@@ -61,8 +61,8 @@ def run(text: str,
         futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
-            print(out)
             raw_items.append(out)
+        return combine_blobs(raw_items)
             # extract JSON array
             # try:
             #     start, end = out.index("["), out.rindex("]")+1
@@ -81,4 +81,4 @@ def run(text: str,
     #         seen.add(uid)
     #         final.append(obj)
 
-    return combine_blobs(raw_items)
+    # return combine_blobs(raw_items)
