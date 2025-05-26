@@ -4,6 +4,7 @@ import uuid
 from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
+from functions import combine_blobs
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -61,14 +62,15 @@ def run(text: str,
         for f in as_completed(futures):
             out = f.result()["text"]
             print(out)
+            raw_items.append(out)
             # extract JSON array
-            try:
-                start, end = out.index("["), out.rindex("]")+1
-                arr = json.loads(out[start:end])
-                if isinstance(arr, list):
-                    raw_items.extend(arr)
-            except:
-                continue
+            # try:
+            #     start, end = out.index("["), out.rindex("]")+1
+            #     arr = json.loads(out[start:end])
+            #     if isinstance(arr, list):
+            #         raw_items.extend(arr)
+            # except:
+            #     continue
 
     # assign IDs & dedupe
     # final, seen = [], set()
@@ -79,4 +81,4 @@ def run(text: str,
     #         seen.add(uid)
     #         final.append(obj)
 
-    return raw_items
+    return combine_blobs(raw_items)

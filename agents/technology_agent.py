@@ -3,6 +3,7 @@ import json
 import uuid
 from typing import List, Dict
 from dotenv import load_dotenv
+from functions import combine_blobs
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -50,6 +51,7 @@ chain = LLMChain(llm=llm, prompt=PROMPT)
 def chunk_text(text: str, max_chars=2000, overlap=200) -> List[str]:
     chunks, i = [], 0
     while i < len(text):
+
         chunks.append(text[i : i + max_chars])
         i += max_chars - overlap
     return chunks
@@ -72,8 +74,9 @@ def run(text: str,
         futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
+            print(out)
             raw_items.append(out)
-        return raw_items
+        return combine_blobs(raw_items)
             # extract JSON array
     #         try:
     #             start, end = out.index("["), out.rindex("]")+1
