@@ -105,6 +105,9 @@ if st.button("Extract & Run All Agents"):
             try:
                 output = future.result()
                 ph.success(f"✅ {name} done")
+
+                ph.markdown(f"**{name} Output:**")
+
                 if isinstance(output, list):
                     ph.json(output)
                 else:
