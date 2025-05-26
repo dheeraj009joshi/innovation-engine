@@ -20,7 +20,7 @@ st.set_page_config(layout="wide")
 st.title("🧠 Agentic AI Innovation Engine")
 
 # --- 1) Upload & Extract Text ---
-project = st.text_input("Project ID")
+project = "kfjdbds"
 rnd_files = st.file_uploader("Upload R&D Files", type=["pdf","docx","txt"], accept_multiple_files=True)
 mkt_files = st.file_uploader("Upload Marketing Files", type=["pdf","docx","txt"], accept_multiple_files=True)
 
