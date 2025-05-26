@@ -6,9 +6,15 @@ import streamlit as st
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# 1) Force a light theme
+st.set_page_config(
+     page_title="Agentic AI Innovation Engine",
+     layout="wide",
+)
+
 load_dotenv()
 
-# Import each agent’s run function
+# 2) Import each agent’s run function
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
 from agents.benefits_agent import run as run_benefits
@@ -16,11 +22,10 @@ from agents.situations_agent import run as run_situations
 from agents.motivations_agent import run as run_motivations
 from agents.outcomes_agent import run as run_outcomes
 
-st.set_page_config(layout="wide")
 st.title("🧠 Agentic AI Innovation Engine")
 
 # --- 1) Upload & Extract Text ---
-project = "kfjdbds"
+project = "dvh"
 rnd_files = st.file_uploader("Upload R&D Files", type=["pdf","docx","txt"], accept_multiple_files=True)
 mkt_files = st.file_uploader("Upload Marketing Files", type=["pdf","docx","txt"], accept_multiple_files=True)
 
@@ -61,56 +66,70 @@ if st.button("Extract & Run All Agents"):
 
     st.success("✅ Text extracted.")
 
-    # Prepare placeholders
+    # 2) Prepare columns and placeholders
     col_r, col_m = st.columns(2)
     with col_r:
         st.subheader("🔬 R&D Agents")
-        ph_ing = st.empty()
-        ph_tech = st.empty()
-        ph_ben = st.empty()
+        rd_placeholders = {
+            "IngredientsAgent":  (st.empty(), st.empty()),
+            "TechnologyAgent":   (st.empty(), st.empty()),
+            "BenefitsAgent":     (st.empty(), st.empty()),
+        }
     with col_m:
         st.subheader("📣 Marketing Agents")
-        ph_sit = st.empty()
-        ph_mot = st.empty()
-        ph_out = st.empty()
+        mk_placeholders = {
+            "SituationsAgent":   (st.empty(), st.empty()),
+            "MotivationsAgent":  (st.empty(), st.empty()),
+            "OutcomesAgent":     (st.empty(), st.empty()),
+        }
 
-    # Map R&D agents → (fn, placeholder, input_text)
-    rd_agents = {
-        "IngredientsAgent": (run_ingredients, ph_ing, rnd_text),
-        "TechnologyAgent":  (run_technology,  ph_tech, rnd_text),
-        "BenefitsAgent":    (run_benefits,    ph_ben, rnd_text),
-    }
-    # Map Marketing agents → (fn, placeholder, input_text)
-    mk_agents = {
-        "SituationsAgent":  (run_situations,   ph_sit, mkt_text),
-        "MotivationsAgent": (run_motivations,  ph_mot, mkt_text),
-        "OutcomesAgent":    (run_outcomes,     ph_out, mkt_text),
-    }
+    # 3) Map names → (fn, status_ph, output_ph, text)
+    agents = {}
+    for name, fn in [
+        ("IngredientsAgent", run_ingredients),
+        ("TechnologyAgent", run_technology),
+        ("BenefitsAgent", run_benefits),
+    ]:
+        status_ph, output_ph = rd_placeholders[name]
+        agents[name] = (fn, status_ph, output_ph, rnd_text)
 
-    # Combine maps
-    all_agents = {**rd_agents, **mk_agents}
+    for name, fn in [
+        ("SituationsAgent", run_situations),
+        ("MotivationsAgent", run_motivations),
+        ("OutcomesAgent", run_outcomes),
+    ]:
+        status_ph, output_ph = mk_placeholders[name]
+        agents[name] = (fn, status_ph, output_ph, mkt_text)
 
-    # Run all in parallel
+    # 4) Run all in parallel
     with ThreadPoolExecutor() as executor:
         futures = {}
-        # submit each
-        for name, (fn, ph, txt) in all_agents.items():
-            ph.info(f"⏳ {name} running…")
+        for name, (fn, status_ph, _, txt) in agents.items():
+            status_ph.info(f"⏳ {name} running…")
             futures[executor.submit(fn, txt)] = name
 
-        # collect results
         for future in as_completed(futures):
             name = futures[future]
-            fn, ph, _ = all_agents[name]
+            fn, status_ph, output_ph, _ = agents[name]
             try:
-                output = future.result()
-                ph.success(f"✅ {name} done")
+                result = future.result()
+                # clear status only
+                status_ph.empty()
 
-                ph.markdown(f"**{name} Output:**")
-
-                if isinstance(output, list):
-                    ph.json(output)
+                # Title + JSON or text
+                output_ph.subheader(f"{name} Output")
+                if isinstance(result, list):
+                    output_ph.json(result)
+                    # Provide download button
+                    json_bytes = json.dumps(result, indent=2).encode("utf-8")
+                    output_ph.download_button(
+                        label=f"📥 Download {name}JSON",
+                        data=json_bytes,
+                        file_name=f"{project}_{name}.json",
+                        mime="application/json"
+                    )
                 else:
-                    ph.text(str(output))
+                    output_ph.text(str(result))
+
             except Exception as e:
-                ph.error(f"❌ {name} error: {e}")
+                status_ph.error(f"❌ {name} error: {e}")
