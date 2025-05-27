@@ -21,6 +21,8 @@ docx2txt==0.9
 dotenv==0.9.9
 faiss-cpu==1.11.0
 frozenlist==1.6.0
+
+
 gitdb==4.0.12
 GitPython==3.1.44
 h11==0.16.0
