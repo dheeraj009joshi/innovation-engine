@@ -11,11 +11,7 @@ from datetime import datetime
 import pandas as pd
 import re
 from bson import ObjectId
-from pandas.api.types import is_list_like
-
-
-
-
+from pandas import json_normalize
 
 # -- Import your agents --
 from agents.ingredients_agent   import run as run_ingredients
@@ -24,10 +20,6 @@ from agents.benefits_agent      import run as run_benefits
 from agents.situations_agent    import run as run_situations
 from agents.motivations_agent   import run as run_motivations
 from agents.outcomes_agent      import run as run_outcomes
-
-
-
-
 
 # Initialize configuration
 st.set_page_config(
@@ -59,6 +51,11 @@ def inject_custom_css():
             margin: 1rem 0;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
+            transition: transform 0.2s;
+        }
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .wizard-step {
             padding: 1rem;
@@ -75,9 +72,27 @@ def inject_custom_css():
             background: #e3f2fd;
             border-color: #2196f3;
         }
-        .dataframe {
-            width: 100%;
-            margin: 1rem 0;
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.3s ease;
+        }
+        .project-icon {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+        }
+        .project-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            background: #e3f2fd;
+            color: #2196f3;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -113,7 +128,8 @@ class AuthService:
             "email": email,
             "password": self.hash_password(password),
             "created_at": datetime.now(),
-            "last_login": None
+            "last_login": None,
+            "current_project": None
         })
         return True
 
@@ -187,6 +203,14 @@ class AuthUI:
                     if user:
                         st.session_state.authenticated = True
                         st.session_state.current_user = user
+                        if user.get("current_project"):
+                            project = self.auth.projects.find_one({"_id": user["current_project"]})
+                            if project:
+                                st.session_state.current_project = project
+                                st.session_state.wizard_step = project.get("wizard_step", 1)
+                                results = self.auth.results.find_one({"project_id": project["_id"]})
+                                if results:
+                                    st.session_state.agent_outputs = results.get("results", {})
                         st.session_state.page = "projects"
                         st.rerun()
                     else:
@@ -244,7 +268,7 @@ class ProjectUI:
         st.title("📂 Project Management")
         
         # Create new project
-        with st.expander("➕ Create New Project", expanded=False):
+        with st.expander("🆕 Create New Project", expanded=False):
             with st.form("new_project_form"):
                 name = st.text_input("Project Name")
                 description = st.text_area("Description")
@@ -263,33 +287,62 @@ class ProjectUI:
                         st.rerun()
         
         # Display projects
-        st.subheader("Your Projects")
+        st.subheader("📦 Your Projects")
         projects = list(self.auth.projects.find({
             "owner": st.session_state.current_user["username"]
         }).sort("created_at", -1))
 
         if not projects:
-            st.info("No projects found. Create your first project above!")
+            st.info("🎯 No projects found. Create your first project above!")
             return
 
         for project in projects:
             with st.container():
-                st.markdown(f"""
-                <div class="project-card">
-                    <h3>{project['name']}</h3>
-                    <p>{project.get('description', '')}</p>
-                    <div style="color: #666; font-size: 0.9rem;">
-                        Progress: {len(project.get('completed_steps', []))}/3 steps completed
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    st.markdown(f"""
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="project-icon">📁</span>
+                        <h3>{project['name']}</h3>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+                    st.caption(f"Created: {project['created_at'].strftime('%Y-%m-%d %H:%M')}")
+                    
+                with col2:
+                    progress = len(project.get('completed_steps', [])) / 3
+                    st.markdown(f"""
+                    <div style="margin-bottom: 0.5rem;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {progress * 100}%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span class="project-badge">{f"{int(progress * 100)}% Complete"}</span>
+                            <span style="color: #666;">Steps completed: {len(project.get('completed_steps', []))}/3</span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if st.button("Open Project", key=f"open_{project['_id']}"):
+                        self.load_project(project)
                 
-                if st.button("Open", key=f"open_{project['_id']}"):
-                    st.session_state.current_project = project
-                    st.session_state.wizard_step = project.get("wizard_step", 1)
-                    st.session_state.completed_steps = project.get("completed_steps", [])
-                    st.session_state.page = "dashboard"
-                    st.rerun()
+                st.markdown("---")
+
+    def load_project(self, project):
+        st.session_state.current_project = project
+        st.session_state.wizard_step = project.get("wizard_step", 1)
+        st.session_state.completed_steps = project.get("completed_steps", [])
+        
+        self.auth.users.update_one(
+            {"_id": st.session_state.current_user["_id"]},
+            {"$set": {"current_project": project["_id"]}}
+        )
+        
+        results = self.auth.results.find_one({"project_id": project["_id"]})
+        if results:
+            st.session_state.agent_outputs = results.get("results", {})
+        
+        st.session_state.page = "dashboard"
+        st.rerun()
 
 class AnalysisUI:
     def __init__(self, auth_service):
@@ -342,7 +395,6 @@ class AnalysisUI:
     def run_agents(self):
         st.subheader("⚙️ Analysis Progress")
         
-        # Extract text
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
         
@@ -350,7 +402,6 @@ class AnalysisUI:
             st.error("No valid text extracted from files")
             return
 
-        # Prepare agents
         agents = {
             "IngredientsAgent": (run_ingredients, rnd_text),
             "TechnologyAgent": (run_technology, rnd_text),
@@ -360,7 +411,6 @@ class AnalysisUI:
             "OutcomesAgent": (run_outcomes, mkt_text)
         }
 
-        # Execute agents
         progress_bar = st.progress(0)
         results = {}
         
@@ -376,7 +426,6 @@ class AnalysisUI:
                     st.error(f"❌ {name} failed: {str(e)}")
                 progress_bar.progress((i + 1) / len(agents))
         
-        # Save results and update state
         if results:
             self.auth.save_agent_results(st.session_state.current_project["_id"], results)
             st.session_state.agent_outputs = results
@@ -384,42 +433,49 @@ class AnalysisUI:
             st.session_state.wizard_step = 3
             st.rerun()
 
+    def normalize_agent_data(self, data):
+        if isinstance(data, dict):
+            for key in list(data.keys()):
+                if key in ['Evidence_Snippets', 'Keywords', 'BenefitsAgent', 'TechnologyAgent']:
+                    if not isinstance(data[key], list):
+                        data[key] = [data[key]] if data[key] else []
+                elif isinstance(data[key], dict):
+                    data[key] = self.normalize_agent_data(data[key])
+                elif isinstance(data[key], list):
+                    data[key] = [self.normalize_agent_data(item) if isinstance(item, dict) else item 
+                               for item in data[key]]
+        return data
+
     def format_dataframe(self, data):
         try:
-            if isinstance(data, dict):
-                # Handle nested dictionaries
-                df = pd.json_normalize(data, sep='_')
-                # Convert all columns to strings to prevent type conflicts
-                return df.astype(str)
-            elif isinstance(data, list):
-                # Handle lists of dictionaries
-                if all(isinstance(item, dict) for item in data):
-                    return pd.json_normalize(data, sep='_')
-                return pd.DataFrame(data)
-            return pd.DataFrame({"Result": [str(data)]})
+            clean_data = self.normalize_agent_data(data)
+            if isinstance(clean_data, dict):
+                df = json_normalize(clean_data, sep='_', errors='ignore')
+            elif isinstance(clean_data, list):
+                df = json_normalize(clean_data, sep='_', errors='ignore')
+            else:
+                df = pd.DataFrame([clean_data])
+            
+            return df.astype(str).replace({
+                'nan': '', 'None': '', 'NaT': '', '[]': '[]', '{}': '{}'
+            })
         except Exception as e:
-            st.error(f"Data formatting error: {str(e)}")
-            return pd.DataFrame({"Raw Output": [str(data)]})
+            st.error(f"📊 Formatting error: {str(e)}")
+            return pd.DataFrame({"Raw Data": [str(data)]})  # Fixed to use data instead of clean_data
 
     def show_results(self):
-        st.subheader("📊 Analysis Results")
-        
-        tabs = st.tabs(list(st.session_state.agent_outputs.keys()))
-        for tab, (agent, result) in zip(tabs, st.session_state.agent_outputs.items()):
+        st.markdown("<div class='emoji-header'>📊 Analysis Results</div>", unsafe_allow_html=True)
+        if not st.session_state.agent_outputs:
+            st.warning("📭 No results found")
+            return
+
+        tabs = st.tabs([f"{name} Agent" for name in st.session_state.agent_outputs.keys()])
+        for tab, (agent_name, agent_data) in zip(tabs, st.session_state.agent_outputs.items()):
             with tab:
-                df = self.format_dataframe(result)
+                df = self.format_dataframe(agent_data)
                 st.dataframe(df, use_container_width=True)
-                
-                with st.expander("Raw JSON Output"):
-                    st.json(result)
-        
-        if st.button("🔄 Start New Analysis"):
-            st.session_state.wizard_step = 1
-            st.session_state.completed_steps = []
-            st.session_state.agent_outputs = {}
-            st.session_state.rnd_files = []
-            st.session_state.mkt_files = []
-            st.rerun()
+                with st.expander("📄 Raw JSON Output"):
+                    st.json(agent_data)
 
 # Main App
 def main():
@@ -431,7 +487,7 @@ def main():
     # Sidebar
     if st.session_state.authenticated:
         with st.sidebar:
-            st.markdown(f"## Welcome, {st.session_state.current_user['username']}")
+            st.markdown(f"## 🧑💻 Welcome, {st.session_state.current_user['username']}")
             st.markdown("---")
             
             if st.session_state.page == "dashboard":
@@ -440,9 +496,11 @@ def main():
                     st.rerun()
             
             if st.button("🚪 Logout"):
-                st.session_state.authenticated = False
-                st.session_state.current_user = None
-                st.session_state.current_project = None
+                auth_service.users.update_one(
+                    {"_id": st.session_state.current_user["_id"]},
+                    {"$set": {"current_project": None}}
+                )
+                st.session_state.clear()
                 st.rerun()
 
     # Page Routing
