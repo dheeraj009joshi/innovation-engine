@@ -34,6 +34,7 @@ def combine_blobs(raw_blobs: List[str]) -> List[Dict]:
     for i, blob in enumerate(raw_blobs):
         obj = parse_maybe_json_blob(blob)
         if obj is None:
+            print(obj)
             print(f"⚠️ Skipping blob #{i}: not valid JSON or literal")
             continue
 

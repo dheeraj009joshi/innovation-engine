@@ -74,7 +74,7 @@ def run(text: str,
         futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
-            print(out)
+            # print(out)
             raw_items.append(out)
         return combine_blobs(raw_items)
             # extract JSON array
