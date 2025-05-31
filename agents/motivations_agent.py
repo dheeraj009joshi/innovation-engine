@@ -19,8 +19,7 @@ Definitions:
 Motivation: The underlying reason, driver, or "why" behind a user's actions or their desire to achieve a particular outcome. Motivations can be functional (task-oriented), emotional (related to feelings), or social (related to self-perception or perception by others).
 Core Task: For each relevant data source or linked Situation, identify and extract all distinct user Motivations.
 Information to Extract for each identified Motivation:
-Motivation_ID: A unique identifier for this extracted motivation.
-Linked_Situation_ID (Optional but Recommended): The Situation_ID this motivation is most strongly associated with, if applicable.
+
 Motivation_Statement: A concise statement capturing the core user motivation, ideally starting with "To..." or "I want/need to..." (e.g., "To feel more productive," "To save time," "To avoid feeling stressed," "To be perceived as competent," "To achieve a sense of accomplishment").
 Motivation_Type: Categorize as "Functional," "Emotional," or "Social." (Can be a primary type with secondary notes).
 Description: A brief explanation (1-2 sentences) elaborating on the motivation, its roots, and what drives it, based on the text.

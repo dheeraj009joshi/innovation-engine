@@ -22,7 +22,7 @@ Definitions:
 Ingredient/Component: A discrete, identifiable substance, material, part, module, or element that is part of a larger formulation, product, or system. This can range from chemical compounds in a food product to software libraries in an application, or raw materials in a manufactured good.
 Core Task: For each document, identify and extract all distinct Ingredients or Components described as part of a specific formulation or system.
 Information to Extract for each identified Ingredient/Component:
-Ingredient_Component_ID: A unique identifier for this item.
+
 Ingredient_Component_Name: The common or technical name of the ingredient/component (e.g., "Ascorbic Acid," "Titanium Dioxide (E171)," "Qualcomm Snapdragon 8 Gen 2 Mobile Platform," "React.js Library," "Cold-Rolled Steel Grade A").
 Alternative_Names_Or_Identifiers (Optional): Any synonyms, CAS numbers, trade names, version numbers, or other identifiers mentioned.
 Category_Or_Type: A classification for the ingredient/component (e.g., "Active Pharmaceutical Ingredient," "Excipient," "Pigment," "Microprocessor," "UI Framework," "Structural Material," "Natural Flavoring").

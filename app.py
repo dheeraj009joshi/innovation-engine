@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import pdfplumber
 import docx2txt
 import streamlit as st
@@ -14,12 +15,13 @@ from bson import ObjectId
 from pandas import json_normalize
 
 # -- Import your agents --
-from agents.ingredients_agent   import run as run_ingredients
-from agents.technology_agent    import run as run_technology
-from agents.benefits_agent      import run as run_benefits
-from agents.situations_agent    import run as run_situations
-from agents.motivations_agent   import run as run_motivations
-from agents.outcomes_agent      import run as run_outcomes
+from agents.ingredients_agent import run as run_ingredients
+from agents.technology_agent import run as run_technology
+from agents.benefits_agent import run as run_benefits
+from agents.situations_agent import run as run_situations
+from agents.motivations_agent import run as run_motivations
+from agents.outcomes_agent import run as run_outcomes
+from agents.product_generation_agent import run as run_product_generation
 
 # Initialize configuration
 st.set_page_config(
@@ -94,6 +96,13 @@ def inject_custom_css():
             background: #e3f2fd;
             color: #2196f3;
         }
+        .digester-box {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -145,13 +154,17 @@ class AuthService:
 
     def save_agent_results(self, project_id, results):
         try:
-            result_id = ObjectId()
-            self.results.insert_one({
-                "_id": result_id,
-                "project_id": ObjectId(project_id),
-                "results": results,
-                "created_at": datetime.now()
-            })
+            # Create or update results document
+            self.results.update_one(
+                {"project_id": ObjectId(project_id)},
+                {"$set": {
+                    "results": results,
+                    "updated_at": datetime.now()
+                }},
+                upsert=True
+            )
+            
+            # Update project progress
             self.projects.update_one(
                 {"_id": ObjectId(project_id)},
                 {"$set": {
@@ -163,6 +176,30 @@ class AuthService:
             return True
         except Exception as e:
             st.error(f"Error saving results: {str(e)}")
+            return False
+        
+    def save_product_results(self, project_id, product_ideas):
+        """Save product generation results to database"""
+        try:
+            # Save product ideas to existing results document
+            self.results.update_one(
+                {"project_id": ObjectId(project_id)},
+                {"$set": {"results.ProductGenerationAgent": product_ideas}},
+                upsert=True
+            )
+            
+            # Update project progress
+            self.projects.update_one(
+                {"_id": ObjectId(project_id)},
+                {"$set": {
+                    "wizard_step": 4,
+                    "completed_steps": [1, 2, 3, 4],
+                    "updated_at": datetime.now()
+                }}
+            )
+            return True
+        except Exception as e:
+            st.error(f"Error saving product ideas: {str(e)}")
             return False
 
 # Session State Management
@@ -176,6 +213,8 @@ def init_session_state():
         "completed_steps": [],
         "rnd_files": [],
         "mkt_files": [],
+        "research_query": "",
+        "research_result": "",
         "page": "login"
     }
     for key, value in required_keys.items():
@@ -309,7 +348,7 @@ class ProjectUI:
                     st.caption(f"Created: {project['created_at'].strftime('%Y-%m-%d %H:%M')}")
                     
                 with col2:
-                    progress = len(project.get('completed_steps', [])) / 3
+                    progress = len(project.get('completed_steps', [])) / 4
                     st.markdown(f"""
                     <div style="margin-bottom: 0.5rem;">
                         <div class="progress-bar">
@@ -317,7 +356,7 @@ class ProjectUI:
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                             <span class="project-badge">{f"{int(progress * 100)}% Complete"}</span>
-                            <span style="color: #666;">Steps completed: {len(project.get('completed_steps', []))}/3</span>
+                            <span style="color: #666;">Steps completed: {len(project.get('completed_steps', []))}/4</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -357,7 +396,7 @@ class AnalysisUI:
         }
 
     def wizard_navigation(self):
-        steps = ["Upload Files", "Run Analysis", "View Results"]
+        steps = ["What we know", "Digester", "View Results", "Generate Products"]
         cols = st.columns(len(steps))
         for i, step in enumerate(steps):
             with cols[i]:
@@ -392,11 +431,79 @@ class AnalysisUI:
                 st.error(f"Error processing {f.name}: {str(e)}")
         return text
 
+    def show_step1_content(self):
+        """Reorganized Step 1 with new sections"""
+        st.subheader("🔍 What We Know")
+        
+        # Technical Documents Section
+        with st.expander("📚 In my possession - Technical Documents", expanded=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Private Technical**")
+                private_tech = st.file_uploader(
+                    "Upload private technical documents",
+                    type=["pdf", "docx", "txt"],
+                    accept_multiple_files=True,
+                    key="private_tech",
+                    label_visibility="collapsed"
+                )
+            with col2:
+                st.markdown("**Public Technical**")
+                public_tech = st.file_uploader(
+                    "Upload public technical documents",
+                    type=["pdf", "docx", "txt"],
+                    accept_multiple_files=True,
+                    key="public_tech",
+                    label_visibility="collapsed"
+                )
+            st.session_state.rnd_files = private_tech + public_tech
+
+        # Marketing Documents Section
+        with st.expander("📊 In my possession - Marketing Documents", expanded=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Private Marketing**")
+                private_mkt = st.file_uploader(
+                    "Upload private marketing documents",
+                    type=["pdf", "docx", "txt"],
+                    accept_multiple_files=True,
+                    key="private_mkt",
+                    label_visibility="collapsed"
+                )
+            with col2:
+                st.markdown("**Public Marketing**")
+                public_mkt = st.file_uploader(
+                    "Upload public marketing documents",
+                    type=["pdf", "docx", "txt"],
+                    accept_multiple_files=True,
+                    key="public_mkt",
+                    label_visibility="collapsed"
+                )
+            st.session_state.mkt_files = private_mkt + public_mkt
+
+        # Deep Research Section
+        with st.expander("🔬 Do my research for me", expanded=True):
+            st.session_state.research_query = st.text_area(
+                "What would you like to find out? Write a 3-sentence paragraph:",
+                height=150,
+                placeholder="e.g., 'Investigate emerging technologies in biodegradable materials for food packaging. Focus on recent scientific breakthroughs and commercial applications. Identify key players and market adoption challenges.'"
+            )
+            if st.button("🧠 Run Deep Research", use_container_width=True):
+                with st.spinner("Researching with Gemini..."):
+                    # Placeholder - would integrate with Gemini API in real implementation
+                    # time.sleep(2)
+                    st.session_state.research_result = f"Research results for: {st.session_state.research_query}"
+                    st.success("The Research Agent is currently under development. Our team is actively working on adding this feature and it will be available soon.")
+
     def run_agents(self):
         st.subheader("⚙️ Analysis Progress")
         
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
+        
+        # Add research content to analysis
+        if st.session_state.get('research_result'):
+            rnd_text += "\n\nRESEARCH FINDINGS:\n" + st.session_state.research_result
         
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
@@ -461,8 +568,113 @@ class AnalysisUI:
             })
         except Exception as e:
             st.error(f"📊 Formatting error: {str(e)}")
-            return pd.DataFrame({"Raw Data": [str(data)]})  # Fixed to use data instead of clean_data
+            return pd.DataFrame({"Raw Data": [str(clean_data)]})
 
+    # def show_results(self):
+    #     st.markdown("<div class='emoji-header'>📊 Analysis Results</div>", unsafe_allow_html=True)
+    #     if not st.session_state.agent_outputs:
+    #         st.warning("📭 No results found")
+    #         return
+
+    #     # Create tabs for each digester
+    #     tabs = st.tabs([f"{name.replace('Agent', ' Digester')}" for name in st.session_state.agent_outputs.keys()])
+    #     for tab, (agent_name, agent_data) in zip(tabs, st.session_state.agent_outputs.items()):
+    #         with tab:
+    #             # Create a container with border
+    #             st.markdown(
+    #                 f'<div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">',
+    #                 unsafe_allow_html=True
+    #             )
+                
+    #             # Display key insights in a condensed format
+    #             if agent_name == "IngredientsAgent":
+    #                 if "Key_Ingredients" in agent_data:
+    #                     st.markdown("**Key Ingredients:**")
+    #                     st.write(agent_data["Key_Ingredients"])
+    #                 if "Functionality" in agent_data:
+    #                     st.markdown("**Functionality:**")
+    #                     st.write(agent_data["Functionality"])
+    #                 if "Sources" in agent_data:
+    #                     st.markdown("**Sources:**")
+    #                     st.write(agent_data["Sources"])
+                
+    #             elif agent_name == "TechnologyAgent":
+    #                 if "Core_Technology" in agent_data:
+    #                     st.markdown("**Core Technology:**")
+    #                     st.write(agent_data["Core_Technology"])
+    #                 if "Innovation_Level" in agent_data:
+    #                     st.markdown("**Innovation Level:**")
+    #                     st.write(agent_data["Innovation_Level"])
+    #                 if "Evidence" in agent_data:
+    #                     st.markdown("**Evidence:**")
+    #                     st.write(agent_data["Evidence"])
+                
+    #             elif agent_name == "BenefitsAgent":
+    #                 if "Primary_Benefits" in agent_data:
+    #                     st.markdown("**Primary Benefits:**")
+    #                     st.write(agent_data["Primary_Benefits"])
+    #                 if "Benefit_Type" in agent_data:
+    #                     st.markdown("**Benefit Type:**")
+    #                     st.write(agent_data["Benefit_Type"])
+    #                 if "Evidence" in agent_data:
+    #                     st.markdown("**Evidence:**")
+    #                     st.write(agent_data["Evidence"])
+                
+    #             elif agent_name == "SituationsAgent":
+    #                 if "Key_Situations" in agent_data:
+    #                     st.markdown("**Key Situations:**")
+    #                     st.write(agent_data["Key_Situations"])
+    #                 if "Consumer_Segments" in agent_data:
+    #                     st.markdown("**Consumer Segments:**")
+    #                     st.write(agent_data["Consumer_Segments"])
+    #                 if "Sources" in agent_data:
+    #                     st.markdown("**Sources:**")
+    #                     st.write(agent_data["Sources"])
+                
+    #             elif agent_name == "MotivationsAgent":
+    #                 if "Primary_Motivations" in agent_data:
+    #                     st.markdown("**Primary Motivations:**")
+    #                     st.write(agent_data["Primary_Motivations"])
+    #                 if "Motivation_Types" in agent_data:
+    #                     st.markdown("**Motivation Types:**")
+    #                     st.write(agent_data["Motivation_Types"])
+    #                 if "Evidence" in agent_data:
+    #                     st.markdown("**Evidence:**")
+    #                     st.write(agent_data["Evidence"])
+                
+    #             elif agent_name == "OutcomesAgent":
+    #                 if "Desired_Outcomes" in agent_data:
+    #                     st.markdown("**Desired Outcomes:**")
+    #                     st.write(agent_data["Desired_Outcomes"])
+    #                 if "Outcome_Types" in agent_data:
+    #                     st.markdown("**Outcome Types:**")
+    #                     st.write(agent_data["Outcome_Types"])
+    #                 if "Evidence" in agent_data:
+    #                     st.markdown("**Evidence:**")
+    #                     st.write(agent_data["Evidence"])
+                
+    #             st.markdown('</div>', unsafe_allow_html=True)
+                
+    #             # Show raw data in expander
+    #             with st.expander("View Detailed Analysis"):
+    #                 df = self.format_dataframe(agent_data)
+    #                 st.dataframe(df, use_container_width=True)
+    #                 with st.expander("📄 Raw JSON Output"):
+    #                     st.json(agent_data)
+        
+    #     # Add navigation buttons
+    #     col1, col2, col3 = st.columns([1,1,2])
+    #     with col1:
+    #         if st.button("← Back to File Upload", key="back_to_step1"):
+    #             st.session_state.wizard_step = 1
+    #             st.rerun()
+    #     with col2:
+    #         st.button("Regenerate Analysis", key="regenerate_analysis", 
+    #                  help="Re-run the analysis agents")
+    #     with col3:
+    #         if st.button("Generate Product Ideas →", key="generate_products"):
+    #             st.session_state.wizard_step = 4
+    #             st.rerun()
     def show_results(self):
         st.markdown("<div class='emoji-header'>📊 Analysis Results</div>", unsafe_allow_html=True)
         if not st.session_state.agent_outputs:
@@ -477,7 +689,194 @@ class AnalysisUI:
                 with st.expander("📄 Raw JSON Output"):
                     st.json(agent_data)
 
-# Main App
+        col1, col2 = st.columns([1,1])
+        with col1:
+            if st.button("← Back to Results", key="back_to_results"):
+                st.session_state.wizard_step = 3
+                st.rerun()
+        with col2:
+            if st.button("🔄 Generate Products", key="Generate_products"):
+                with st.spinner("Generating product ideas..."):
+                    if self.generate_products():
+                        st.rerun()
+    def generate_products(self):
+        """Run product generation with guaranteed UI display"""
+        st.subheader("🚀 Generating Product Ideas")
+        
+        # Get all agent outputs
+        all_agent_outputs = st.session_state.agent_outputs
+        
+        if not all_agent_outputs:
+            st.error("No analysis results found. Please run analysis first.")
+            return False
+
+        # Create progress container
+        progress_container = st.container()
+        progress_bar = progress_container.progress(0)
+        status_text = progress_container.empty()
+        
+        def progress_callback(percent, message):
+            progress_bar.progress(percent)
+            status_text.text(message)
+        
+        try:
+            # Run product generation agent
+            product_ideas = run_product_generation(all_agent_outputs, progress_callback=progress_callback)
+            
+            # Store the results
+            st.session_state.agent_outputs["ProductGenerationAgent"] = product_ideas
+            
+            # Save to database
+            self.auth.save_product_results(
+                st.session_state.current_project["_id"],
+                product_ideas
+            )
+            
+            # Update UI state
+            st.session_state.completed_steps = [1, 2, 3, 4]
+            st.session_state.wizard_step = 4
+            
+            # Refresh the UI
+            st.rerun()
+            return True
+            
+        except Exception as e:
+            progress_callback(100, f"Error: {str(e)}")
+            time.sleep(2)
+            return False
+        finally:
+            # Clear progress after delay
+            time.sleep(1)
+            progress_container.empty()    
+
+    def show_product_ideas(self):
+        """Display generated product ideas in a structured format"""
+        st.subheader("💡 Generated Product Ideas")
+        
+        # Check if we have product ideas
+        if "ProductGenerationAgent" not in st.session_state.agent_outputs:
+            st.warning("No product ideas generated yet")
+            return
+
+        ideas = st.session_state.agent_outputs["ProductGenerationAgent"]
+        
+        # If we have a string, try to parse it as JSON
+        if isinstance(ideas, str):
+            try:
+                ideas = json.loads(ideas)
+            except json.JSONDecodeError:
+                st.error("Could not parse product ideas as JSON")
+                st.text_area("Raw Output", ideas, height=400)
+                return
+        
+        # Display each product idea in a structured format
+        if isinstance(ideas, list) and ideas:
+            for idx, idea in enumerate(ideas, 1):
+                with st.expander(f"Idea #{idx}: {idea.get('product_name', 'Unnamed Product')}", expanded=False):
+                    # Product header
+                    st.markdown(f"### {idea.get('product_name', 'Unnamed Product')}")
+                    
+                    # Technical Explanation
+                    st.markdown("#### Technical Explanation")
+                    st.write(idea.get("technical_explanation", "No technical explanation available"))
+                    
+                    # Consumer Pitch
+                    st.markdown("#### Consumer Pitch")
+                    st.write(idea.get("consumer_pitch", "No consumer pitch available"))
+                    
+                    # Competitor Reaction
+                    st.markdown("#### Competitor Reaction")
+                    st.write(idea.get("competitor_reaction", "No competitor reaction available"))
+                    
+                    # 5-Year Projection
+                    st.markdown("#### 5-Year Projection (2030)")
+                    st.write(idea.get("five_year_projection", "No projection available"))
+                    
+                    # Consumer Discussion
+                    st.markdown("#### Consumer Discussion (Town Hall Meeting)")
+                    st.write(idea.get("consumer_discussion", "No consumer discussion available"))
+                    
+                    # Presentation
+                    st.markdown("#### Professional Presentation")
+                    presentation = idea.get("presentation", [])
+                    if isinstance(presentation, list) and len(presentation) > 0:
+                        for i, sentence in enumerate(presentation, 1):
+                            st.markdown(f"{i}. {sentence}")
+                    else:
+                        st.write("No presentation available")
+                    
+                    # Consumer Q&A
+                    st.markdown("#### Consumer Q&A")
+                    qa = idea.get("consumer_qa", [])
+                    if isinstance(qa, list) and len(qa) > 0:
+                        for i, qa_item in enumerate(qa, 1):
+                            st.markdown(f"**Q{i}:** {qa_item.get('question', '')}")
+                            answers = qa_item.get('answers', [])
+                            if answers:
+                                for j, ans in enumerate(answers, 1):
+                                    st.markdown(f"{j}. {ans}")
+                            else:
+                                st.markdown("No answers available")
+                    else:
+                        st.write("No Q&A available")
+                    
+                    # Investor Evaluation
+                    st.markdown("#### Investor Evaluation")
+                    st.write(idea.get("investor_evaluation", "No investor evaluation available"))
+                    
+                    # Advertiser Slogans
+                    st.markdown("#### Advertiser Slogans")
+                    slogans = idea.get("advertisor_slogans", [])
+                    if isinstance(slogans, list) and len(slogans) > 0:
+                        for slogan in slogans:
+                            st.markdown(f"**Slogan:** {slogan.get('slogan', '')}")
+                            st.markdown(f"**Mindset Description:** {slogan.get('mindset_description', '')}")
+                            st.markdown("---")
+                    else:
+                        st.write("No slogans available")
+                    
+                    # AI Report Card
+                    st.markdown("#### AI Report Card")
+                    report_card = idea.get("ai_report_card", {})
+                    if report_card:
+                        report_data = {
+                            "Metric": ["Originality", "Usefulness", "Social Media Talk", 
+                                    "Memorability", "Friend Talk", "Purchase Ease", 
+                                    "Excitement", "Boredom Likelihood"],
+                            "Score": [
+                                report_card.get("originality", 0),
+                                report_card.get("usefulness", 0),
+                                report_card.get("social_media_talk", 0),
+                                report_card.get("memorability", 0),
+                                report_card.get("friend_talk", 0),
+                                report_card.get("purchase_ease", 0),
+                                report_card.get("excitement", 0),
+                                report_card.get("boredom_likelihood", 0)
+                            ]
+                        }
+                        st.dataframe(report_data)
+                    else:
+                        st.write("No AI report card available")
+                    
+                    st.markdown("---")
+            
+            # Add JSON viewer at the bottom
+            with st.expander("View Raw JSON Output", expanded=False):
+                st.json(ideas)
+        
+        # Add navigation buttons
+        col1, col2 = st.columns([1,1])
+        with col1:
+            if st.button("← Back to Results", key="back_to_results"):
+                st.session_state.wizard_step = 3
+                st.rerun()
+        with col2:
+            if st.button("🔄 Regenerate Products", key="regenerate_products"):
+                with st.spinner("Regenerating product ideas..."):
+                    if self.generate_products():
+                        st.rerun()
+        
+    # Main App
 def main():
     auth_service = AuthService()
     auth_ui = AuthUI(auth_service)
@@ -515,21 +914,15 @@ def main():
         elif st.session_state.page == "dashboard":
             analysis_ui.wizard_navigation()
             if st.session_state.wizard_step == 1:
-                st.subheader("📤 Upload Documents")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.session_state.rnd_files = st.file_uploader(
-                        "R&D Documents",
-                        type=["pdf", "docx", "txt"],
-                        accept_multiple_files=True
-                    )
-                with col2:
-                    st.session_state.mkt_files = st.file_uploader(
-                        "Marketing Documents",
-                        type=["pdf", "docx", "txt"],
-                        accept_multiple_files=True
-                    )
-                if st.button("Next →") and (st.session_state.rnd_files or st.session_state.mkt_files):
+                analysis_ui.show_step1_content()
+                
+                # Check if any files or research queries exist
+                any_files = (len(st.session_state.get('rnd_files', []))) > 0 or \
+                            (len(st.session_state.get('mkt_files', []))) > 0
+                any_research = st.session_state.get('research_query') or \
+                               st.session_state.get('research_result')
+                
+                if st.button("Next →", disabled=not (any_files or any_research)):
                     st.session_state.wizard_step = 2
                     st.session_state.completed_steps.append(1)
                     st.rerun()
@@ -539,7 +932,11 @@ def main():
             
             elif st.session_state.wizard_step == 3:
                 analysis_ui.show_results()
-
+               
+            
+            elif st.session_state.wizard_step == 4:
+                analysis_ui.show_product_ideas()
+                    
 if __name__ == "__main__":
     try:
         main()

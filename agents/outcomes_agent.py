@@ -20,9 +20,6 @@ Definitions:
 Desired Outcome: A specific, measurable statement describing what the user wants to achieve or experience as a result of using a product/service or completing a job. It defines "done" or "better" from the user's perspective. Outcomes are often framed as "Minimize X," "Increase Y," "Ensure Z," "Be able to A."
 Core Task: For each relevant data source, or linked Situation/Motivation, identify and extract all distinct Desired Outcomes.
 Information to Extract for each identified Outcome:
-Outcome_ID: A unique identifier for this extracted outcome.
-Linked_Situation_ID (Optional): The Situation_ID this outcome is relevant to.
-Linked_Motivation_ID (Optional): The Motivation_ID this outcome helps satisfy.
 Outcome_Statement: A concise, measurable statement of the desired outcome from the user's perspective (e.g., "Reduce the time spent on [task] by 50%," "Increase the accuracy of [data] to 99.9%," "Be able to access [information] within 5 seconds," "Ensure the [process] is completed without errors").
 Outcome_Metric_Or_Criteria: How would the user measure the achievement of this outcome? What are the specific metrics, criteria, or indicators of success? (e.g., "Time in minutes," "Percentage accuracy," "Number of steps," "Subjective feeling of ease").
 Context_Of_Importance: Why is this outcome important to the user in their specific situation or for their motivation?

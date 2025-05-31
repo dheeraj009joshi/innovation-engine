@@ -18,7 +18,6 @@ The specific underlying mechanism (e.g., biochemical, physical, chemical, comput
 Technology: A novel or established application of scientific knowledge, engineering principles, methods, materials, apparatus, or systems designed to achieve a practical purpose or solve a specific problem. This can include new manufacturing processes, analytical techniques, material compositions, software algorithms, or system architectures.
 Core Task: For each document in the corpus, identify and extract all distinct MoAs and Technologies described.
 Information to Extract for each identified MoA/Technology:
-MoA_Technology_ID: A unique identifier for this item.
 MoA_Technology_Name: A concise, descriptive name or title for the MoA or Technology (e.g., "CRISPR-Cas9 Gene Editing," "Nanoparticle Encapsulation for Drug Delivery," "Quantum Annealing for Optimization," "Photocatalytic Oxidation Process").
 Type: Categorize as "Mode of Action" or "Technology."
 Description: A brief explanation (1-3 sentences) of what it is and how it fundamentally works or what it enables, based on the text.

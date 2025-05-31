@@ -20,7 +20,6 @@ Definitions:
 Situation: The specific context, circumstances, environment, or trigger event that a user experiences, leading them to seek a solution, make progress, or address a challenge. It's the "when" and "where" of a user's need.
 Core Task: For each relevant data source, identify and extract all distinct Situations described.
 Information to Extract for each identified Situation:
-Situation_ID: A unique identifier for this extracted situation.
 Situation_Name: A concise, descriptive name or title for the situation (e.g., "Commuting to Work During Rush Hour," "Preparing a Quick Weeknight Family Meal," "Last-Minute Gift Shopping Online," "Collaborating on a Document Remotely").
 Description: A brief explanation (1-3 sentences) of the circumstances, environment, and key activities or triggers involved in this situation, based on the text.
 Key_Contextual_Factors: List any critical environmental, temporal, social, or resource-related factors explicitly mentioned as defining or influencing this situation (e.g., "Time pressure," "Limited budget," "Presence of children," "Unreliable internet connection," "Specific location").
