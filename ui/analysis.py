@@ -292,7 +292,7 @@ class AnalysisUI:
             if st.session_state.get('social_media_data') or st.session_state.current_project.get('social_media_data'):
                 st.markdown("### Scraped Data Preview ")
                 # print({st.session_state.current_project['last_hashtags']})
-                st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags')}")
+                st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags') or st.session_state.last_hashtags}")
 
                 # Step 1: Copy the data
                 try:
