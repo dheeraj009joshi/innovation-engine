@@ -128,6 +128,11 @@ def get_scraper_data(hashtag, update_queue=None):
 def inject_custom_css():
     st.markdown("""
     <style>
+                @import url('https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@400;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Anek Devanagari', sans-serif !important;
+    }
         .main {
             max-width: 1200px;
             padding: 2rem;
