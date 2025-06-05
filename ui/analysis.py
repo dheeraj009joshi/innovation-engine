@@ -431,6 +431,10 @@ class AnalysisUI:
             st.session_state.wizard_step = 3
             st.rerun()
 
+
+
+        
+
     def normalize_agent_data(self, data):
         if isinstance(data, dict):
             for key in list(data.keys()):
