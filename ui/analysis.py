@@ -22,7 +22,7 @@ from agents.product_generation_agent import run as run_product_generation
 from functions import upload_to_azure, get_scraper_data
 
 
-class AnalysisUI:
+class DigesterUI:
     def __init__(self, auth_service):
         self.auth = auth_service
         self.agents = {
@@ -37,7 +37,7 @@ class AnalysisUI:
     def wizard_navigation(self):
         steps = [
             {"title": "What We Know", "icon": "🔍"},
-            {"title": "Analysis", "icon": "⚙️"},
+            {"title": "Digester", "icon": "⚙️"},
             {"title": "Results", "icon": "📊"},
             {"title": "Product Ideas", "icon": "💡"}
         ]
@@ -365,7 +365,7 @@ class AnalysisUI:
                     st.session_state.social_media_data=st.session_state.current_project["social_media_data"]
                 except:
                     pass
-                if st.button("Start Analysis →", key="start_analysis", 
+                if st.button("Start Digester →", key="start_Digester", 
                             disabled=not (st.session_state.rnd_files or st.session_state.mkt_files or st.session_state.research_result or st.session_state.social_media_data)):
                     # Save files to Azure and update metadata
                     with st.spinner(f"Saving files to system.."):
@@ -385,13 +385,13 @@ class AnalysisUI:
                     st.rerun()
 
     def run_agents(self):
-        st.subheader("⚙️ Running Analysis")
+        st.subheader("⚙️ Running Digester")
         st.info("This may take a few minutes. Please don't close your browser.")
         
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
         
-        # Add research content to analysis
+        # Add research content to Digester
         if st.session_state.get('research_result'):
             rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)
         if st.session_state.get("social_media_data"):
@@ -467,10 +467,10 @@ class AnalysisUI:
             return pd.DataFrame({"Raw Data": [str(clean_data)]})
 
     def show_results(self):
-        st.subheader("📊 Analysis Results")
+        st.subheader("📊 Digester Results")
         
         if not st.session_state.agent_outputs:
-            st.warning("No analysis results found")
+            st.warning("No Digester results found")
             return
 
         # Display each agent's results in expandable sections
@@ -478,7 +478,7 @@ class AnalysisUI:
             if agent_name == "ProductGenerationAgent":
                 continue
                 
-            with st.expander(f"🔎 {agent_name.replace('Agent', ' Analysis')}", expanded=False):
+            with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
                 df = self.format_dataframe(agent_data)
                 st.dataframe(df, use_container_width=True)
                 
@@ -566,7 +566,7 @@ class AnalysisUI:
         #     all_agent_outputs = st.session_state.agent_outputs
             
         #     if not all_agent_outputs:
-        #         st.error("No analysis results found. Please run analysis first.")
+        #         st.error("No Digester results found. Please run Digester first.")
         #         return False
 
         #     # Create progress container
@@ -631,7 +631,7 @@ class AnalysisUI:
         all_agent_outputs = st.session_state.agent_outputs
         
         if not all_agent_outputs:
-            st.error("No analysis results found. Please run analysis first.")
+            st.error("No Digester results found. Please run Digester first.")
             return False
 
         # Create progress container
