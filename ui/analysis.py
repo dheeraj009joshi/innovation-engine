@@ -22,7 +22,7 @@ from agents.product_generation_agent import run as run_product_generation
 from functions import upload_to_azure, get_scraper_data
 
 
-class DigesterUI:
+class AnalysisUI:
     def __init__(self, auth_service):
         self.auth = auth_service
         self.agents = {
