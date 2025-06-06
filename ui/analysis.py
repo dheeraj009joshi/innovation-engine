@@ -254,6 +254,7 @@ class AnalysisUI:
                         return get_scraper_data(hashtags, update_queue)
 
                     with st.spinner(f"Scraping posts for {hashtags}..."):
+                        st.info("This may take a few minutes. Please don't close your browser.")
                         from threading import Thread
 
                         # Run scraper in background thread
