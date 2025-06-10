@@ -236,7 +236,7 @@ class AnalysisUI:
         with st.expander("📱 Social Media Scraper", expanded=True):
             hashtags = st.text_input(
                 "Enter a single word to scrape:",
-                placeholder="yourproduct",
+                placeholder="cleanbeauty",
                 key="hashtag_input"
             )
             hashtags=hashtags.replace("#","")
