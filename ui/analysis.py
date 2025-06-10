@@ -235,13 +235,13 @@ class AnalysisUI:
         # Social Media Scraper Section
         with st.expander("📱 Social Media Scraper", expanded=True):
             hashtags = st.text_input(
-                "Enter hashtags to scrape (comma separated):",
+                "Enter a single world to scrape:",
                 value=", ".join(st.session_state.last_hashtags),
                 placeholder="#yourproduct, #competitor",
                 key="hashtag_input"
             )
 
-            if st.button("🌐 Scrape Social Media", key="scrape_button"):
+            if st.button("🌐 Scrape 🎵  tiktok", key="scrape_button"):
                 if not hashtags.strip():
                     st.error("Please enter at least one hashtag")
                 else:
@@ -253,7 +253,7 @@ class AnalysisUI:
                     def run_scraper():
                         return get_scraper_data(hashtags, update_queue)
 
-                    with st.spinner(f"Scraping posts for {hashtags}..."):
+                    with st.spinner(f" 🎵 Scraping posts for {hashtags} from tiktok"):
                         st.info("This may take a few minutes. Please don't close your browser.")
                         from threading import Thread
 
