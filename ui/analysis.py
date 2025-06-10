@@ -235,9 +235,9 @@ class AnalysisUI:
         # Social Media Scraper Section
         with st.expander("📱 Social Media Scraper", expanded=True):
             hashtags = st.text_input(
-                "Enter a single world to scrape:",
+                "Enter a single word to scrape:",
                 value=", ".join(st.session_state.last_hashtags),
-                placeholder="#yourproduct, #competitor",
+                placeholder="yourproduct",
                 key="hashtag_input"
             )
 
