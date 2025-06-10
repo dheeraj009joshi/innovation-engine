@@ -241,7 +241,7 @@ class AnalysisUI:
                 key="hashtag_input"
             )
 
-            if st.button("🌐 Scrape 🎵  tiktok", key="scrape_button"):
+            if st.button("🌐 Scrape 🎵  TikTok", key="scrape_button"):
                 if not hashtags.strip():
                     st.error("Please enter at least one hashtag")
                 else:
