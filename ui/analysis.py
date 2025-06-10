@@ -241,7 +241,7 @@ class AnalysisUI:
             )
             hashtags_list=hashtags.split(" ")
             if len(hashtags_list)>1:
-                st.error(f"Please enter single hashtag, you entred :- {hashtags_list}")
+                st.error(f"Please enter a single hashtag. You entered: {hashtags_list}")
 
 
             hashtags=hashtags.replace("#","")
