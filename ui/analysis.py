@@ -239,6 +239,11 @@ class AnalysisUI:
                 placeholder="cleanbeauty",
                 key="hashtag_input"
             )
+            hashtags_list=hashtags.split(" ")
+            if len(hashtags_list)>1:
+                st.error(f"Please enter single hashtag, you entred :- {hashtags_list}")
+
+
             hashtags=hashtags.replace("#","")
             if st.button("🌐 Scrape 🎵  TikTok", key="scrape_button"):
                 if not hashtags.strip():
