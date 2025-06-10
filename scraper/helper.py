@@ -86,14 +86,14 @@ def extract_text_from_image(image_url):
     return text
 
 # ----------- Example Usage ----------- #
-if __name__ == "__main__":
-    # 1. Transcribe video
-    video_url = "https://www.tiktok.com/aweme/v1/play/?faid=1988&file_id=73579d7ad4d74bc48fdad12a036392e2&is_play_url=1&item_id=7497635805213494535&line=0&ply_type=2&signaturev3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLmQwMmQ2NDMxOTQ2NjBjOTlkMjliNGY5NDY1NzlkMTNm&tk=tt_chain_token&video_id=v14044g50000d06f6c7og65stluqa13g"
-    video_file = download_tiktok_video(video_url)
-    transcription = transcribe_with_whisper(video_file)
-    print("\n--- Video Transcription ---\n", transcription)
+# if __name__ == "__main__":
+#     # 1. Transcribe video
+#     video_url = "https://www.tiktok.com/aweme/v1/play/?faid=1988&file_id=73579d7ad4d74bc48fdad12a036392e2&is_play_url=1&item_id=7497635805213494535&line=0&ply_type=2&signaturev3=dmlkZW9faWQ7ZmlsZV9pZDtpdGVtX2lkLmQwMmQ2NDMxOTQ2NjBjOTlkMjliNGY5NDY1NzlkMTNm&tk=tt_chain_token&video_id=v14044g50000d06f6c7og65stluqa13g"
+#     video_file = download_tiktok_video(video_url)
+#     transcription = transcribe_with_whisper(video_file)
+#     print("\n--- Video Transcription ---\n", transcription)
 
-    # 2. Extract text from image
-    image_url = "YOUR_IMAGE_URL_HERE"
-    image_text = extract_text_from_image(image_url)
-    print("\n--- Image Text Extraction ---\n", image_text)
+#     # 2. Extract text from image
+#     image_url = "YOUR_IMAGE_URL_HERE"
+#     image_text = extract_text_from_image(image_url)
+#     print("\n--- Image Text Extraction ---\n", image_text)

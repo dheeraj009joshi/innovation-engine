@@ -94,7 +94,10 @@ def get_scraper_data(hashtag, update_queue=None):
         post["transcript"] = transcribe_with_whisper(video_file)
         post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
         if os.path.exists(f"video{idx}"):
-            os.remove(f"video{idx}")
+            try:
+                os.remove(f"video{idx}")
+            except:
+                pass
         return post
 
     augmented_posts = []
