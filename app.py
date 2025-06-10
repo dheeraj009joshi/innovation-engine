@@ -1,31 +1,20 @@
-
+# app.py
 import streamlit as st
-# from dotenv import load_dotenv
-
-from functions import inject_custom_css
+from functions import inject_custom_css, read_token
 from services.auth import AuthService
 from ui.analysis import AnalysisUI
 from ui.auth import AuthUI
 from ui.project import ProjectUI
-
-
-# -- Import your agents --
-
-# Initialize configuration
+from functions import read_token
 st.set_page_config(
     page_title="AI Innovation Engine",
     layout="wide",
-    page_icon="🧠",
+    page_icon="\U0001F9E0",
     initial_sidebar_state="expanded"
 )
-# load_dotenv()
-
-# Custom CSS
 
 inject_custom_css()
 
-
-# Session State Management
 def init_session_state():
     required_keys = {
         "authenticated": False,
@@ -42,13 +31,12 @@ def init_session_state():
         "social_media_search": "",
         "social_media_data": {},
         "page": "login",
-        "last_hashtags":""
+        "last_hashtags": ""
     }
     for key, value in required_keys.items():
         if key not in st.session_state:
             st.session_state[key] = value
-            
-    # Ensure ProductGenerationAgent has proper structure
+
     if "ProductGenerationAgent" not in st.session_state.agent_outputs:
         st.session_state.agent_outputs["ProductGenerationAgent"] = {
             "generations": [],
@@ -57,26 +45,42 @@ def init_session_state():
 
 init_session_state()
 
-
-
-# Main App
 def main():
+
+  
     auth_service = AuthService()
     auth_ui = AuthUI(auth_service)
     project_ui = ProjectUI(auth_service)
     analysis_ui = AnalysisUI(auth_service)
 
-    # Sidebar
-    if st.session_state.authenticated:
+    if "restored" not in st.session_state:
+        read_token()
+        st.session_state.restored = True
+
+    if not st.session_state.authenticated and "auth_token" in st.session_state:
+        token = st.session_state.auth_token
+        user = auth_service.users.find_one({"_id": token})
+        if user:
+            st.session_state.authenticated = True
+            st.session_state.current_user = user
+            st.session_state.page = "projects"
+            st.rerun()
+        else:
+            st.session_state.auth_token = None
+
+    if not st.session_state.authenticated:
+        if st.session_state.page == "login":
+            auth_ui.login_form()
+        elif st.session_state.page == "signup":
+            auth_ui.signup_form()
+    else:
         with st.sidebar:
-            st.markdown(f"## 🧑💻 Welcome, {st.session_state.current_user['username']}")
+            st.markdown(f"## \U0001F9D1\U0001F4BB Welcome, {st.session_state.current_user['username']}")
             if st.session_state.page != "projects":
                 if st.session_state.current_project:
                     project = st.session_state.current_project
-                    st.markdown(f"#### 📁 {project['name']}")
+                    st.markdown(f"#### \U0001F4C1 {project['name']}")
                     st.caption(project.get('description', 'No description'))
-                    
-                    # Project progress
                     progress = len(st.session_state.get('completed_steps', [])) / 4
                     st.markdown(f"""
                     <div style="margin: 1rem 0;">
@@ -89,61 +93,43 @@ def main():
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    # Last updated
+
                     if 'updated_at' in project:
                         st.caption(f"Last updated: {project['updated_at'].strftime('%Y-%m-%d %H:%M')}")
-                
+
                 st.markdown("---")
-            
-            # Project actions
-            
-                if st.button("📂 Switch Project", use_container_width=True):
+                if st.button("\U0001F4C2 Switch Project", use_container_width=True):
                     st.session_state.page = "projects"
                     st.rerun()
-                    
-                
-                if st.button("📥 Export Results", use_container_width=True):
+
+                if st.button("\U0001F4E5 Export Results", use_container_width=True):
                     st.info("Export feature coming soon!")
-            
+
             st.markdown("---")
-            if st.button("🚪 Logout", use_container_width=True):
+            if st.button("\U0001F6AA Logout", use_container_width=True):
                 auth_service.users.update_one(
                     {"_id": st.session_state.current_user["_id"]},
                     {"$set": {"current_project": None}}
                 )
                 st.session_state.clear()
+                
                 st.rerun()
 
-    # Page Routing
-    if not st.session_state.authenticated:
-        if st.session_state.page == "login":
-            auth_ui.login_form()
-        elif st.session_state.page == "signup":
-            auth_ui.signup_form()
-    else:
         if st.session_state.page == "projects":
             project_ui.projects_dashboard()
         elif st.session_state.page == "dashboard":
-            st.markdown(f"## 🚀 {st.session_state.current_project['name']}")
+            st.markdown(f"## \U0001F680 {st.session_state.current_project['name']}")
             analysis_ui.wizard_navigation()
-            
-            # Wrap each step in a styled container
             with st.container():
                 st.markdown("<div class='step-container'>", unsafe_allow_html=True)
-                
                 if st.session_state.wizard_step == 1:
                     analysis_ui.show_step1_content()
-                    
                 elif st.session_state.wizard_step == 2:
                     analysis_ui.run_agents()
-                    
                 elif st.session_state.wizard_step == 3:
                     analysis_ui.show_results()
-                    
                 elif st.session_state.wizard_step == 4:
                     analysis_ui.show_product_ideas()
-                
                 st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":

@@ -6,11 +6,14 @@ import uuid
 from db.mongo import get_db
 import re
 
+from functions import save_token
+
 
 class AuthUI:
     def __init__(self, auth_service):
         self.auth = auth_service
 
+    
     def login_form(self):
         with st.container():
             st.markdown("<div class='auth-container'>", unsafe_allow_html=True)
@@ -25,28 +28,33 @@ class AuthUI:
                     if user:
                         st.session_state.authenticated = True
                         st.session_state.current_user = user
+
+                        # Save to localStorage
+                        save_token(str(user["_id"]))
+
+                        # Restore project
                         if user.get("current_project"):
                             project = self.auth.projects.find_one({"_id": user["current_project"]})
                             if project:
                                 st.session_state.current_project = project
                                 st.session_state.wizard_step = project.get("wizard_step", 1)
                                 st.session_state.completed_steps = project.get("completed_steps", [])
-                                
-                                # Load file metadata
                                 st.session_state.file_metadata = self.auth.get_file_metadata(project["_id"])
-                                
+
                                 results = self.auth.results.find_one({"project_id": project["_id"]})
                                 if results:
                                     st.session_state.agent_outputs = results.get("results", {})
+
                         st.session_state.page = "projects"
                         st.rerun()
                     else:
                         st.error("Invalid credentials")
-            
+
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("Create New Account"):
                 st.session_state.page = "signup"
                 st.rerun()
+
 
     def signup_form(self):
         with st.container():

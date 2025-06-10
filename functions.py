@@ -90,14 +90,18 @@ def get_scraper_data(hashtag, update_queue=None):
     posts = aa.get_hastag_posts_by_id(hashtag_id, 20)
 
     def process_post(post, idx):
-        video_file = download_tiktok_video(post["videoUrl"], f"video{idx}")
-        post["transcript"] = transcribe_with_whisper(video_file)
-        post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
-        if os.path.exists(f"video{idx}"):
-            try:
-                os.remove(f"video{idx}")
-            except:
-                pass
+        try:
+            video_file = download_tiktok_video(post["videoUrl"], f"video{idx}")
+            post["transcript"] = transcribe_with_whisper(video_file)
+            post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
+            if os.path.exists(f"video{idx}"):
+                try:
+                    os.remove(f"video{idx}")
+                except:
+                    pass
+        except Exception as error:
+            print(error)
+            pass
         return post
 
     augmented_posts = []
@@ -116,8 +120,29 @@ def get_scraper_data(hashtag, update_queue=None):
 # print(aa)
 
 
+# utils/localstorage.py
+# import streamlit as st
+# import streamlit.components.v1 as components
 
+# utils/localstorage.py
+import streamlit as st
+from streamlit_javascript import st_javascript
 
+def save_token(token: str):
+    st.session_state.auth_token = token
+    js = f'localStorage.setItem("auth_token", "{token}");'
+    st_javascript(js)
+
+def read_token():
+    if "auth_token" not in st.session_state:
+        token = st_javascript('localStorage.getItem("auth_token");')
+        if token and token != "null":
+            st.session_state.auth_token = token
+
+def clear_token():
+    if "auth_token" in st.session_state:
+        del st.session_state.auth_token
+    st_javascript('localStorage.removeItem("auth_token");')
 
 
 
