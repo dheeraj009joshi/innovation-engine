@@ -562,70 +562,6 @@ class AnalysisUI:
         
         return file_stream
 
-        # def generate_products(self):
-        #     """Run product generation with version history"""
-        #     st.subheader("🚀 Generating Product Ideas")
-            
-        #     # Get all agent outputs
-        #     all_agent_outputs = st.session_state.agent_outputs
-            
-        #     if not all_agent_outputs:
-        #         st.error("No Digester results found. Please run Digester first.")
-        #         return False
-
-        #     # Create progress container
-        #     progress_container = st.container()
-        #     progress_bar = progress_container.progress(0)
-        #     status_text = progress_container.empty()
-            
-        #     def progress_callback(percent, message):
-        #         progress_bar.progress(percent)
-        #         status_text.text(message)
-            
-        #     try:
-        #         # Run product generation agent
-        #         product_ideas = run_product_generation(all_agent_outputs, progress_callback=progress_callback)
-                
-        #         # Store the results in session
-        #         if "ProductGenerationAgent" not in st.session_state.agent_outputs:
-        #             st.session_state.agent_outputs["ProductGenerationAgent"] = {
-        #                 "generations": [],
-        #                 "current_generation": None
-        #             }
-                
-        #         # Create new generation
-        #         new_gen = {
-        #             "_id":  str(uuid.uuid4()),
-        #             "timestamp": datetime.now().isoformat(),
-        #             "ideas": product_ideas
-        #         }
-                
-        #         # Add to history
-        #         st.session_state.agent_outputs["ProductGenerationAgent"]["generations"].append(new_gen)
-        #         st.session_state.agent_outputs["ProductGenerationAgent"]["current_generation"] = new_gen
-                
-        #         # Save to database
-        #         self.auth.save_product_results(
-        #             st.session_state.current_project["_id"],
-        #             st.session_state.agent_outputs["ProductGenerationAgent"]
-        #         )
-                
-        #         # Update UI state
-        #         st.session_state.completed_steps = [1, 2, 3, 4]
-        #         st.session_state.wizard_step = 4
-                
-        #         # Refresh the UI
-        #         st.rerun()
-        #         return True
-                
-        #     except Exception as e:
-        #         progress_callback(100, f"Error: {str(e)}")
-        #         time.sleep(2)
-        #         return False
-        #     finally:
-        #         # Clear progress after delay
-        #         time.sleep(1)
-        #         progress_container.empty()
 
     def generate_products(self):
         """Run product generation with version history"""
@@ -776,98 +712,116 @@ class AnalysisUI:
         # Display each product idea in a structured format
         if isinstance(ideas, list) and ideas:
             for idx, idea in enumerate(ideas, 1):
-                with st.expander(f"Idea #{idx}: {idea.get('product_name', 'Unnamed Product')}", expanded=False):
-                    # Product header
-                    st.markdown(f"### {idea.get('product_name', 'Unnamed Product')}")
-                    
-                    # Technical Explanation
-                    st.markdown("#### Technical Explanation")
-                    st.write(idea.get("technical_explanation", "No technical explanation available"))
-                    
-                    # Consumer Pitch
-                    st.markdown("#### Consumer Pitch")
-                    st.write(idea.get("consumer_pitch", "No consumer pitch available"))
-                    
-                    # Competitor Reaction
-                    st.markdown("#### Competitor Reaction")
-                    st.write(idea.get("competitor_reaction", "No competitor reaction available"))
-                    
-                    # 5-Year Projection
-                    st.markdown("#### 5-Year Projection (2030)")
-                    st.write(idea.get("five_year_projection", "No projection available"))
-                    
-                    # Consumer Discussion
-                    st.markdown("#### Consumer Discussion (Town Hall Meeting)")
-                    st.write(idea.get("consumer_discussion", "No consumer discussion available"))
-                    
-                    # Presentation
-                    st.markdown("#### Professional Presentation")
-                    presentation = idea.get("presentation", [])
-                    if isinstance(presentation, list) and len(presentation) > 0:
-                        for i, sentence in enumerate(presentation, 1):
-                            st.markdown(f"{i}. {sentence}")
-                    else:
-                        st.write("No presentation available")
-                    
-                    # Consumer Q&A
-                    st.markdown("#### Consumer Q&A")
-                    qa = idea.get("consumer_qa", [])
-                    if isinstance(qa, list) and len(qa) > 0:
-                        for i, qa_item in enumerate(qa, 1):
-                            st.markdown(f"**Q{i}:** {qa_item.get('question', '')}")
-                            answers = qa_item.get('answers', [])
-                            if answers:
-                                for j, ans in enumerate(answers, 1):
-                                    st.markdown(f"{j}. {ans}")
-                            else:
-                                st.markdown("No answers available")
-                    else:
-                        st.write("No Q&A available")
-                    
-                    # Investor Evaluation
-                    st.markdown("#### Investor Evaluation")
-                    st.write(idea.get("investor_evaluation", "No investor evaluation available"))
-                    
-                    # Advertiser Slogans
-                    st.markdown("#### Advertiser Slogans")
-                    slogans = idea.get("advertisor_slogans", [])
-                    if isinstance(slogans, list) and len(slogans) > 0:
-                        for slogan in slogans:
-                            st.markdown(f"**Slogan:** {slogan.get('slogan', '')}")
-                            st.markdown(f"**Mindset Description:** {slogan.get('mindset_description', '')}")
-                            st.markdown("---")
-                    else:
-                        st.write("No slogans available")
-                    
-                    # AI Report Card
-                    st.markdown("#### AI Report Card")
-                    report_card = idea.get("ai_report_card", {})
-                    if report_card:
-                        report_data = {
-                            "Metric": ["Originality", "Usefulness", "Social Media Talk", 
-                                    "Memorability", "Friend Talk", "Purchase Ease", 
-                                    "Excitement", "Boredom Likelihood"],
-                            "Score": [
-                                report_card.get("originality", 0),
-                                report_card.get("usefulness", 0),
-                                report_card.get("social_media_talk", 0),
-                                report_card.get("memorability", 0),
-                                report_card.get("friend_talk", 0),
-                                report_card.get("purchase_ease", 0),
-                                report_card.get("excitement", 0),
-                                report_card.get("boredom_likelihood", 0)
-                            ]
-                        }
-                        st.dataframe(report_data)
-                    else:
-                        st.write("No AI report card available")
-                    
-                    st.markdown("---")
-            
+                cols = st.columns([0.85, 0.15]) 
+                with cols[0]:
+                    with st.expander(f"Idea #{idx}: {idea.get('product_name', 'Unnamed Product')}", expanded=False):
+                        # Product header
+                        st.markdown(f"### {idea.get('product_name', 'Unnamed Product')}")
+                        
+                        # Technical Explanation
+                        st.markdown("#### Technical Explanation")
+                        st.write(idea.get("technical_explanation", "No technical explanation available"))
+                        
+                        # Consumer Pitch
+                        st.markdown("#### Consumer Pitch")
+                        st.write(idea.get("consumer_pitch", "No consumer pitch available"))
+                        
+                        # Competitor Reaction
+                        st.markdown("#### Competitor Reaction")
+                        st.write(idea.get("competitor_reaction", "No competitor reaction available"))
+                        
+                        # 5-Year Projection
+                        st.markdown("#### 5-Year Projection (2030)")
+                        st.write(idea.get("five_year_projection", "No projection available"))
+                        
+                        # Consumer Discussion
+                        st.markdown("#### Consumer Discussion (Town Hall Meeting)")
+                        st.write(idea.get("consumer_discussion", "No consumer discussion available"))
+                        
+                        # Presentation
+                        st.markdown("#### Professional Presentation")
+                        presentation = idea.get("presentation", [])
+                        if isinstance(presentation, list) and len(presentation) > 0:
+                            for i, sentence in enumerate(presentation, 1):
+                                st.markdown(f"{i}. {sentence}")
+                        else:
+                            st.write("No presentation available")
+                        
+                        # Consumer Q&A
+                        st.markdown("#### Consumer Q&A")
+                        qa = idea.get("consumer_qa", [])
+                        if isinstance(qa, list) and len(qa) > 0:
+                            for i, qa_item in enumerate(qa, 1):
+                                st.markdown(f"**Q{i}:** {qa_item.get('question', '')}")
+                                answers = qa_item.get('answers', [])
+                                if answers:
+                                    for j, ans in enumerate(answers, 1):
+                                        st.markdown(f"{j}. {ans}")
+                                else:
+                                    st.markdown("No answers available")
+                        else:
+                            st.write("No Q&A available")
+                        
+                        # Investor Evaluation
+                        st.markdown("#### Investor Evaluation")
+                        st.write(idea.get("investor_evaluation", "No investor evaluation available"))
+                        
+                        # Advertiser Slogans
+                        st.markdown("#### Advertiser Slogans")
+                        slogans = idea.get("advertisor_slogans", [])
+                        if isinstance(slogans, list) and len(slogans) > 0:
+                            for slogan in slogans:
+                                st.markdown(f"**Slogan:** {slogan.get('slogan', '')}")
+                                st.markdown(f"**Mindset Description:** {slogan.get('mindset_description', '')}")
+                                st.markdown("---")
+                        else:
+                            st.write("No slogans available")
+                        
+                        # AI Report Card
+                        st.markdown("#### AI Report Card")
+                        report_card = idea.get("ai_report_card", {})
+                        if report_card:
+                            report_data = {
+                                "Metric": ["Originality", "Usefulness", "Social Media Talk", 
+                                        "Memorability", "Friend Talk", "Purchase Ease", 
+                                        "Excitement", "Boredom Likelihood"],
+                                "Score": [
+                                    report_card.get("originality", 0),
+                                    report_card.get("usefulness", 0),
+                                    report_card.get("social_media_talk", 0),
+                                    report_card.get("memorability", 0),
+                                    report_card.get("friend_talk", 0),
+                                    report_card.get("purchase_ease", 0),
+                                    report_card.get("excitement", 0),
+                                    report_card.get("boredom_likelihood", 0)
+                                ]
+                            }
+                            st.dataframe(report_data)
+                        else:
+                            st.write("No AI report card available")
+                        
+                        st.markdown("---")
+                    with cols[1]:
+                        if st.button("📚 Generate Study", type="primary", key=f"gen-study-{idx}"):
+                            st.session_state["study_step"] = 1
+                            st.session_state["selected_idea_idx"] = idx - 1  # store 0-based index
+
+        # Now handle study generation AFTER loop (full-width)
+        if st.session_state.get("study_step", 0) > 0:
+            selected_idx = st.session_state.get("selected_idea_idx", 0)
+            selected_idea = ideas[selected_idx]
+
+            st.markdown("## 📑 Study Generation (Step 1/4)")
+            from .studu import StudyGenerationProcess
+            study_gen = StudyGenerationProcess(self.auth, selected_idea)
+            study_gen.run()
+                
+
             # Add JSON viewer at the bottom
-            with st.expander("View Raw JSON Output", expanded=False):
-                st.json(ideas)
-        
+            # with st.expander("View Raw JSON Output", expanded=False):
+            #     st.json(ideas)
+
+            
         # Navigation buttons
         col1, col2 = st.columns([1,1])
         with col1:

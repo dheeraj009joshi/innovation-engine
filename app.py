@@ -30,6 +30,7 @@ def init_session_state():
         "research_result": "",
         "social_media_search": "",
         "social_media_data": {},
+        "study_data":{},
         "page": "login",
         "last_hashtags": ""
     }
