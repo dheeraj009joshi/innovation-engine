@@ -712,7 +712,7 @@ class AnalysisUI:
         # Display each product idea in a structured format
         if isinstance(ideas, list) and ideas:
             for idx, idea in enumerate(ideas, 1):
-                cols = st.columns([0.85, 0.15]) 
+                cols = st.columns([0.95, 0.05]) 
                 with cols[0]:
                     with st.expander(f"Idea #{idx}: {idea.get('product_name', 'Unnamed Product')}", expanded=False):
                         # Product header
