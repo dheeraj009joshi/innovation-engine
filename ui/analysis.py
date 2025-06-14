@@ -803,11 +803,11 @@ class AnalysisUI:
                         st.markdown("---")
                     with cols[1]:
                         if st.button("📚 Generate Study", type="primary", key=f"gen-study-{idx}"):
-                            st.session_state["study_step"] = 1
+                            st.session_state["study_step"] = 0
                             st.session_state["selected_idea_idx"] = idx - 1  # store 0-based index
 
         # Now handle study generation AFTER loop (full-width)
-        if st.session_state.get("study_step", 0) > 0:
+        if st.session_state.get("study_step", 0) >= 0:
             selected_idx = st.session_state.get("selected_idea_idx", 0)
             selected_idea = ideas[selected_idx]
 
