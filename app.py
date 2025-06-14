@@ -7,7 +7,7 @@ from ui.auth import AuthUI
 from ui.project import ProjectUI
 from functions import read_token
 st.set_page_config(
-    page_title="AI Innovation Engine",
+    page_title="Mind Genomics",
     layout="wide",
     page_icon="\U0001F9E0",
     initial_sidebar_state="expanded"
