@@ -109,13 +109,27 @@ Keep all language simple, natural, and consumer-friendly.
                 # Team Inputted Preliminary Prompt
                 f"""
                 
-                
-                
-                Go back to the description of product, ask 18 questions regarding the product and the experience of the product (i.e. if product is health product). 
+Read the study questions and all 16 answers. Based on the 16 answers, generate 20 radically different questions. Each question should paint a vivid picture of the person taking the study—what they feel about the product, how they see themselves, and how the product makes them feel.
 
-Give me some ideas about a human being based upon the product. Think about 18 questions you can ask about a person’s life based upon the product. What kind of lens does the product give you regarding a person’s life. Give me 18 aspects - which one best describes you when I saw the word “Cancer” 
+For each question, provide exactly 3 radically different answers. Each answer should be a complete sentence with no more than 8 words. The answers must be rich with information and paint a clear picture of how the person thinks, their habits, rituals, emotions, and mindset regarding the situation.
 
-You are looking at a product and asking “What could I say about the person who uses the product”. Give 18 classification questions exactly with 3 answers. 
+Next, return to the description of the product. Create 18 questions specifically about the product and the experience of using it (e.g., if it’s a health product, focus on the feeling or ritual of use). Think: what aspects of a person’s life are revealed through this product?
+
+Now, imagine you are looking at the product and asking:
+“What could I say about the person who uses this product?”
+Create 18 classification questions that reveal the person’s world through the lens of the product.
+
+Each of the 18 classification questions should include 3 answers that are:
+
+    Totally unexpected
+
+    Rich with understanding
+
+    Mutually distinct
+
+    Paint a portrait of the person’s life
+
+These responses should be usable for segmentation, emotionally vivid, and not generic.
 
 
 
