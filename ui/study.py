@@ -40,126 +40,6 @@ class StudyGenerationProcess:
         elif st.session_state.study_step == 4:
             self._step4_review()
 
-#     def _auto_generate_full_study(self):
-#         product = self.currentProduct
-#         if not product:
-#             st.error("No product data found.")
-#             return
-
-#         with st.status("Generating study...", expanded=True) as status:
-#             status.update(label="🧠 Generating Study Description...")
-#             desc_prompt = (
-#                 f"Create a comprehensive study description for a product called {product['product_name']}. "
-#                 f"Product details: {product['technical_explanation']} "
-#                 f"Consumer pitch: {product['consumer_pitch']} "
-#                 # Team Inputted Prompt
-#                 f""
-#                 "Make this into a 4–5 paragraph response."
-#             )
-#             description = self._call_gpt(desc_prompt, max_tokens=400, json_mode=False)
-
-#             status.update(label="🧪 Generating Main Questions...")
-#             q_prompt = (
-#                 f"Product name: {product['product_name']}"
-#                 f"Product details: {product['technical_explanation']} "
-#                 f"Product description: {description} "
-#                 # Team Inputted Questions Prompt
-#                 f"""
-#                 We are interested in understanding the factors that make a person want to adopt or comply with a product, experience, or solution. These factors may include physical needs, emotional desires, lifestyle improvements, or other personal motivations.
-# You are working with the following:
-# Product name
-# Product description
-# Product details
-# For this product or concept, create four questions that are relevant to the benefit or experience being offered. For each question, provide four answers in simple English. These answers should be short descriptive statements that reflect what the person using this product would say they "want" or "think is important."
-# To summarize:
-# You know the product or concept based on the study name and description provided above.
-
-
-# You are to ask four relevant questions about the person's everyday life, needs, or hopes. These questions must each begin with the phrase:
-#  "Describe a situation that is important to you personally..."
-
-
-# Each question should have four answers. These answers should reflect:
-
-
-# What the person experiences in daily life,
-
-
-# Or what they care about related to the product’s purpose,
-
-
-# Or what they are hoping for over the next few years.
-
-
-# Keep all language simple, natural, and consumer-friendly.
-
-    
-
-# """
-#                 "Return a valid JSON object in this format:\n"
-#                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\", \"\"] } ] }"
-#             )
-#             questions_json = self._call_gpt(q_prompt, max_tokens=700, json_mode=True)
-
-#             status.update(label="📋 Generating Prelim Questions...")
-#             p_prompt = (
-#                 f"Product name: {product['product_name']}"
-#                 f"Product details: {product['technical_explanation']} "
-#                 f"Product description: {description} "
-#                 f"Study Questions : {questions_json}"
-#                 # Team Inputted Preliminary Prompt
-#                 f"""
-                
-# Read the study questions and all 16 answers. Based on the 16 answers, generate 20 radically different questions. Each question should paint a vivid picture of the person taking the study—what they feel about the product, how they see themselves, and how the product makes them feel.
-
-# For each question, provide exactly 3 radically different answers. Each answer should be a complete sentence with no more than 8 words. The answers must be rich with information and paint a clear picture of how the person thinks, their habits, rituals, emotions, and mindset regarding the situation.
-
-# Next, return to the description of the product. Create 18 questions specifically about the product and the experience of using it (e.g., if it’s a health product, focus on the feeling or ritual of use). Think: what aspects of a person’s life are revealed through this product?
-
-# Now, imagine you are looking at the product and asking:
-# “What could I say about the person who uses this product?”
-# Create 18 classification questions that reveal the person’s world through the lens of the product.
-
-# Each of the 18 classification questions should include 3 answers that are:
-
-#     Totally unexpected
-
-#     Rich with understanding
-
-#     Mutually distinct
-
-#     Paint a portrait of the person’s life
-
-# These responses should be usable for segmentation, emotionally vivid, and not generic.
-
-
-
-
-# """
-#                 "Return a valid JSON object in this format:\n"
-#                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
-#             )
-#             prelim_json = self._call_gpt(p_prompt, max_tokens=1000, json_mode=True)
-
-#             try:
-#                 main_questions = json.loads(questions_json)["questions"]
-#                 prelim_questions = json.loads(prelim_json)["questions"]
-#             except Exception as e:
-#                 st.error("❌ Failed to parse AI response.")
-#                 return
-
-#             st.session_state.study_data = {
-#                 "study_name": product["product_name"],
-#                 "study_description": description,
-#                 "questions": main_questions,
-#                 "prelim_questions": prelim_questions
-#             }
-
-#             status.update(label="✅ Study generated successfully!", state="complete")
-
-
-
-
     def _auto_generate_full_study(self):
         product = self.currentProduct
         if not product:
@@ -167,64 +47,61 @@ class StudyGenerationProcess:
             return
 
         with st.status("Generating study...", expanded=True) as status:
-            # Step 1: Extract mutually exclusive themes
-            status.update(label="🧠 Extracting 4 Mutually Exclusive Themes...")
-            theme_prompt = f"""
-    You are analyzing a product with the following information:
-
-    Product Name: {product['product_name']}
-    Technical Explanation: {product['technical_explanation']}
-    Consumer Pitch: {product['consumer_pitch']}
-
-    Extract 4 **mutually exclusive** themes that describe different aspects of consumer benefit, motivation, or experience with this product. These themes should NOT overlap. Return a valid JSON object in this format:
-    {{ "themes": ["Theme 1", "Theme 2", "Theme 3", "Theme 4"] }}
-    """
-            themes_json = self._call_gpt(theme_prompt, max_tokens=400, json_mode=True)
-            try:
-
-                themes = json.loads(themes_json)["themes"]
-                print(themes_json)
-            except Exception as e:
-                st.error("❌ Failed to parse themes.")
-                return
-            status.update(label="🧾 Generating Study Description...")
+            status.update(label="🧠 Generating Study Description...")
             desc_prompt = (
                 f"Create a comprehensive study description for a product called {product['product_name']}. "
                 f"Product details: {product['technical_explanation']} "
                 f"Consumer pitch: {product['consumer_pitch']} "
+                # Team Inputted Prompt
+                f""
                 "Make this into a 4–5 paragraph response."
             )
             description = self._call_gpt(desc_prompt, max_tokens=400, json_mode=False)
 
-            # Step 2: Generate main questions
-            questions = []
-            for theme in themes:
-                status.update(label=f"✍️ Generating Main Question for theme: {theme}...")
-                q_prompt = f"""
-                    Theme: {theme}
-                    Product: {product['product_name']}
-                    Product details: {product['technical_explanation']}
-                    Consumer pitch: {product['consumer_pitch']}
+            status.update(label="🧪 Generating Main Questions...")
+            q_prompt = (
+                f"Product name: {product['product_name']}"
+                f"Product details: {product['technical_explanation']} "
+                f"Product description: {description} "
+                # Team Inputted Questions Prompt
+                f"""
+                We are interested in understanding the factors that make a person want to adopt or comply with a product, experience, or solution. These factors may include physical needs, emotional desires, lifestyle improvements, or other personal motivations.
+You are working with the following:
+Product name
+Product description
+Product details
+For this product or concept, create four questions that are relevant to the benefit or experience being offered. For each question, provide four answers in simple English. These answers should be short descriptive statements that reflect what the person using this product would say they "want" or "think is important."
+To summarize:
+You know the product or concept based on the study name and description provided above.
 
-                    Create one question that starts with:
-                    "Describe a situation that is important to you personally..."
 
-                    This question should relate directly to the theme.
+You are to ask four relevant questions about the person's everyday life, needs, or hopes. These questions must each begin with the phrase:
+ "Describe a situation that is important to you personally..."
 
-                    Then provide 4 **mutually exclusive** answer options in simple, natural language. These should reflect real things people might want or care about related to this theme.
 
-                    Return a valid JSON object in this format:
-                    {{ "question": "...", "options": ["...", "...", "...", "..."] }}
-                    """
-                q_json = self._call_gpt(q_prompt, max_tokens=400, json_mode=True)
-                print({"theme":theme,"question":q_json})
-                try:
-                    questions.append(json.loads(q_json))
-                except:
-                    st.error(f"❌ Failed to parse main question for theme: {theme}")
-                    return
+Each question should have four answers. These answers should reflect:
 
-            # Step 3: Generate 4 prelim questions per theme
+
+What the person experiences in daily life,
+
+
+Or what they care about related to the product’s purpose,
+
+
+Or what they are hoping for over the next few years.
+
+
+Keep all language simple, natural, and consumer-friendly.
+
+    
+
+"""
+                "Return a valid JSON object in this format:\n"
+                "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\", \"\"] } ] }"
+            )
+            questions_json = self._call_gpt(q_prompt, max_tokens=700, json_mode=True)
+
+            status.update(label="📋 Generating Prelim Questions...")
             p_prompt = (
                 f"Product name: {product['product_name']}"
                 f"Product details: {product['technical_explanation']} "
@@ -265,24 +142,21 @@ All questions must speak directly to the user and every answer must help us unde
             )
             prelim_json = self._call_gpt(p_prompt, max_tokens=2000, json_mode=True)
 
-        try:
-            prelim_questions = json.loads(prelim_json)["questions"]
-        except Exception as e:
-            st.error("❌ Failed to parse AI response.")
-            return
+            try:
+                main_questions = json.loads(questions_json)["questions"]
+                prelim_questions = json.loads(prelim_json)["questions"]
+            except Exception as e:
+                st.error("❌ Failed to parse AI response.")
+                return
 
-       
-        # Step 4: Generate study description
-        
-        # Save to session state
-        st.session_state.study_data = {
-            "study_name": product["product_name"],
-            "study_description": description,
-            "questions": questions,
-            "prelim_questions": prelim_questions
-        }
+            st.session_state.study_data = {
+                "study_name": product["product_name"],
+                "study_description": description,
+                "questions": main_questions,
+                "prelim_questions": prelim_questions
+            }
 
-        status.update(label="✅ Study generated successfully!", state="complete")
+            status.update(label="✅ Study generated successfully!", state="complete")
 
     def _step1_setup(self, product):
         study_data = st.session_state.study_data
