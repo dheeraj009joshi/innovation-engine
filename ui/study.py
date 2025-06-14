@@ -226,44 +226,44 @@ class StudyGenerationProcess:
 
             # Step 3: Generate 4 prelim questions per theme
             p_prompt = (
-            f"Product name: {product['product_name']}"
-            f"Product details: {product['technical_explanation']} "
-            f"Product description: {description} "
-            f"Study Questions : {questions}"
-            # Team Inputted Preliminary Prompt
-            f"""
-            
-            Read the study questions and all 16 answers. Based on the 16 answers, generate 20 radically different questions. Each question should paint a vivid picture of the person taking the study—what they feel about the product, how they see themselves, and how the product makes them feel.
-
-            For each question, provide exactly 3 radically different answers. Each answer should be a complete sentence with no more than 8 words. The answers must be rich with information and paint a clear picture of how the person thinks, their habits, rituals, emotions, and mindset regarding the situation.
-
-            Next, return to the description of the product. Create 18 questions specifically about the product and the experience of using it (e.g., if it’s a health product, focus on the feeling or ritual of use). Think: what aspects of a person’s life are revealed through this product?
-
-            Now, imagine you are looking at the product and asking:
-            “What could I say about the person who uses this product?”
-            Create 18 classification questions that reveal the person’s world through the lens of the product.
-
-            Each of the 18 classification questions should include 3 answers that are:
-
-                Totally unexpected
-
-                Rich with understanding
-
-                Mutually distinct
-
-                Paint a portrait of the person’s life
-
-            These responses should be usable for segmentation, emotionally vivid, and not generic.
+                f"Product name: {product['product_name']}"
+                f"Product details: {product['technical_explanation']} "
+                f"Product description: {description} "
+                f"Study questions: {questions_json}" 
 
 
+                # Team Inputted Preliminary Prompt
+                f"""
+                Read the study questions and all 16 answers. Based on the 16 answers, generate 18 radically different questions that directly ask the user about themselves. Each question must paint a vivid picture of who the user is—what they feel about the product, how they see themselves, and how the product makes them feel. Each question should be written in the second person and ask the user a question.
+
+For each question, provide exactly 3 radically different answers. Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation.
+
+Next, return to the description of the product. Create 18 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
+
+Now, imagine you’re looking at this product and asking:
+“What does this product reveal about you?”
+Write 18 classification questions that each directly ask the user to identify something about themselves—how they think, act, or feel—through the lens of the product.
+
+Each of the 18 questions should include 3 mutually exclusive and unexpected answers that:
+
+    Are written as full sentences (max 8 words)
+
+    Are rich in meaning and emotionally vivid
+
+    Reveal something distinct and usable for segmentation
+
+   
+
+All questions must speak directly to the user and every answer must help us understand who they are on a deeper level. Avoid generic phrasing—these should feel personal, human, and revealing.
 
 
-            """
-            "Return a valid JSON object in this format:\n"
-            "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
-        )
-        status.update(label=f"✍️ Generating Preliminary Questions ")
-        prelim_json = self._call_gpt(p_prompt, max_tokens=1000, json_mode=True)
+
+
+"""
+                "Return a valid JSON object in this format:\n"
+                "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
+            )
+            prelim_json = self._call_gpt(p_prompt, max_tokens=2000, json_mode=True)
 
         try:
             prelim_questions = json.loads(prelim_json)["questions"]
