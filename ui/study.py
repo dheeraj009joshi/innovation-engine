@@ -119,7 +119,7 @@ class StudyGenerationProcess:
                 f"""
                 Read the study questions and all 16 answers. Based on the 16 answers, generate 18 radically different questions that directly ask the user about themselves. Each question must paint a vivid picture of who the user is—what they feel about the product, how they see themselves, and how the product makes them feel. Each question should be written in the second person and ask the user a question.
 
-For each question, provide exactly 3 radically different answers. Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation.
+For each question, provide exactly 3 radically different answers. Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation. The answers MUST NOT BE in second person.
 
 Next, return to the description of the product. Create 18 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
 
