@@ -812,7 +812,7 @@ class AnalysisUI:
             selected_idea = ideas[selected_idx]
 
             st.markdown("## 📑 Study Generation ")
-            from .studu import StudyGenerationProcess
+            from .study import StudyGenerationProcess
             study_gen = StudyGenerationProcess(self.auth, selected_idea)
             study_gen.run()
                 

@@ -52,14 +52,50 @@ class StudyGenerationProcess:
                 f"Create a comprehensive study description for a product called {product['product_name']}. "
                 f"Product details: {product['technical_explanation']} "
                 f"Consumer pitch: {product['consumer_pitch']} "
+                # Team Inputted Prompt
+                f""
                 "Make this into a 4–5 paragraph response."
             )
             description = self._call_gpt(desc_prompt, max_tokens=400, json_mode=False)
 
             status.update(label="🧪 Generating Main Questions...")
             q_prompt = (
-                f"Generate 4 market research questions about {product['product_name']} with 4 mutually exclusive options each. "
+                f"Product name: {product['product_name']}"
                 f"Product details: {product['technical_explanation']} "
+                f"Product description: {description} "
+                # Team Inputted Questions Prompt
+                f"""
+                We are interested in understanding the factors that make a person want to adopt or comply with a product, experience, or solution. These factors may include physical needs, emotional desires, lifestyle improvements, or other personal motivations.
+You are working with the following:
+Product name
+Product description
+Product details
+For this product or concept, create four questions that are relevant to the benefit or experience being offered. For each question, provide four answers in simple English. These answers should be short descriptive statements that reflect what the person using this product would say they "want" or "think is important."
+To summarize:
+You know the product or concept based on the study name and description provided above.
+
+
+You are to ask four relevant questions about the person's everyday life, needs, or hopes. These questions must each begin with the phrase:
+ "Describe a situation that is important to you personally..."
+
+
+Each question should have four answers. These answers should reflect:
+
+
+What the person experiences in daily life,
+
+
+Or what they care about related to the product’s purpose,
+
+
+Or what they are hoping for over the next few years.
+
+
+Keep all language simple, natural, and consumer-friendly.
+
+    
+
+"""
                 "Return a valid JSON object in this format:\n"
                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\", \"\"] } ] }"
             )
@@ -67,7 +103,24 @@ class StudyGenerationProcess:
 
             status.update(label="📋 Generating Prelim Questions...")
             p_prompt = (
-                "Generate 16 demographic or behavioral questions, each with 3 mutually exclusive options. "
+                f"Product name: {product['product_name']}"
+                f"Product details: {product['technical_explanation']} "
+                f"Product description: {description} "
+                # Team Inputted Preliminary Prompt
+                f"""
+                
+                
+                
+                Go back to the description of product, ask 18 questions regarding the product and the experience of the product (i.e. if product is health product). 
+
+Give me some ideas about a human being based upon the product. Think about 18 questions you can ask about a person’s life based upon the product. What kind of lens does the product give you regarding a person’s life. Give me 18 aspects - which one best describes you when I saw the word “Cancer” 
+
+You are looking at a product and asking “What could I say about the person who uses the product”. Give 18 classification questions exactly with 3 answers. 
+
+
+
+
+"""
                 "Return a valid JSON object in this format:\n"
                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
             )
@@ -187,17 +240,17 @@ class StudyGenerationProcess:
         st.markdown(f"**Study Name:** {study_data['study_name']}")
         st.markdown(f"**Description:** {study_data['study_description']}")
 
-        st.subheader("Main Questions")
+        st.subheader("Study Questions")
         for i, q in enumerate(study_data["questions"]):
-            with st.expander(f"Prelim #{i+1}: {q['question']}", expanded=False):
-                st.markdown(f"{i+1}. {q['question']}")
+            with st.expander(f"Question #{i+1}: {q['question']}", expanded=False):
+                # st.markdown(f"{i+1}. {q['question']}")
                 for j, opt in enumerate(q["options"]):
                     st.markdown(f"    {chr(65+j)}. {opt}")
 
         st.subheader("Preliminary Questions")
         for i, q in enumerate(study_data["prelim_questions"]):
-            with st.expander(f"Prelim #{i+1}: {q['question']}", expanded=False):
-                st.markdown(f"{i+1}. {q['question']}")
+            with st.expander(f"Prelim #{i+1}: {q['question'].replace(f"{i+1}", "").replace(".","")}", expanded=False):
+                # st.markdown(f"{i+1}. {q['question']}")
                 for j, opt in enumerate(q["options"]):
                     st.markdown(f"    {chr(65+j)}. {opt}")
 
