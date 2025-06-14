@@ -13,7 +13,7 @@ class StudyGenerationProcess:
 
     def run(self):
         if "study_step" not in st.session_state:
-            st.session_state.study_step = 1
+            st.session_state.study_step = 10
         if "study_data" not in st.session_state or not st.session_state.study_data:
             st.session_state.study_data = {
                 "study_name": "",
@@ -69,32 +69,32 @@ class StudyGenerationProcess:
                 # Team Inputted Questions Prompt
                 f"""
                 We are interested in understanding the factors that make a person want to adopt or comply with a product, experience, or solution. These factors may include physical needs, emotional desires, lifestyle improvements, or other personal motivations.
-You are working with the following:
-Product name
-Product description
-Product details
-For this product or concept, create four questions that are relevant to the benefit or experience being offered. For each question, provide four answers in simple English. These answers should be short descriptive statements that reflect what the person using this product would say they "want" or "think is important."
-To summarize:
-You know the product or concept based on the study name and description provided above.
+                You are working with the following:
+                Product name
+                Product description
+                Product details
+                For this product or concept, create four questions that are relevant to the benefit or experience being offered. For each question, provide four answers in simple English. These answers should be short descriptive statements that reflect what the person using this product would say they "want" or "think is important."
+                To summarize:
+                You know the product or concept based on the study name and description provided above.
 
 
-You are to ask four relevant questions about the person's everyday life, needs, or hopes. These questions must each begin with the phrase:
- "Describe a situation that is important to you personally..."
+                You are to ask four relevant questions about the person's everyday life, needs, or hopes. These questions must each begin with the phrase:
+                "Describe a situation that is important to you personally..."
 
 
-Each question should have four answers. These answers should reflect:
+                Each question should have four answers. These answers should reflect:
 
 
-What the person experiences in daily life,
+                What the person experiences in daily life,
 
 
-Or what they care about related to the product’s purpose,
+                Or what they care about related to the product’s purpose,
 
 
-Or what they are hoping for over the next few years.
+                Or what they are hoping for over the next few years.
 
 
-Keep all language simple, natural, and consumer-friendly.
+                Keep all language simple, natural, and consumer-friendly.
 
     
 
@@ -126,11 +126,13 @@ Write 18 classification questions that each directly ask the user to identify so
 
 Each of the 18 questions should include 3 mutually exclusive and unexpected answers that:
 
-    Are written as full sentences (max 8 words)
+    The answers are written as full sentences (max 10 words)
 
-    Are rich in meaning and emotionally vivid
+    The answers are rich in meaning and emotionally vivid
 
-    Reveal something distinct and usable for segmentation
+    The answers are something distinct and usable for segmentation
+
+    The answers are not in second person
 
    
 
