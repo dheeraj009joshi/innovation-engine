@@ -106,16 +106,32 @@ Keep all language simple, natural, and consumer-friendly.
                 f"Product name: {product['product_name']}"
                 f"Product details: {product['technical_explanation']} "
                 f"Product description: {description} "
+                f"Study questions: {questions_json}" 
+
+
                 # Team Inputted Preliminary Prompt
                 f"""
-                
-                
-                
-                Go back to the description of product, ask 18 questions regarding the product and the experience of the product (i.e. if product is health product). 
+                Read the study questions and all 16 answers. Based on the 16 answers, generate 18 radically different questions that directly ask the user about themselves. Each question must paint a vivid picture of who the user is—what they feel about the product, how they see themselves, and how the product makes them feel. Each question should be written in the second person and ask the user a question.
 
-Give me some ideas about a human being based upon the product. Think about 18 questions you can ask about a person’s life based upon the product. What kind of lens does the product give you regarding a person’s life. Give me 18 aspects - which one best describes you when I saw the word “Cancer” 
+For each question, provide exactly 3 radically different answers. Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation.
 
-You are looking at a product and asking “What could I say about the person who uses the product”. Give 18 classification questions exactly with 3 answers. 
+Next, return to the description of the product. Create 18 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
+
+Now, imagine you’re looking at this product and asking:
+“What does this product reveal about you?”
+Write 18 classification questions that each directly ask the user to identify something about themselves—how they think, act, or feel—through the lens of the product.
+
+Each of the 18 questions should include 3 mutually exclusive and unexpected answers that:
+
+    Are written as full sentences (max 8 words)
+
+    Are rich in meaning and emotionally vivid
+
+    Reveal something distinct and usable for segmentation
+
+   
+
+All questions must speak directly to the user and every answer must help us understand who they are on a deeper level. Avoid generic phrasing—these should feel personal, human, and revealing.
 
 
 
@@ -124,7 +140,7 @@ You are looking at a product and asking “What could I say about the person who
                 "Return a valid JSON object in this format:\n"
                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
             )
-            prelim_json = self._call_gpt(p_prompt, max_tokens=1000, json_mode=True)
+            prelim_json = self._call_gpt(p_prompt, max_tokens=2000, json_mode=True)
 
             try:
                 main_questions = json.loads(questions_json)["questions"]
