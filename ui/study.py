@@ -106,6 +106,7 @@ Keep all language simple, natural, and consumer-friendly.
                 f"Product name: {product['product_name']}"
                 f"Product details: {product['technical_explanation']} "
                 f"Product description: {description} "
+                f"Study Questions : {questions_json}"
                 # Team Inputted Preliminary Prompt
                 f"""
                 
