@@ -273,15 +273,15 @@ All questions must speak directly to the user and every answer must help us unde
                 for j, opt in enumerate(q["options"]):
                     st.markdown(f"    {chr(65+j)}. {opt}")
 
-        if st.button("💾 Save Study"):
-            project_id = st.session_state.current_project["_id"]
-            success = self.auth.save_study(project_id, study_data)
-            if success:
-                st.success("Study saved successfully!")
-                st.session_state.study_step = 0
-                st.session_state.study_data = None
-            else:
-                st.error("Failed to save study")
+        # if st.button("💾 Save Study"):
+        #     project_id = st.session_state.current_project["_id"]
+        #     success = self.auth.save_study(project_id, study_data)
+        #     if success:
+        #         st.success("Study saved successfully!")
+        #         st.session_state.study_step = 0
+        #         st.session_state.study_data = None
+        #     else:
+        #         st.error("Failed to save study")
 
         if st.button("← Edit Questions"):
             st.session_state.study_step = 3
