@@ -13,6 +13,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+
+inject_custom_css()
 def init_session_state():
     required_keys = {
         "authenticated": False,
