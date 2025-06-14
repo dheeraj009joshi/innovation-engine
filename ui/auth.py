@@ -16,7 +16,13 @@ class AuthUI:
     
     def login_form(self):
         with st.container():
-            st.markdown("<div class='auth-container'>", unsafe_allow_html=True)
+            st.markdown(
+        "<div style='text-align: center;'>"
+        "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
+        "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+        "</div>",
+        unsafe_allow_html=True
+    )
             st.title("🔐 Login")
             with st.form("login_form"):
                 username = st.text_input("Username")
@@ -58,7 +64,13 @@ class AuthUI:
 
     def signup_form(self):
         with st.container():
-            st.markdown("<div class='auth-container'>", unsafe_allow_html=True)
+            st.markdown(
+        "<div style='text-align: center;'>"
+        "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
+        "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+        "</div>",
+        unsafe_allow_html=True
+    )
             st.title("🚀 Get Started")
             with st.form("signup_form"):
                 username = st.text_input("Username (min 4 characters)")

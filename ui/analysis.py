@@ -810,8 +810,6 @@ class AnalysisUI:
         if st.session_state.get("study_step", 0) >= 0:
             selected_idx = st.session_state.get("selected_idea_idx", 0)
             selected_idea = ideas[selected_idx]
-
-            st.markdown("## 📑 Study Generation ")
             from .study import StudyGenerationProcess
             study_gen = StudyGenerationProcess(self.auth, selected_idea)
             study_gen.run()
