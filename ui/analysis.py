@@ -3,9 +3,11 @@ import io
 import json
 import queue
 import time
+import gc
 import docx2txt
 from pandas import json_normalize
 import pdfplumber
+import os 
 import streamlit as st
 from datetime import datetime
 import uuid
@@ -388,37 +390,58 @@ class AnalysisUI:
                     st.session_state.wizard_step = 2
                     st.rerun()
 
+    
+
     def run_agents(self):
         st.subheader("⚙️ Running Digester")
         st.info("This may take a few minutes. Please don't close your browser.")
-        
+
+        # Process and write full file content to disk (no truncation)
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
-        
-        # Add research content to Digester
-        if st.session_state.get('research_result'):
+
+        # Append additional context
+        if st.session_state.get("research_result"):
             rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)
         if st.session_state.get("social_media_data"):
-            mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
-            rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
+            rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + st.session_state.social_media_data
+            mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + st.session_state.social_media_data
+
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
 
+        # Save to temp files
+        rnd_path = "temp_rnd_text.txt"
+        mkt_path = "temp_mkt_text.txt"
+        with open(rnd_path, "w", encoding="utf-8") as f:
+            f.write(rnd_text)
+        with open(mkt_path, "w", encoding="utf-8") as f:
+            f.write(mkt_text)
+
+        # Redefine each agent to read from file
+        def run_from_file(fn, path):
+            with open(path, "r", encoding="utf-8") as f:
+                return fn(f.read())
+
         agents = {
-            "IngredientsAgent": (run_ingredients, rnd_text),
-            "TechnologyAgent": (run_technology, rnd_text),
-            "BenefitsAgent": (run_benefits, rnd_text),
-            "SituationsAgent": (run_situations, mkt_text),
-            "MotivationsAgent": (run_motivations, mkt_text),
-            "OutcomesAgent": (run_outcomes, mkt_text)
+            "IngredientsAgent": (run_ingredients, rnd_path),
+            "TechnologyAgent": (run_technology, rnd_path),
+            "BenefitsAgent": (run_benefits, rnd_path),
+            "SituationsAgent": (run_situations, mkt_path),
+            "MotivationsAgent": (run_motivations, mkt_path),
+            "OutcomesAgent": (run_outcomes, mkt_path)
         }
 
         progress_bar = st.progress(0)
         results = {}
-        
-        with ThreadPoolExecutor() as executor:
-            futures = {executor.submit(fn, text): name for name, (fn, text) in agents.items()}
+
+        # Run agents in parallel (but using disk-backed text)
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = {
+                executor.submit(run_from_file, fn, path): name
+                for name, (fn, path) in agents.items()
+            }
             for i, future in enumerate(as_completed(futures)):
                 name = futures[future]
                 try:
@@ -428,7 +451,16 @@ class AnalysisUI:
                 except Exception as e:
                     st.error(f"❌ {name} failed: {str(e)}")
                 progress_bar.progress((i + 1) / len(agents))
-        
+                gc.collect()  # Manual cleanup
+
+        # Clean up temporary files
+        for path in [rnd_path, mkt_path]:
+            try:
+                os.remove(path)
+            except:
+                pass
+
+        # Save + transition to next step
         if results:
             self.auth.save_agent_results(st.session_state.current_project["_id"], results)
             st.session_state.agent_outputs = results
@@ -436,9 +468,7 @@ class AnalysisUI:
             st.session_state.wizard_step = 3
             st.rerun()
 
-
-
-        
+            
 
     def normalize_agent_data(self, data):
         if isinstance(data, dict):
