@@ -8,6 +8,6 @@ font="sans serif"
 
 
 [server]
-maxUploadSize = 2
+maxUploadSize = 7
 enableCORS = false
 headless = true

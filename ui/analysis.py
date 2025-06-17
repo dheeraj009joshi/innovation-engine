@@ -144,8 +144,8 @@ class AnalysisUI:
             if not uploaded_files:
                 return True
             
-            MAX_SINGLE_FILE = 2 * 1024 * 1024  # 2MB
-            MAX_TOTAL_SIZE = 10 * 1024 * 1024  # 10MB
+            MAX_SINGLE_FILE = 7 * 1024 * 1024  # 2MB
+            MAX_TOTAL_SIZE = 17 * 1024 * 1024  # 10MB
             
             # Check individual file sizes
             for file in uploaded_files:
