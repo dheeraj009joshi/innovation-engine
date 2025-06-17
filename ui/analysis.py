@@ -3,16 +3,19 @@ import io
 import json
 import queue
 import time
-import gc
 import docx2txt
 from pandas import json_normalize
 import pdfplumber
-import os 
 import streamlit as st
 from datetime import datetime
 import uuid
 from docx import Document
-from docx.shared import Inches
+from datetime import datetime
+import pandas as pd
+import io
+import queue
+import time
+from threading import Thread
 import pandas as pd
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
@@ -102,6 +105,8 @@ class AnalysisUI:
                 st.error(f"Error processing {f.name}: {str(e)}")
         return text
 
+
+
     def save_files_to_azure(self, files, file_type):
         """Save files to Azure and return metadata"""
         file_metadata = []
@@ -115,6 +120,8 @@ class AnalysisUI:
                     "uploaded_at": datetime.now().isoformat()
                 })
         return file_metadata
+
+
 
     def show_step1_content(self):
         st.subheader("🔍 What We Know")
@@ -132,6 +139,28 @@ class AnalysisUI:
             st.session_state.rnd_files = []
             st.session_state.mkt_files = []
 
+        # Function to validate file sizes immediately
+        def validate_files(uploaded_files, file_type=""):
+            if not uploaded_files:
+                return True
+            
+            MAX_SINGLE_FILE = 2 * 1024 * 1024  # 2MB
+            MAX_TOTAL_SIZE = 10 * 1024 * 1024  # 10MB
+            
+            # Check individual file sizes
+            for file in uploaded_files:
+                if file.size > MAX_SINGLE_FILE:
+                    st.error(f"❌ {file_type} file '{file.name}' exceeds 2MB limit ({file.size/1024/1024:.2f}MB)")
+                    return False
+            
+            # Check total size
+            total_size = sum(file.size for file in uploaded_files)
+            if total_size > MAX_TOTAL_SIZE:
+                st.error(f"❌ Total {file_type} size exceeds 10MB limit ({total_size/1024/1024:.2f}MB)")
+                return False
+                
+            return True
+
         # Technical Documents Section
         with st.expander("📚 In my possession - Technical Documents", expanded=True):
             # Display existing files
@@ -144,23 +173,15 @@ class AnalysisUI:
                         st.caption(f"Uploaded: {datetime.fromisoformat(file['uploaded_at']).strftime('%Y-%m-%d %H:%M')}")
                     with col2:
                         st.markdown(
-                        f"""
-                        <a href="{file['url']}" download target="_blank">
-                            <button style="background-color: #f0f0f0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                ⬇️ {file['name']}
-                            </button>
-                        </a>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    # with col3:
-                    #     if st.button("🗑️", key=f"delete_tech_{file['name']}"):
-                    #         self.auth.delete_file_from_project(
-                    #             st.session_state.current_project["_id"],
-                    #             file['url'],
-                    #             "technical"
-                    #         )
-                    #         st.rerun()
+                            f"""
+                            <a href="{file['url']}" download target="_blank">
+                                <button style="background-color: #f0f0f0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    ⬇️ {file['name']}
+                                </button>
+                            </a>
+                            """,
+                            unsafe_allow_html=True
+                        )
             
             col1, col2 = st.columns(2)
             with col2:
@@ -170,7 +191,8 @@ class AnalysisUI:
                     type=["pdf", "docx", "txt"],
                     accept_multiple_files=True,
                     key="private_tech",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    on_change=lambda: validate_files(st.session_state.private_tech, "private technical")
                 )
             with col1:
                 st.markdown("**Public Technical**")
@@ -179,9 +201,17 @@ class AnalysisUI:
                     type=["pdf", "docx", "txt"],
                     accept_multiple_files=True,
                     key="public_tech",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    on_change=lambda: validate_files(st.session_state.public_tech, "public technical")
                 )
-            st.session_state.rnd_files = private_tech + public_tech
+            
+            # Validate and store files
+            tech_files = []
+            if private_tech and validate_files(private_tech, "private technical"):
+                tech_files.extend(private_tech)
+            if public_tech and validate_files(public_tech, "public technical"):
+                tech_files.extend(public_tech)
+            st.session_state.rnd_files = tech_files
 
         # Marketing Documents Section
         with st.expander("📊 In my possession - Marketing Documents", expanded=True):
@@ -195,23 +225,15 @@ class AnalysisUI:
                         st.caption(f"Uploaded: {datetime.fromisoformat(file['uploaded_at']).strftime('%Y-%m-%d %H:%M')}")
                     with col2:
                         st.markdown(
-                        f"""
-                        <a href="{file['url']}" download target="_blank">
-                            <button style="background-color: #f0f0f0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                                ⬇️ {file['name']}
-                            </button>
-                        </a>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    # with col3:
-                    #     if st.button("🗑️", key=f"delete_mkt_{file['name']}"):
-                    #         self.auth.delete_file_from_project(
-                    #             st.session_state.current_project["_id"],
-                    #             file['url'],
-                    #             "marketing"
-                    #         )
-                            # st.rerun()
+                            f"""
+                            <a href="{file['url']}" download target="_blank">
+                                <button style="background-color: #f0f0f0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    ⬇️ {file['name']}
+                                </button>
+                            </a>
+                            """,
+                            unsafe_allow_html=True
+                        )
             
             col1, col2 = st.columns(2)
             with col2:
@@ -221,7 +243,8 @@ class AnalysisUI:
                     type=["pdf", "docx", "txt"],
                     accept_multiple_files=True,
                     key="private_mkt",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    on_change=lambda: validate_files(st.session_state.private_mkt, "private marketing")
                 )
             with col1:
                 st.markdown("**Public Marketing**")
@@ -230,9 +253,17 @@ class AnalysisUI:
                     type=["pdf", "docx", "txt"],
                     accept_multiple_files=True,
                     key="public_mkt",
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    on_change=lambda: validate_files(st.session_state.public_mkt, "public marketing")
                 )
-            st.session_state.mkt_files = private_mkt + public_mkt
+            
+            # Validate and store files
+            mkt_files = []
+            if private_mkt and validate_files(private_mkt, "private marketing"):
+                mkt_files.extend(private_mkt)
+            if public_mkt and validate_files(public_mkt, "public marketing"):
+                mkt_files.extend(public_mkt)
+            st.session_state.mkt_files = mkt_files
 
         # Social Media Scraper Section
         with st.expander("📱 Social Media Scraper", expanded=True):
@@ -241,13 +272,12 @@ class AnalysisUI:
                 placeholder="cleanbeauty",
                 key="hashtag_input"
             )
-            hashtags_list=hashtags.split(" ")
-            if len(hashtags_list)>1:
+            hashtags_list = hashtags.split(" ")
+            if len(hashtags_list) > 1:
                 st.error(f"Please enter a single hashtag. You entered: {hashtags_list}")
 
-
-            hashtags=hashtags.replace("#","")
-            if st.button("🌐 Scrape 🎵  TikTok", key="scrape_button"):
+            hashtags = hashtags.replace("#", "")
+            if st.button("🌐 Scrape 🎵 TikTok", key="scrape_button"):
                 if not hashtags.strip():
                     st.error("Please enter at least one hashtag")
                 else:
@@ -259,10 +289,9 @@ class AnalysisUI:
                     def run_scraper():
                         return get_scraper_data(hashtags, update_queue)
 
-                    with st.spinner(f" 🎵 Scraping posts for {hashtags} from tiktok"):
+                    with st.spinner(f"🎵 Scraping posts for {hashtags} from TikTok"):
                         st.info("This may take a few minutes. Please don't close your browser.")
-                        from threading import Thread
-
+                        
                         # Run scraper in background thread
                         result_holder = {}
                         scraper_thread = Thread(target=lambda: result_holder.update({"data": run_scraper()}))
@@ -281,11 +310,12 @@ class AnalysisUI:
                         scraper_thread.join()
                         scraped_data = result_holder["data"]
                         st.session_state.social_media_data = scraped_data
-                        st.session_state.last_hashtags=hashtags
+                        st.session_state.last_hashtags = hashtags
+                        
                         # Save to MongoDB
                         try:
                             self.auth.update_project(
-                                st.session_state.current_project["_id"],  # Fixed: single underscore
+                                st.session_state.current_project["_id"],
                                 {
                                     "social_media_data": scraped_data,
                                     "last_hashtags": st.session_state.last_hashtags
@@ -295,31 +325,25 @@ class AnalysisUI:
                         except Exception as e:
                             st.error(f"Failed to save scraped data: {str(e)}")
 
-                        
             if st.session_state.get('social_media_data') or st.session_state.current_project.get('social_media_data'):
-                st.markdown("### Scraped Data Preview ")
-                # print({st.session_state.current_project['last_hashtags']})
+                st.markdown("### Scraped Data Preview")
                 st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags') or st.session_state.last_hashtags}")
 
-                # Step 1: Copy the data
                 try:
                     data = st.session_state.current_project.get('social_media_data').copy() 
                 except:
-                    data=st.session_state.get('social_media_data').copy()
+                    data = st.session_state.get('social_media_data').copy()
 
-                # Step 2: Flatten the 'comments' field into a single string per post
+                # Process data for display
                 for item in data:
                     if isinstance(item.get("comments"), list):
                         item["comments"] = " | ".join(
                             c.get("text", "") for c in item["comments"] if isinstance(c, dict))
                 
-                # Step 3: Flatten all nested fields
                 df = pd.json_normalize(data)
-
-                # Step 4: Show the table
                 st.dataframe(df, use_container_width=True)
 
-                # Step 5: Prepare CSV download
+                # CSV download
                 csv_buffer = io.StringIO()
                 df.to_csv(csv_buffer, index=False)
                 st.download_button(
@@ -329,52 +353,25 @@ class AnalysisUI:
                     mime="text/csv"
                 )
 
-        # Deep Research Section
-        # with st.expander("🔬 Do my research for me", expanded=True):
-        #     st.session_state.research_query = st.text_area(
-        #         "What would you like to find out? Write a 3-sentence paragraph:",
-        #         value=st.session_state.research_result,
-        #         height=150,
-        #         placeholder="e.g., 'Investigate emerging technologies in biodegradable materials for food packaging. Focus on recent scientific breakthroughs and commercial applications. Identify key players and market adoption challenges.'",
-        #         key="research_input"
-        #     )
-            
-        #     if st.session_state.research_result:
-        #         st.markdown("### Research Results")
-        #         st.markdown(f"<div class='research-content'>{st.session_state.research_result}</div>", unsafe_allow_html=True)
-            
-        #     if st.button("🧠 Run Deep Research", use_container_width=True):
-        #         with st.spinner("Researching with Gemini..."):
-        #             # Placeholder - would integrate with Gemini API in real implementation
-        #             time.sleep(2)
-        #             st.session_state.research_result = f"Research results for: {st.session_state.research_query}"
-        #             # Save to MongoDB
-        #             self.auth.update_project(
-        #                 st.session_state.current_project["_id"],
-        #                 {"research_result": st.session_state.research_result}
-        #             )
-        #             st.success("Research completed!")
-        
-
-
         # Navigation buttons
         col1, col2 = st.columns([1, 1])
         with col1:
             if st.button("← Back to Projects", key="back_to_projects"):
                 st.session_state.page = "projects"
                 st.rerun()
-        if 1 in st.session_state.completed_steps:
-            pass
-        else:
+        
+        if 1 not in st.session_state.completed_steps:
             with col2:
                 try:
-                    st.session_state.social_media_data=st.session_state.current_project["social_media_data"]
+                    st.session_state.social_media_data = st.session_state.current_project["social_media_data"]
                 except:
                     pass
+                
                 if st.button("Start Digester →", key="start_Digester", 
-                            disabled=not (st.session_state.rnd_files or st.session_state.mkt_files or st.session_state.research_result or st.session_state.social_media_data)):
+                            disabled=not (st.session_state.rnd_files or st.session_state.mkt_files or 
+                                        st.session_state.research_result or st.session_state.social_media_data)):
                     # Save files to Azure and update metadata
-                    with st.spinner(f"Saving files to system.."):
+                    with st.spinner("Saving files to system..."):
                         tech_metadata = self.save_files_to_azure(st.session_state.rnd_files, "technical")
                         mkt_metadata = self.save_files_to_azure(st.session_state.mkt_files, "marketing")
                         
@@ -390,58 +387,39 @@ class AnalysisUI:
                     st.session_state.wizard_step = 2
                     st.rerun()
 
-    
+
 
     def run_agents(self):
         st.subheader("⚙️ Running Digester")
         st.info("This may take a few minutes. Please don't close your browser.")
-
-        # Process and write full file content to disk (no truncation)
+        
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
-
-        # Append additional context
-        if st.session_state.get("research_result"):
+        
+        # Add research content to Digester
+        if st.session_state.get('research_result'):
             rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)
         if st.session_state.get("social_media_data"):
-            rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + st.session_state.social_media_data
-            mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + st.session_state.social_media_data
-
+            mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
+            rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
 
-        # Save to temp files
-        rnd_path = "temp_rnd_text.txt"
-        mkt_path = "temp_mkt_text.txt"
-        with open(rnd_path, "w", encoding="utf-8") as f:
-            f.write(rnd_text)
-        with open(mkt_path, "w", encoding="utf-8") as f:
-            f.write(mkt_text)
-
-        # Redefine each agent to read from file
-        def run_from_file(fn, path):
-            with open(path, "r", encoding="utf-8") as f:
-                return fn(f.read())
-
         agents = {
-            "IngredientsAgent": (run_ingredients, rnd_path),
-            "TechnologyAgent": (run_technology, rnd_path),
-            "BenefitsAgent": (run_benefits, rnd_path),
-            "SituationsAgent": (run_situations, mkt_path),
-            "MotivationsAgent": (run_motivations, mkt_path),
-            "OutcomesAgent": (run_outcomes, mkt_path)
+            "IngredientsAgent": (run_ingredients, rnd_text),
+            "TechnologyAgent": (run_technology, rnd_text),
+            "BenefitsAgent": (run_benefits, rnd_text),
+            "SituationsAgent": (run_situations, mkt_text),
+            "MotivationsAgent": (run_motivations, mkt_text),
+            "OutcomesAgent": (run_outcomes, mkt_text)
         }
 
         progress_bar = st.progress(0)
         results = {}
-
-        # Run agents in parallel (but using disk-backed text)
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = {
-                executor.submit(run_from_file, fn, path): name
-                for name, (fn, path) in agents.items()
-            }
+        
+        with ThreadPoolExecutor() as executor:
+            futures = {executor.submit(fn, text): name for name, (fn, text) in agents.items()}
             for i, future in enumerate(as_completed(futures)):
                 name = futures[future]
                 try:
@@ -451,16 +429,7 @@ class AnalysisUI:
                 except Exception as e:
                     st.error(f"❌ {name} failed: {str(e)}")
                 progress_bar.progress((i + 1) / len(agents))
-                gc.collect()  # Manual cleanup
-
-        # Clean up temporary files
-        for path in [rnd_path, mkt_path]:
-            try:
-                os.remove(path)
-            except:
-                pass
-
-        # Save + transition to next step
+        
         if results:
             self.auth.save_agent_results(st.session_state.current_project["_id"], results)
             st.session_state.agent_outputs = results
@@ -468,7 +437,9 @@ class AnalysisUI:
             st.session_state.wizard_step = 3
             st.rerun()
 
-            
+
+
+        
 
     def normalize_agent_data(self, data):
         if isinstance(data, dict):
