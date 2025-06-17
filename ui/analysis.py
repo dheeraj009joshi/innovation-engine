@@ -478,18 +478,22 @@ class AnalysisUI:
             return
 
         # Display each agent's results in expandable sections
+        # Display each agent's results in expandable sections
         for agent_name, agent_data in st.session_state.agent_outputs.items():
             if agent_name == "ProductGenerationAgent":
                 continue
-                
-            with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
-                df = self.format_dataframe(agent_data)
-                st.dataframe(df, use_container_width=True)
-                
-                # Checkbox to show raw JSON
-                show_raw = st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}")
-                if show_raw:
-                    st.json(agent_data)
+
+            df = self.format_dataframe(agent_data)
+            
+            # Only show expander if DataFrame is not empty
+            if not df.empty:
+                with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
+                    st.dataframe(df, use_container_width=True)
+
+                    # Checkbox to show raw JSON
+                    show_raw = st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}")
+                    if show_raw:
+                        st.json(agent_data)
         
         # Navigation buttons
         col1, col2 = st.columns([1,1])
