@@ -125,7 +125,7 @@ class AuthUI:
             if submitted:
                 token = self.auth.create_reset_token(email)
                 if token:
-                    reset_link = f"http://localhost:8501/?page=reset&token={token}"
+                    reset_link = f"http://mindgenome.org/?page=reset&token={token}"
                     send_reset_email(email, reset_link)
                     st.success("Password reset link sent.")
                 else:
