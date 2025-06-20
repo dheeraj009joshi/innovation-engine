@@ -405,16 +405,17 @@ class AnalysisUI:
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
-        # # text combining 
-        text="Rnd text : "+rnd_text+" marketing text : "+mkt_text
+        # # # text combining 
+        # text="Rnd text : "+rnd_text+" marketing text : "+mkt_text
         agents = {
-            "IngredientsAgent": (run_ingredients, text),
-            "TechnologyAgent": (run_technology, text),
-            "BenefitsAgent": (run_benefits, text),
-            "SituationsAgent": (run_situations, text),
-            "MotivationsAgent": (run_motivations, text),
-            "OutcomesAgent": (run_outcomes, text)
+            "IngredientsAgent": (run_ingredients, rnd_text),
+            "TechnologyAgent": (run_technology, rnd_text),
+            "BenefitsAgent": (run_benefits, rnd_text),
+            "SituationsAgent": (run_situations, mkt_text),
+            "MotivationsAgent": (run_motivations, mkt_text),
+            "OutcomesAgent": (run_outcomes, mkt_text)
         }
+
 
         progress_bar = st.progress(0)
         results = {}
@@ -675,8 +676,9 @@ class AnalysisUI:
             with col1:
                 
                 if st.button("📚 Generate Study", type="primary", key=f"gen-study"):
-                            st.session_state["study_step"] = 0
-                            st.session_state["selected_idea_idx"] =  1  # store 0-based index
+                    st.info("We are working of this functionality...")
+                            # st.session_state["study_step"] = 0
+                            # st.session_state["selected_idea_idx"] =  1  # store 0-based index
 
             with col2:
                 if st.button("❌ Clear Selections"):
