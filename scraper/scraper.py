@@ -97,12 +97,12 @@ class ScraperClient:
             pass
 
     
-aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
+# aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
 
 # tt=aa.get_hastag_info("cleandeodorant")
 # print(tt)
-res=aa.get_hastag_posts_by_id(1681086669362181,20)
-print(res)
+# res=aa.get_hastag_posts_by_id(1681086669362181,20)
+# print(res)
 
 # res=aa.get_post_comments_by_post_id(7242381942933490971,100)
 # print(res)
