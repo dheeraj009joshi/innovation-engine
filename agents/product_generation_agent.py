@@ -176,7 +176,7 @@ Output ONLY JSON with this structure:
   }},
  
 
-
+make sure you provide 5 products
 make sure you follow this structure  and do not miss any keys and always complete the json structure 
  Insights:
 {chunk}
