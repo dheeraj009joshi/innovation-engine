@@ -87,7 +87,7 @@ import queue
 def get_scraper_data(hashtag, update_queue=None):
     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
     hashtag_id = aa.get_hastag_id_by_tag_name(hashtag)
-    posts = aa.get_hastag_posts_by_id(hashtag_id, 20)
+    posts = aa.get_hastag_posts_by_id(hashtag_id, 100)
 
     def process_post(post, idx):
         try:
