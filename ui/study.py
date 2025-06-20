@@ -7,7 +7,7 @@ from openai import OpenAI
 from config import aii  # Your OpenAI API key module
 
 class StudyGenerationProcess:
-    def __init__(self, auth, currentProduct):
+    def __init__(self, auth, currentProduct,type="product"):
         self.auth = auth
         self.currentProduct = currentProduct
 
@@ -42,7 +42,7 @@ class StudyGenerationProcess:
         elif st.session_state.study_step == 4:
             self._step4_review()
 
-    def _auto_generate_full_study(self):
+    def _auto_generate_full_study_product(self):
         product = self.currentProduct
         if not product:
             st.error("No product data found.")

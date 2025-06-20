@@ -1,17 +1,15 @@
 
 import streamlit as st
-from datetime import datetime
-import hashlib
-import uuid
-from db.mongo import get_db
 import re
+from streamlit_cookies_manager import EncryptedCookieManager
 
-from functions import save_token
+
 
 
 class AuthUI:
-    def __init__(self, auth_service):
+    def __init__(self, auth_service,cookies):
         self.auth = auth_service
+        self.cookies=cookies
 
     
     def login_form(self):
@@ -35,8 +33,11 @@ class AuthUI:
                         st.session_state.authenticated = True
                         st.session_state.current_user = user
 
-                        # Save to localStorage
-                        save_token(str(user["_id"]))
+
+                        # After user successfully logs in:
+                        st.session_state.auth_token = str(user["_id"])
+                        self.cookies["auth_token"] = st.session_state.auth_token
+
 
                         # Restore project
                         if user.get("current_project"):

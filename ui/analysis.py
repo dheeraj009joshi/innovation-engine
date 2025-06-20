@@ -472,6 +472,105 @@ class AnalysisUI:
             st.error(f"📊 Formatting error: {str(e)}")
             return pd.DataFrame({"Raw Data": [str(clean_data)]})
 
+    # def show_results(self):
+    #     st.subheader("📊 Digester Results")
+        
+    #     if not st.session_state.agent_outputs:
+    #         st.warning("No Digester results found")
+    #         return
+
+    #     # Initialize selected_agent_outputs if it doesn't exist
+    #     if "selected_agent_outputs" not in st.session_state:
+    #         st.session_state.selected_agent_outputs = {}
+
+    #     # Display each agent's results in expandable sections
+    #     for agent_name, agent_data in st.session_state.agent_outputs.items():
+    #         if agent_name == "ProductGenerationAgent":
+    #             continue
+
+    #         df = self.format_dataframe(agent_data)
+            
+    #         # Add _selected column if it doesn't exist
+    #         if "_selected" not in df.columns:
+    #             df["_selected"] = False
+                
+    #         # Only show expander if DataFrame is not empty
+    #         if not df.empty:
+    #             with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
+    #                 # Create a unique key for the dataframe
+    #                 dataframe_key = f"df_{agent_name}"
+                    
+    #                 # Display editable dataframe
+    #                 edited_df = st.data_editor(
+    #                     df,
+    #                     use_container_width=True,
+    #                     key=dataframe_key,
+    #                     num_rows="dynamic",
+    #                     disabled=[col for col in df.columns if col != "_selected"]  # Only allow selecting
+    #                 )
+                    
+    #                 # Get the selected rows from session state
+    #                 if f"df_{agent_name}" in st.session_state:
+    #                     selected_rows = st.session_state[f"df_{agent_name}"]["edited_rows"]
+                        
+    #                     # Filter the dataframe to only include selected rows
+    #                     selected_indices = [i for i, val in selected_rows.items() if val.get("_selected", False)]
+    #                     if selected_indices:
+    #                         selected_data = edited_df.iloc[selected_indices]
+    #                         print(selected_data)
+    #                         st.session_state.selected_agent_outputs[agent_name] = selected_data.to_dict('records')
+    #                     else:
+    #                         # Remove agent from selection if nothing is selected
+    #                         if agent_name in st.session_state.selected_agent_outputs:
+    #                             del st.session_state.selected_agent_outputs[agent_name]
+
+    #                 # Checkbox to show raw JSON
+    #                 show_raw = st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}")
+    #                 if show_raw:
+    #                     st.json(agent_data)
+
+    #     # Show generate study button if there are selected outputs (OUTSIDE THE LOOP)
+    #     if st.session_state.selected_agent_outputs:
+    #         print("inside selected ")
+    #         col1, col2 = st.columns(2)
+    #         with col1:
+    #             if st.button("🚀 Generate Study from Selected Results", type="primary"):
+    #                 # Here you would call whatever function generates the study
+    #                 st.success("Generating study from selected results...")
+    #                 # You can access the selected outputs via st.session_state.selected_agent_outputs
+    #                 st.json(st.session_state.selected_agent_outputs)  # Just for demonstration
+            
+    #         with col2:
+    #             if st.button("🔄 Clear Selections"):
+    #                 st.session_state.selected_agent_outputs = {}
+    #                 st.rerun()
+
+    #     # Navigation buttons
+    #     col1, col2 = st.columns([1,1])
+    #     with col1:
+    #         if st.button("← Back to File Upload", key="back_to_step1"):
+    #             st.session_state.wizard_step = 1
+    #             st.rerun()
+
+    #     with col2:
+    #         # Check if product ideas exist
+    #         has_products = "ProductGenerationAgent" in st.session_state.agent_outputs
+    #         has_generations = has_products and st.session_state.agent_outputs["ProductGenerationAgent"].get("generations")
+            
+    #         if has_generations:
+    #             if st.button("View Product Ideas →", key="view_products"):
+    #                 st.session_state.wizard_step = 4
+    #                 st.rerun()
+    #         else:
+    #             if st.button("Generate Product Ideas →", key="generate_products"):
+    #                 with st.spinner("Generating product ideas..."):
+    #                     if self.generate_products():
+    #                         st.rerun()
+    
+   
+
+  
+
     def show_results(self):
         st.subheader("📊 Digester Results")
         
@@ -479,25 +578,70 @@ class AnalysisUI:
             st.warning("No Digester results found")
             return
 
-        # Display each agent's results in expandable sections
-        # Display each agent's results in expandable sections
+        # Initialize session state
+        if "selected_rows" not in st.session_state:
+            st.session_state.selected_rows = {}
+        if "select_all_states" not in st.session_state:
+            st.session_state.select_all_states = {}
+
+        # Track current selections
+        current_selections_exist = False
+
         for agent_name, agent_data in st.session_state.agent_outputs.items():
             if agent_name == "ProductGenerationAgent":
                 continue
 
             df = self.format_dataframe(agent_data)
             
-            # Only show expander if DataFrame is not empty
             if not df.empty:
+                # Initialize agent's select all state
+                if agent_name not in st.session_state.select_all_states:
+                    st.session_state.select_all_states[agent_name] = False
+                
+                # Add Select column initialized with select all state
+                df.insert(0, "Select", st.session_state.select_all_states[agent_name])
+                
                 with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
-                    st.dataframe(df, use_container_width=True)
+                    # Select all checkbox with synchronization
+                    select_all = st.checkbox(
+                        "Select all",
+                        value=st.session_state.select_all_states[agent_name],
+                        key=f"select_all_{agent_name}",
+                        on_change=lambda a=agent_name: self._handle_select_all(a)
+                    )
+                    
+                    # Display the dataframe
+                    edited_df = st.data_editor(
+                        df,
+                        key=f"editor_{agent_name}",
+                        use_container_width=True,
+                        disabled=df.columns[1:],  # Only allow editing Select column
+                        hide_index=True
+                    )
+                    
+                    # Update selection states
+                    selected_rows = edited_df[edited_df["Select"]]
+                    if not selected_rows.empty:
+                        st.session_state.selected_rows[agent_name] = selected_rows.to_dict('records')
+                        current_selections_exist = True
+                        # Update select all state if all rows are selected
+                        if len(selected_rows) == len(df):
+                            st.session_state.select_all_states[agent_name] = True
+                        else:
+                            st.session_state.select_all_states[agent_name] = False
+                    elif agent_name in st.session_state.selected_rows:
+                        del st.session_state.selected_rows[agent_name]
+                        st.session_state.select_all_states[agent_name] = False
 
-                    # Checkbox to show raw JSON
-                    show_raw = st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}")
-                    if show_raw:
+                    # Show raw JSON option
+                    if st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}"):
                         st.json(agent_data)
+
         
+        st.info("You can select the specific raws from the above tables to proceed with the study from results directly")
         # Navigation buttons
+        st.markdown("---")
+         # Navigation buttons
         col1, col2 = st.columns([1,1])
         with col1:
             if st.button("← Back to File Upload", key="back_to_step1"):
@@ -515,9 +659,54 @@ class AnalysisUI:
                     st.rerun()
             else:
                 if st.button("Generate Product Ideas →", key="generate_products"):
-                   with st.spinner("Generating product ideas..."):
+                    with st.spinner("Generating product ideas..."):
                         if self.generate_products():
                             st.rerun()
+    
+        # Clear selections handler
+        if "clear_clicked" not in st.session_state:
+            st.session_state.clear_clicked = False
+
+        # Show action buttons only if we have current selections
+        if current_selections_exist or (st.session_state.selected_rows and not st.session_state.clear_clicked):
+            st.markdown("---")
+            st.info(f"You have selected rows from the following digesters :- {', '.join([k.replace('Agent', ' Digester') for k in list(st.session_state.selected_rows.keys())])}")
+            col1, col2 = st.columns(2)
+            with col1:
+                
+                if st.button("📚 Generate Study", type="primary", key=f"gen-study"):
+                            st.session_state["study_step"] = 0
+                            st.session_state["selected_idea_idx"] =  1  # store 0-based index
+
+            with col2:
+                if st.button("❌ Clear Selections"):
+                    st.session_state.selected_rows = {}
+                    st.session_state.select_all_states = {k: False for k in st.session_state.select_all_states}
+                    st.session_state.clear_clicked = True
+                    st.rerun()
+            # Now handle study generation AFTER loop (full-width)
+            if st.session_state.get("study_step", 0) >= 0:
+                # selected_idx = st.session_state.get("selected_idea_idx", 0)
+                selected_idea = st.session_state.selected_rows
+                from .study import StudyGenerationProcess
+                study_gen = StudyGenerationProcess(self.auth, selected_idea,type="results")
+                study_gen.run()
+        # Reset clear flag after render
+        if st.session_state.clear_clicked:
+            st.session_state.clear_clicked = False
+    def _handle_select_all(self, agent_name):
+        """Handle select all checkbox changes"""
+        # Toggle the select all state
+        st.session_state.select_all_states[agent_name] = not st.session_state.select_all_states.get(agent_name, False)
+        
+        # Update the dataframe editor state
+        if f"editor_{agent_name}" in st.session_state:
+            edited_data = st.session_state[f"editor_{agent_name}"]["edited_rows"]
+            for row_idx in edited_data:
+                edited_data[row_idx]["Select"] = st.session_state.select_all_states[agent_name]
+
+
+
 
     def generate_product_docx(self, product_data):
         """Generate a Word document for a product idea"""

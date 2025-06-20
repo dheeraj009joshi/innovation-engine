@@ -1,17 +1,19 @@
 # app.py
 import streamlit as st
-from functions import inject_custom_css, read_token
-from services.auth import AuthService
-from ui.analysis import AnalysisUI
-from ui.auth import AuthUI
-from ui.project import ProjectUI
-from functions import read_token
+
 st.set_page_config(
     page_title="Mind Genomics",
     layout="wide",
     page_icon="\U0001F9E0",
     initial_sidebar_state="expanded"
 )
+
+from functions import inject_custom_css
+from services.auth import AuthService
+from ui.analysis import AnalysisUI
+from ui.auth import AuthUI
+from ui.project import ProjectUI
+from streamlit_cookies_manager import EncryptedCookieManager
 
 
 inject_custom_css()
@@ -53,15 +55,23 @@ init_session_state()
 
 def main():
 
-  
+    cookies = EncryptedCookieManager(password="Dheeraj@2006")
+    if not cookies.ready():
+        st.stop()
     auth_service = AuthService()
-    auth_ui = AuthUI(auth_service)
+    auth_ui = AuthUI(auth_service,cookies)
     project_ui = ProjectUI(auth_service)
     analysis_ui = AnalysisUI(auth_service)
 
+    
+
+    # Restore token
     if "restored" not in st.session_state:
-        read_token()
+        token = cookies.get("auth_token")
+        if token:
+            st.session_state.auth_token = token
         st.session_state.restored = True
+
 
     if not st.session_state.authenticated and "auth_token" in st.session_state:
         token = st.session_state.auth_token
