@@ -63,90 +63,98 @@ def main():
     project_ui = ProjectUI(auth_service)
     analysis_ui = AnalysisUI(auth_service)
 
-    
+    params = st.query_params
+    page = params.get("page", "login")
+    token = params.get("token", None)
+
+    if page == "reset" and token:
+        auth_ui.reset_password_form(token)
+    elif page == "forgot":
+        auth_ui.request_reset_form()
 
     # Restore token
-    if "restored" not in st.session_state:
-        token = cookies.get("auth_token")
-        if token:
-            st.session_state.auth_token = token
-        st.session_state.restored = True
-
-
-    if not st.session_state.authenticated and "auth_token" in st.session_state:
-        token = st.session_state.auth_token
-        user = auth_service.users.find_one({"_id": token})
-        if user:
-            st.session_state.authenticated = True
-            st.session_state.current_user = user
-            st.session_state.page = "projects"
-            st.rerun()
-        else:
-            st.session_state.auth_token = None
-
-    if not st.session_state.authenticated:
-        if st.session_state.page == "login":
-            auth_ui.login_form()
-        elif st.session_state.page == "signup":
-            auth_ui.signup_form()
     else:
-        with st.sidebar:
-            st.markdown(f"## \U0001F9D1\U0001F4BB Welcome, {st.session_state.current_user['username']}")
-            if st.session_state.page != "projects":
-                if st.session_state.current_project:
-                    project = st.session_state.current_project
-                    st.markdown(f"#### \U0001F4C1 {project['name']}")
-                    st.caption(project.get('description', 'No description'))
-                    progress = len(st.session_state.get('completed_steps', [])) / 4
-                    st.markdown(f"""
-                    <div style="margin: 1rem 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>Project Progress</span>
-                            <span>{int(progress * 100)}%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {progress * 100}%"></div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+        if "restored" not in st.session_state:
+            token = cookies.get("auth_token")
+            if token:
+                st.session_state.auth_token = token
+            st.session_state.restored = True
 
-                    if 'updated_at' in project:
-                        st.caption(f"Last updated: {project['updated_at'].strftime('%Y-%m-%d %H:%M')}")
+
+        if not st.session_state.authenticated and "auth_token" in st.session_state:
+            token = st.session_state.auth_token
+            user = auth_service.users.find_one({"_id": token})
+            if user:
+                st.session_state.authenticated = True
+                st.session_state.current_user = user
+                st.session_state.page = "projects"
+                st.rerun()
+            else:
+                st.session_state.auth_token = None
+
+        if not st.session_state.authenticated:
+            if st.session_state.page == "login":
+                auth_ui.login_form()
+            elif st.session_state.page == "signup":
+                auth_ui.signup_form()
+        else:
+            with st.sidebar:
+                st.markdown(f"## \U0001F9D1\U0001F4BB Welcome, {st.session_state.current_user['username']}")
+                if st.session_state.page != "projects":
+                    if st.session_state.current_project:
+                        project = st.session_state.current_project
+                        st.markdown(f"#### \U0001F4C1 {project['name']}")
+                        st.caption(project.get('description', 'No description'))
+                        progress = len(st.session_state.get('completed_steps', [])) / 4
+                        st.markdown(f"""
+                        <div style="margin: 1rem 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Project Progress</span>
+                                <span>{int(progress * 100)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {progress * 100}%"></div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        if 'updated_at' in project:
+                            st.caption(f"Last updated: {project['updated_at'].strftime('%Y-%m-%d %H:%M')}")
+
+                    st.markdown("---")
+                    if st.button("\U0001F4C2 Switch Project", use_container_width=True):
+                        st.session_state.page = "projects"
+                        st.rerun()
+
+                    if st.button("\U0001F4E5 Export Results", use_container_width=True):
+                        st.info("Export feature coming soon!")
 
                 st.markdown("---")
-                if st.button("\U0001F4C2 Switch Project", use_container_width=True):
-                    st.session_state.page = "projects"
+                if st.button("\U0001F6AA Logout", use_container_width=True):
+                    auth_service.users.update_one(
+                        {"_id": st.session_state.current_user["_id"]},
+                        {"$set": {"current_project": None}}
+                    )
+                    st.session_state.clear()
+                    
                     st.rerun()
 
-                if st.button("\U0001F4E5 Export Results", use_container_width=True):
-                    st.info("Export feature coming soon!")
-
-            st.markdown("---")
-            if st.button("\U0001F6AA Logout", use_container_width=True):
-                auth_service.users.update_one(
-                    {"_id": st.session_state.current_user["_id"]},
-                    {"$set": {"current_project": None}}
-                )
-                st.session_state.clear()
-                
-                st.rerun()
-
-        if st.session_state.page == "projects":
-            project_ui.projects_dashboard()
-        elif st.session_state.page == "dashboard":
-            st.markdown(f"## \U0001F680 {st.session_state.current_project['name']}")
-            analysis_ui.wizard_navigation()
-            with st.container():
-                st.markdown("<div class='step-container'>", unsafe_allow_html=True)
-                if st.session_state.wizard_step == 1:
-                    analysis_ui.show_step1_content()
-                elif st.session_state.wizard_step == 2:
-                    analysis_ui.run_agents()
-                elif st.session_state.wizard_step == 3:
-                    analysis_ui.show_results()
-                elif st.session_state.wizard_step == 4:
-                    analysis_ui.show_product_ideas()
-                st.markdown("</div>", unsafe_allow_html=True)
+            if st.session_state.page == "projects":
+                project_ui.projects_dashboard()
+            elif st.session_state.page == "dashboard":
+                st.markdown(f"## \U0001F680 {st.session_state.current_project['name']}")
+                analysis_ui.wizard_navigation()
+                with st.container():
+                    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+                    if st.session_state.wizard_step == 1:
+                        analysis_ui.show_step1_content()
+                    elif st.session_state.wizard_step == 2:
+                        analysis_ui.run_agents()
+                    elif st.session_state.wizard_step == 3:
+                        analysis_ui.show_results()
+                    elif st.session_state.wizard_step == 4:
+                        analysis_ui.show_product_ideas()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     try:

@@ -126,29 +126,37 @@ def get_scraper_data(hashtag, update_queue=None):
 
 # utils/localstorage.py
 import streamlit as st
-from streamlit_javascript import st_javascript
-
-def save_token(token: str):
-    st.session_state.auth_token = token
-    js = f'localStorage.setItem("auth_token", "{token}");'
-    st_javascript(js)
-
-def read_token():
-    if "auth_token" not in st.session_state:
-        token = st_javascript('localStorage.getItem("auth_token");')
-        if token and token != "null":
-            st.session_state.auth_token = token
-
-def clear_token():
-    if "auth_token" in st.session_state:
-        del st.session_state.auth_token
-    st_javascript('localStorage.removeItem("auth_token");')
+# from streamlit_javascript import st_javascript
 
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
+def send_reset_email(email, reset_link):
+    sender = "support@mindgenome.org"
+    password = "nG^oKB+SGr4"
 
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "Reset Your Mind Genomics Password"
+    msg["From"] = sender
+    msg["To"] = email
 
+    html = f"""
+    <html>
+    <body>
+        <h3>Password Reset for your mindgenome account</h3>
+        <p>Click the link below to reset your password:</p>
+        <a href="{reset_link}">{reset_link}</a>
+    </body>
+    </html>
+    """
 
+    msg.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP_SSL("smtp.hostinger.com", 465) as server:
+        server.login(sender, password)
+        server.sendmail(sender, email, msg.as_string())
 
 
 

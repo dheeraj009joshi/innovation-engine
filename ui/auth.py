@@ -1,4 +1,6 @@
 
+import time
+from functions import send_reset_email
 import streamlit as st
 import re
 from streamlit_cookies_manager import EncryptedCookieManager
@@ -24,7 +26,12 @@ class AuthUI:
             st.title("🔐 Login")
             with st.form("login_form"):
                 username = st.text_input("Username")
+                col1, col2 = st.columns([4, 1])
                 password = st.text_input("Password", type="password")
+
+                st.markdown('<a href="?page=forgot">Forgot Password?</a>', unsafe_allow_html=True)
+
+
                 submitted = st.form_submit_button("Sign In")
 
                 if submitted:
@@ -108,3 +115,41 @@ class AuthUI:
                 st.session_state.page = "login"
                 st.rerun()
                 
+   
+    def request_reset_form(self):
+        st.title("🔑 Forgot Password")
+        with st.form("reset_request"):
+            email = st.text_input("Enter your registered email")
+            submitted = st.form_submit_button("Send Reset Link")
+
+            if submitted:
+                token = self.auth.create_reset_token(email)
+                if token:
+                    reset_link = f"http://localhost:8501/?page=reset&token={token}"
+                    send_reset_email(email, reset_link)
+                    st.success("Password reset link sent.")
+                else:
+                    st.error("Email not found.")
+
+    def reset_password_form(self, token):
+        st.title("🔐 Set New Password")
+        with st.form("reset_form"):
+            new_pw = st.text_input("New Password", type="password")
+            confirm_pw = st.text_input("Confirm Password", type="password")
+            submitted = st.form_submit_button("Reset Password")
+
+            if submitted:
+                if new_pw != confirm_pw:
+                    st.error("Passwords do not match")
+                elif len(new_pw) < 8:
+                    st.error("Password must be at least 8 characters")
+                else:
+                    if self.auth.reset_password(token, new_pw):
+                        st.success("Password reset successful. Please login.")
+                    else:
+                        st.error("Invalid or expired token")
+        if st.button("🔐 Go to Login"):
+                            # Clear token from URL and state
+                            st.session_state.page = "login"
+                            st.query_params.clear()  # Clears URL params
+                            st.rerun()

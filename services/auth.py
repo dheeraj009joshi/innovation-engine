@@ -1,7 +1,7 @@
 
 
 
-
+import secrets
 import streamlit as st
 from datetime import datetime
 import hashlib
@@ -32,6 +32,7 @@ class AuthService:
             "current_project": None
         })
         return True
+    
 
     def verify_user(self, username, password):
         user = self.users.find_one({"username": username})
@@ -188,3 +189,31 @@ class AuthService:
     
     def delete_project(self,project_id):
         return self.projects.delete_one({"_id":project_id})
+    
+
+    
+    def reset_password(self, token, new_password):
+        user = self.users.find_one({"reset_token": token})
+        if not user:
+            return False
+        self.users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {
+                "password": self.hash_password(new_password),
+                "reset_token": None
+            }}
+        )
+        return True
+
+    def create_reset_token(self, email):
+        user = self.users.find_one({"email": email})
+        if not user:
+            return None
+        token = secrets.token_urlsafe(32)
+        self.users.update_one(
+            {"email": email},
+            {"$set": {"reset_token": token, "reset_token_expiry": datetime.now()}}
+        )
+        return token
+
+    
