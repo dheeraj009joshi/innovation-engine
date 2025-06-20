@@ -31,118 +31,15 @@ def get_existing_product_names(concepts: list) -> list:
 
 
 
-def generate_chunk_products(client, chunk, chunk_num, total_chunks,all_concepts):
+def generate_chunk_products(client, chunk, chunk_num, total_chunks,all_concepts,model):
     """Generate products from a single insight chunk with priority scores"""
-
-
-
-    ##  promnt 2 :- 
-#The product themselves must be absolutely specific and not general. We should be able to point to a specific situation, specific problem, specific ingredient when describing the product. The product should have one use and one use only, and it should be extrodinarly impressive for that one situation. It should be better than any product in the world for that one use situation.
-#Make this a unique product the only type in the world. Totally new that consumers love when they hear about it
-#For EACH of the 1 product idea, provide ALL of the following:
-
-
-
-
-
-## prompt 3 :- 
-# """You are a world-class AI responsible for generating entirely original, emotionally powerful, and technically sound product ideas that blend deep scientific insight with real consumer desires.
-
-# Your inputs come from two sides:
-
-#     Technical Inputs: Ingredients, Technologies, and Benefits
-#     These provide the scientific mechanisms, core functionalities, and material components of the product.
-
-#     Consumer Insight Inputs: Situations, Motivations, and Outcomes
-#     These provide the emotional jobs, contextual pain points, and desired end states of the user.
-
-# Your job is to combine these two to generate one extraordinary, radically different product idea at a time. No product should resemble another in name, category, function, or vibe. Each one must feel like a true invention — something people have never seen, but immediately want.
-
-# For EACH product, provide ALL details EXACTLY as specified:
-# For EACH of the 1 product idea, provide ALL of the following:
-
-# """
-
-
-
-
-## prompt 4:- 
-# You are a specialized AI called the Mind Genome Inventor.
-
-# Your mission is to generate radically innovative, emotionally compelling, and technically feasible product ideas that can be built using real inputs — specifically:
-
-#     Ingredients
-
-#     Technologies
-
-#     Benefits
-
-#     Situations, Motivations, and Outcomes (SMOs)
-
-# You are not designing futuristic concepts.
-# You are inventing real, buildable products by recombining these inputs in novel ways.
-# Each product should feel like something people instantly understand, emotionally resonate with, and would want to buy right now — whether they’re kids, adults, or seniors.
-
-# Every product must feel:
-
-#     Entirely new in its formulation and approach
-
-#     Entirely familiar in its purpose and promise
-
-#     And emotionally irresistible to everyday people the moment they see it
-
-# Each product must also be radically different from every other in the same run — in name, function, domain, tone, and appeal.
-
-# You are inventing a product that has no direct equivalent on the market, but is made from real elements that exist.
-# Each product must have a three-word name, with no shared words across any other product in the same run (whether it’s 1 or 20).
-# These products should score in the top 10% of buying interest for anyone in their category.
-# They must feel like they were made for regular people with real desires, not abstract or speculative users.
-
-
-# ABOVE IS TOP PART
-
-
-# Every product must have a three-word name, and no word used in any product name may be reused in any other product name in the same run.
-
-# Before finalizing output, you must extract and compare every individual word from all product names in the full set.
-
-# If a word appears more than once in any position (first, middle, or last), you must regenerate the affected name(s) using entirely unused words.
-
-# Word uniqueness is enforced at the individual word level, not just full phrases, meanings, or combinations.
-
-# No repetition is allowed, even if the reused words are placed in different contexts, categories, or tones.
-
-# Every product must be radically different in name, category, function, vibe, and emotional appeal.
-
-# Products must be technically feasible using the available input components (ingredients, technologies, benefits).
-
-# Every product must pass a realism check: Before generating the output, ask: Could this realistically be built using the input materials? If not, discard and regenerate it.
-
-# Every part of the product — its name, pitch, function, emotional appeal, and slogans — must be directly grounded in and traceable to the provided inputs (ingredients, technologies, benefits, or SMOs). This is a recombination task, not freeform invention.
-
-# Products must feel emotionally intuitive and culturally grounded — they should resonate with everyday people, not abstract or futuristic audiences.
-
-# All consumer testimonials must reflect genuine, persona-specific enthusiasm, from ten completely distinct mindsets.
-
-# No generic ideas. No safe bets. No buzzwords or trend-chasing.
-# These products must be surprising, simple, buildable — and instantly desirable to anyone.
-
-
-# ABOVE IS RULES
-
-
-
-
 
 
     forrbiden_names= ",".join(get_existing_product_names(all_concepts))
     print(forrbiden_names)
     prompt = f"""
-Generate 1 product idea from this market insights chunk ({chunk_num}/{total_chunks}).
+Generate 5 product idea from this  insights ).
 For EACH product, provide ALL details EXACTLY as specified:
-make sure the name don't match or get's even closer to these names or already generated names 
-following are the already gnerated product names :- {forrbiden_names}
-
 
 You are a specialized AI called the Mind Genome Inventor.
 
@@ -281,12 +178,12 @@ Output ONLY JSON with this structure:
 
 
 make sure you follow this structure  and do not miss any keys and always complete the json structure 
-Chunk Insights:
+ Insights:
 {chunk}
 
 """
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=model,
         messages=[
             {"role": "system", "content": "You are a product strategist"},
             {"role": "user", "content": prompt}
@@ -295,23 +192,23 @@ Chunk Insights:
         max_tokens=3000,
         response_format={"type": "json_object"}
     )
-    # print("partial products", response.choices[0].message.content)
+    print("partial products", response.choices[0].message.content)
     return response.choices[0].message.content
-def clean_created_at(data):
-    agent_data = data.get("ProductGenerationAgent", {})
+# def clean_created_at(data):
+#     agent_data = data.get("ProductGenerationAgent", {})
 
-    # Clean 'generations' list
-    if "generations" in agent_data:
-        for gen in agent_data["generations"]:
-            gen.pop("created_at", None)
-            gen.pop("createdAt", None)  # handle camelCase if needed
+#     # Clean 'generations' list
+#     if "generations" in agent_data:
+#         for gen in agent_data["generations"]:
+#             gen.pop("created_at", None)
+#             gen.pop("createdAt", None)  # handle camelCase if needed
 
-    # Clean 'latest' dict
-    if "latest" in agent_data:
-        agent_data["latest"].pop("created_at", None)
-        agent_data["latest"].pop("createdAt", None)
+#     # Clean 'latest' dict
+#     if "latest" in agent_data:
+#         agent_data["latest"].pop("created_at", None)
+#         agent_data["latest"].pop("createdAt", None)
 
-    return data
+#     return data
 
 def flatten_agent_outputs(agent_outputs):
     output_lines = []
@@ -336,44 +233,103 @@ def flatten_agent_outputs(agent_outputs):
 
 
 
-def run(all_agent_outputs, progress_callback=None):
-    client = OpenAI(api_key=aii)
-    insights_str = flatten_agent_outputs(clean_created_at(all_agent_outputs))
-    chunks = chunk_insights(insights_str)
-    num_chunks = len(chunks)
-    total_steps = 4 + num_chunks
-    progress_mgr = ProgressManager(progress_callback, total_steps)
+# # def run(all_agent_outputs, progress_callback=None):
+#     client = OpenAI(api_key=aii)
+#     insights_str = flatten_agent_outputs(clean_created_at(all_agent_outputs))
+#     chunks = chunk_insights(insights_str)
+#     num_chunks = len(chunks)
+#     total_steps = 4 + num_chunks
+#     progress_mgr = ProgressManager(progress_callback, total_steps)
 
+#     progress_mgr.update("🚀 Starting product generation engine...")
+#     progress_mgr.update("🔍 Preparing market insights...")
+#     progress_mgr.update(f"⚙️ Processing {num_chunks} insight chunks...")
+
+#     all_concepts = []
+#     existing_names = set()
+
+#     with ThreadPoolExecutor(max_workers=5) as executor:
+#         futures = {}
+#         for i, chunk in enumerate(chunks):
+#             future = executor.submit(generate_chunk_products, client, chunk, i+1, num_chunks,all_concepts)
+#             futures[future] = i
+
+#         for future in as_completed(futures):
+#             chunk_num = futures[future]
+#             try:
+#                 concepts = future.result()
+#                 concept_data = json.loads(concepts)
+
+#                 if 'priority' not in concept_data:
+#                     concept_data['priority'] = 75
+
+#                 name = concept_data.get('product_name', '').strip()
+#                 if name and name not in existing_names:
+#                     existing_names.add(name)
+#                     all_concepts.append(concept_data)
+
+#                 progress_mgr.update(f"✅ Generated: {name or 'Unknown Product'}")
+#             except Exception as e:
+#                 progress_mgr.update(f"⚠️ Error processing chunk: {str(e)}")
+
+#     progress_mgr.update("📊 Evaluating concept potential...")
+
+#     try:
+#         sorted_concepts = sorted(all_concepts, key=lambda x: x.get('priority', 0), reverse=True)[:5]
+#         names = [c['product_name'] for c in sorted_concepts]
+#         progress_mgr.update(f"🏆 Top concepts: {', '.join(names)}")
+#         return sorted_concepts
+#     except Exception as e:
+#         progress_mgr.update(f"❌ Prioritization failed: {str(e)}")
+#         return all_concepts[:5]
+    
+
+
+
+# from concurrent.futures import ThreadPoolExecutor, as_completed
+# import json
+# from openai import OpenAI
+
+def run(all_agent_outputs, progress_callback=None):
+    client = OpenAI(api_key=aii)  # Make sure `aii` is defined somewhere
+    insights_str = flatten_agent_outputs(all_agent_outputs)
+    # print(insights_str)
+    progress_mgr = ProgressManager(progress_callback, total_steps=5)
     progress_mgr.update("🚀 Starting product generation engine...")
     progress_mgr.update("🔍 Preparing market insights...")
-    progress_mgr.update(f"⚙️ Processing {num_chunks} insight chunks...")
+    progress_mgr.update("⚙️ Sending insights to GPT-4.1 Nano...")
 
     all_concepts = []
     existing_names = set()
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {}
-        for i, chunk in enumerate(chunks):
-            future = executor.submit(generate_chunk_products, client, chunk, i+1, num_chunks,all_concepts)
-            futures[future] = i
+    try:
+        # Call GPT-4.1 Nano with the full input
+        concepts = generate_chunk_products(
+            client=client,
+            chunk=insights_str,  # Now the full insights string
+            chunk_num=1,
+            total_chunks=1,
+            all_concepts=all_concepts,
+            model="gpt-4.1-nano"  # or use correct model version per your setup
+        )
+        concept_data = json.loads(concepts)
+        print(concept_data)
+        if isinstance(concept_data, dict):
+            concept_data = [concept_data]
 
-        for future in as_completed(futures):
-            chunk_num = futures[future]
-            try:
-                concepts = future.result()
-                concept_data = json.loads(concepts)
+        for data in concept_data:
+            if 'priority' not in data:
+                data['priority'] = 75
 
-                if 'priority' not in concept_data:
-                    concept_data['priority'] = 75
+            name = data.get('product_name', '').strip()
+            if name and name not in existing_names:
+                existing_names.add(name)
+                all_concepts.append(data)
 
-                name = concept_data.get('product_name', '').strip()
-                if name and name not in existing_names:
-                    existing_names.add(name)
-                    all_concepts.append(concept_data)
+            progress_mgr.update(f"✅ Generated: {name or 'Unknown Product'}")
 
-                progress_mgr.update(f"✅ Generated: {name or 'Unknown Product'}")
-            except Exception as e:
-                progress_mgr.update(f"⚠️ Error processing chunk: {str(e)}")
+    except Exception as e:
+        progress_mgr.update(f"⚠️ Error processing insights: {str(e)}")
 
     progress_mgr.update("📊 Evaluating concept potential...")
 

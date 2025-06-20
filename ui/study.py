@@ -149,7 +149,8 @@ All questions must speak directly to the user and every answer must help us unde
                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
             )
             prelim_json = self._call_gpt(p_prompt, max_tokens=2000, json_mode=True)
-
+            print({"main questions ": questions_json})
+            print({"perlim questions ": prelim_json})
             try:
                 main_questions = json.loads(questions_json)["questions"]
                 prelim_questions = json.loads(prelim_json)["questions"]
@@ -296,9 +297,9 @@ All questions must speak directly to the user and every answer must help us unde
         try:
             client = OpenAI(api_key=aii)
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4.1-nano",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
+                max_tokens=2000,
                 response_format={"type": "json_object"} if json_mode else None
             )
             return response.choices[0].message.content

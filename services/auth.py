@@ -216,4 +216,55 @@ class AuthService:
         )
         return token
 
-    
+        # In your AuthService class, add these methods:
+    def get_trial_status(self, user_id: str) -> dict:
+        """Get user's trial status"""
+        user = self.users.find_one(
+            {"_id": user_id},
+            {"payment_info": 1, "usage_stats": 1}
+        )
+        if not user:
+            return {"trial_remaining": 0, "has_paid": False}
+        
+        return {
+            "trial_remaining": user.get("payment_info", {}).get("trial_number", 1),
+            "has_paid": user.get("payment_info", {}).get("has_paid", False)
+        }
+
+    def decrement_trial(self, user_id: str) -> bool:
+        """Decrement trial count when user uses a free attempt"""
+        result = self.users.update_one(
+            {"_id": user_id},
+            {"$inc": {"payment_info.trial_number": -1}}
+        )
+        return result.modified_count > 0
+
+        # Add to your AuthService class
+    def update_user_payment(self, user_id: str, transaction_data: dict) -> bool:
+        """Record a successful payment transaction"""
+        return self.users.update_one(
+            {"_id": user_id},
+            {
+                "$set": {
+                    "payment_info.has_paid": True,
+                    "payment_info.last_payment_date": datetime.now()
+                },
+                "$push": {"transactions": transaction_data},
+                "$inc": {"usage_stats.products_generated": 1}
+            }
+        ).modified_count > 0
+
+    def get_user_payment_status(self, user_id: str) -> dict:
+        """Get user's payment status"""
+        user = self.users.find_one(
+            {"_id": user_id},
+            {"payment_info": 1, "transactions": 1, "usage_stats": 1}
+        )
+        if not user:
+            return {}
+        
+        return {
+            "has_paid": user.get("payment_info", {}).get("has_paid", False),
+            "trial_available": not user.get("payment_info", {}).get("trial_used", False),
+            "last_transaction": user.get("transactions", [])[-1] if user.get("transactions") else None
+        }
