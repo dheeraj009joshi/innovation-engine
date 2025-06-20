@@ -189,7 +189,7 @@ make sure you follow this structure  and do not miss any keys and always complet
             {"role": "user", "content": prompt}
         ],
         temperature=0.7,
-        max_tokens=3000,
+        max_tokens=10000,
         response_format={"type": "json_object"}
     )
     print("partial products", response.choices[0].message.content)
