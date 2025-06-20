@@ -142,15 +142,20 @@ def send_reset_email(email, reset_link):
     msg["From"] = sender
     msg["To"] = email
 
-    html = f"""
-    <html>
-    <body>
-        <h3>Password Reset for your mindgenome account</h3>
-        <p>Click the link below to reset your password:</p>
-        <a href="{reset_link}">{reset_link}</a>
-    </body>
-    </html>
-    """
+    html = html = f"""
+<html>
+  <body style="font-family: Arial, sans-serif; color: #333;">
+    <h2>Reset Your Password</h2>
+    <p>We received a request to reset your Mind Genomics password.</p>
+    <p>If you didn't request this, you can safely ignore it.</p>
+    <p>Otherwise, click the button below:</p>
+    <p><a href="{reset_link}" style="padding: 10px 20px; background: #0066cc; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+    <p>This link will expire in 24 hours.</p>
+    <br>
+    <p>— The Mind Genomics Team</p>
+  </body>
+</html>
+"""
 
     msg.attach(MIMEText(html, "html"))
 
