@@ -15,6 +15,8 @@ import pandas as pd
 import io
 import queue
 import time
+import requests
+from streamlit_lottie import st_lottie
 from threading import Thread
 import pandas as pd
 from agents.ingredients_agent import run as run_ingredients
@@ -389,10 +391,94 @@ class AnalysisUI:
 
 
 
+    # def run_agents(self):
+    #     st.subheader("⚙️ Running Digester")
+    #     st.info("This may take a few minutes. Please don't close your browser.")
+        
+    #     rnd_text = self.process_files(st.session_state.rnd_files)
+    #     mkt_text = self.process_files(st.session_state.mkt_files)
+        
+    #     # Add research content to Digester
+    #     if st.session_state.get('research_result'):
+    #         rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)
+    #     if st.session_state.get("social_media_data"):
+    #         mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
+    #         rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
+    #     if not rnd_text and not mkt_text:
+    #         st.error("No valid text extracted from files")
+    #         return
+    #     # # # text combining 
+    #     # text="Rnd text : "+rnd_text+" marketing text : "+mkt_text
+    #     agents = {
+    #         "IngredientsAgent": (run_ingredients, rnd_text),
+    #         "TechnologyAgent": (run_technology, rnd_text),
+    #         "BenefitsAgent": (run_benefits, rnd_text),
+    #         "SituationsAgent": (run_situations, mkt_text),
+    #         "MotivationsAgent": (run_motivations, mkt_text),
+    #         "OutcomesAgent": (run_outcomes, mkt_text)
+    #     }
+
+
+    #     progress_bar = st.progress(0)
+    #     results = {}
+        
+    #     with ThreadPoolExecutor() as executor:
+    #         futures = {executor.submit(fn, text): name for name, (fn, text) in agents.items()}
+    #         for i, future in enumerate(as_completed(futures)):
+    #             name = futures[future]
+    #             try:
+    #                 result = future.result()
+    #                 results[name] = result
+    #                 st.success(f"✅ {name} completed")
+    #             except Exception as e:
+    #                 st.error(f"❌ {name} failed: {str(e)}")
+    #             progress_bar.progress((i + 1) / len(agents))
+        
+    #     if results:
+    #         self.auth.save_agent_results(st.session_state.current_project["_id"], results)
+    #         st.session_state.agent_outputs = results
+    #         st.session_state.completed_steps = [1, 2, 3]
+    #         st.session_state.wizard_step = 3
+    #         st.rerun()
+
+
+    def load_lottie_url(self,url: str):
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+
     def run_agents(self):
         st.subheader("⚙️ Running Digester")
-        st.info("This may take a few minutes. Please don't close your browser.")
         
+        # Create a visually appealing header
+        st.markdown("""
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <div style="font-size: 24px;">🔬</div>
+            <div>
+                <h3 style="margin: 0;">Research Digest in Progress</h3>
+                <p style="margin: 0; color: #666;">Analyzing your documents with specialized agents</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show loading animations
+        # col1, col2, col3 = st.columns(3)
+        # with col1:
+        #     st_lottie(self.load_lottie_url('https://assets8.lottiefiles.com/packages/lf20_raiw2hpe.json'), 
+        #             height=100, key="lottie1")
+        # with col2:
+        #     st_lottie(self.load_lottie_url('https://assets1.lottiefiles.com/packages/lf20_3rwasyjy.json'), 
+        #             height=100, key="lottie2")
+        # with col3:
+        #     st_lottie(self.load_lottie_url('https://assets1.lottiefiles.com/packages/lf20_soCRuE.json'), 
+        #             height=100, key="lottie3")
+        
+        # Status information
+        st.info("⏳ This may take a few minutes. Please don't close your browser.")
+        status_text = st.empty()
+        
+        # Process files
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
         
@@ -405,8 +491,8 @@ class AnalysisUI:
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
-        # # # text combining 
-        # text="Rnd text : "+rnd_text+" marketing text : "+mkt_text
+        
+        # Define agents
         agents = {
             "IngredientsAgent": (run_ingredients, rnd_text),
             "TechnologyAgent": (run_technology, rnd_text),
@@ -415,33 +501,67 @@ class AnalysisUI:
             "MotivationsAgent": (run_motivations, mkt_text),
             "OutcomesAgent": (run_outcomes, mkt_text)
         }
-
-
-        progress_bar = st.progress(0)
-        results = {}
         
+        # Create progress bar
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        results = {}
+        agent_count = len(agents)
+        
+        # Create a container for agent status messages
+        status_container = st.container()
+        
+        # Initialize status messages
+        status_messages = {
+            agent: status_container.empty() for agent in agents
+        }
+        
+        # Set initial status
+        for agent in agents:
+            status_messages[agent].info(f"🟡 {agent.replace('Agent', '')} waiting to start")
+        
+        # Run agents with ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
-            futures = {executor.submit(fn, text): name for name, (fn, text) in agents.items()}
+            futures = {executor.submit(fn, text): agent for agent, (fn, text) in agents.items()}
+            
             for i, future in enumerate(as_completed(futures)):
-                name = futures[future]
+                agent = futures[future]
+                
                 try:
                     result = future.result()
-                    results[name] = result
-                    st.success(f"✅ {name} completed")
+                    results[agent] = result
+                    # Update status to success
+                    status_messages[agent].success(f"✅ {agent.replace('Agent', '')} completed successfully")
+                    
+                    # Show quick notification
+                    st.toast(f"✨ {agent.replace('Agent', '')} finished!", icon="✅")
                 except Exception as e:
-                    st.error(f"❌ {name} failed: {str(e)}")
-                progress_bar.progress((i + 1) / len(agents))
+                    status_messages[agent].error(f"❌ {agent.replace('Agent', '')} failed: {str(e)}")
+                    st.toast(f"⚠️ {agent.replace('Agent', '')} failed", icon="❌")
+                
+                # Update progress bar
+                progress = int((i + 1) / agent_count * 100)
+                progress_bar.progress(progress)
+                status_text.info(f"⏳ Progress: {progress}% complete | {i+1}/{agent_count} agents finished")
         
+        # Final completion
+        progress_bar.progress(100)
+        status_text.success("🎉 All agents completed!")
+        
+        # Celebration effect
+        st.balloons()
+        st.success("Digester analysis complete! Ready to review results.")
+        
+        # Save results and move to next step
         if results:
             self.auth.save_agent_results(st.session_state.current_project["_id"], results)
             st.session_state.agent_outputs = results
             st.session_state.completed_steps = [1, 2, 3]
             st.session_state.wizard_step = 3
+            
+            # Auto-rerun after short delay to show results
+            time.sleep(2)
             st.rerun()
-
-
-
-        
 
     def normalize_agent_data(self, data):
         if isinstance(data, dict):
@@ -602,7 +722,7 @@ class AnalysisUI:
                 # Add Select column initialized with select all state
                 df.insert(0, "Select", st.session_state.select_all_states[agent_name])
                 
-                with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
+                with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}",expanded=False):
                     # Select all checkbox with synchronization
                     select_all = st.checkbox(
                         "Select all",
@@ -766,7 +886,13 @@ class AnalysisUI:
         
         # Get all agent outputs
         all_agent_outputs = st.session_state.agent_outputs
-        
+        # if st.session_state.selected_rows=={}:
+        #     all_agent_outputs = st.session_state.agent_outputs
+        # else:
+        #     # selected_raws=list(st.session_state.selected_rows.keys())
+        #     # for i in selected_raws:
+        #     all_agent_outputs = st.session_state.selected_rows
+        # print(all_agent_outputs)
         if not all_agent_outputs:
             st.error("No Digester results found. Please run Digester first.")
             return False
