@@ -119,7 +119,7 @@ class StudyGenerationProcess:
                 f"""
                 Read the study questions and all 16 answers. Based on the 16 answers, generate 18 radically different questions that directly ask the user about themselves. Each question must paint a vivid picture of who the user is—what they feel about the product, how they see themselves, and how the product makes them feel. Each question should be written in the second person and ask the user a question.
 
-For each question, provide exactly 3 radically different answers. Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation. The answers MUST NOT BE in second person.
+For each question, provide exactly 3 radically different answers . Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation. The answers MUST NOT BE in second person.
 
 Next, return to the description of the product. Create 18 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
 
@@ -145,12 +145,12 @@ All questions must speak directly to the user and every answer must help us unde
 
 
 """
-                "Return a valid JSON object in this format:\n"
+                "Return a valid JSON object which has only questions key which holds the list of all the questions and their answers (no other keys or other data ) in this format:\n"
                 "{ \"questions\": [ { \"question\": \"\", \"options\": [\"\", \"\", \"\"] } ] }"
             )
             prelim_json = self._call_gpt(p_prompt, max_tokens=2000, json_mode=True)
-            print({"main questions ": questions_json})
-            print({"perlim questions ": prelim_json})
+            # print({"main questions ": questions_json})
+            # print({"perlim questions ": prelim_json})
             try:
                 main_questions = json.loads(questions_json)["questions"]
                 prelim_questions = json.loads(prelim_json)["questions"]
@@ -299,9 +299,10 @@ All questions must speak directly to the user and every answer must help us unde
             response = client.chat.completions.create(
                 model="gpt-4.1-nano",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=2000,
+                max_tokens=3000,
                 response_format={"type": "json_object"} if json_mode else None
             )
+            print(response.choices[0].message.content)
             return response.choices[0].message.content
         except Exception as e:
             st.error(f"AI generation failed: {str(e)}")

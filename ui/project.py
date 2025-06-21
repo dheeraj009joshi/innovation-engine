@@ -12,13 +12,26 @@ class ProjectUI:
         self.auth = auth_service
 
     def projects_dashboard(self):
+
+
+        if "submitted_project_form" not in st.session_state:
+            st.session_state.submitted_project_form = False
+
+        # ✅ Show success toast after rerun
+        if st.session_state.submitted_project_form:
+            st.success("🎉 Project created successfully!", icon="📁")
+            st.session_state.project_name = ""
+            st.session_state.project_description = ""
+            st.session_state.submitted_project_form = False
+
+
         st.title("📂 Project Management")
         
         # Create new project
         with st.expander("🆕 Create New Project", expanded=False):
             with st.form("new_project_form"):
-                name = st.text_input("Project Name")
-                description = st.text_area("Description")
+                name = st.text_input("Project Name", key="project_name")
+                description = st.text_area("Description", key="project_description")
                 if st.form_submit_button("Create Project"):
                     if name:
                         project = {
@@ -33,10 +46,8 @@ class ProjectUI:
                             "file_metadata": {}
                         }
                         result = self.auth.projects.insert_one(project)
-                        # Update session state
-                        # project["_id"] = result.inserted_id
-                        # st.session_state.current_project = project
-                        # st.session_state.page = "dashboard"
+                        # ✅ Clear input fields
+                        st.session_state.submitted_project_form = True
                         st.rerun()
         
         # Display projects
@@ -99,6 +110,10 @@ class ProjectUI:
                 st.markdown("---")
 
     def load_project(self, project):
+        # clearing study state so that the study data won't come across the different projects 
+        # print(st.session_state)
+        st.session_state.study_step = 10
+        st.session_state.pop("study_data")
         st.session_state.current_project = project
         st.session_state.wizard_step = project.get("wizard_step", 1)
         st.session_state.completed_steps = project.get("completed_steps", [])
