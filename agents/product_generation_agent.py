@@ -358,9 +358,224 @@ import json
 from openai import OpenAI
 from config import aii
 
+# def generate_single_product(client, insights_str, existing_products, model="gpt-4.1-nano"):
+#     """Generate a single product that's unique from existing ones"""
+#     # Create list of forbidden names/words
+#     forbidden_names = [p['product_name'] for p in existing_products]
+#     forbidden_words = []
+#     for name in forbidden_names:
+#         forbidden_words.extend(name.lower().split())
+    
+#     prompt = f"""
+# You are the Mind Genome Inventor AI. Generate ONE unique product idea that:
+# 1. Has a completely unique name (3 words, no shared words/substrings with existing products)
+# 2. Is technically feasible and emotionally compelling
+# 3. Is distinct from these existing products: {', '.join(forbidden_names)}
+
+# EXISTING PRODUCT WORDS TO AVOID: {', '.join(forbidden_words)}
+
+# Output must contain ALL these elements in EXACT JSON format:
+# {{
+#   "product_name": "Three Unique Words",
+#   "technical_explanation": "How it works...",
+#   "consumer_pitch": "Why people want it...",
+#   "competitor_reaction": "What competitors would say...",
+#   "five_year_projection": "Market outlook...",
+#   "consumer_discussion": "Public conversation...",
+#   "presentation": ["Sentence 1", "Sentence 2", ..., "Sentence 15"],
+#   "priority": 0-100,
+#   "consumer_qa": [
+#     {{
+#       "question": "Question 1?",
+#       "answers": ["Answer 1", "Answer 2", "Answer 3", "Answer 4"]
+#     }},
+#     {{"question": "Question 2?", "answers": [...]}},
+#     {{"question": "Question 3?", "answers": [...]}},
+#     {{"question": "Question 4?", "answers": [...]}}
+#   ],
+#   "investor_evaluation": "Investor analysis...",
+#   "advertisor_slogans": [
+#     {{
+#       "slogan": "Catchy phrase",
+#       "mindset_description": "4 sentence paragraph"
+#     }},
+#     ...  # 3 more
+#   ],
+#   "ai_report_card": {{
+#     "originality": 0-100,
+#     "usefulness": 0-100,
+#     "social_media_talk": 0-100,
+#     "memorability": 0-100,
+#     "friend_talk": 0-100,
+#     "purchase_ease": 0-100,
+#     "excitement": 0-100,
+#     "boredom_likelihood": 0-100
+#   }}
+# }}
+
+# VALIDATION REQUIRED:
+# 1. Check name against forbidden words: {forbidden_words}
+# 2. Ensure no shared words/substrings (3+ characters)
+# 3. Verify all fields are present
+# 4. Confirm technical feasibility
+
+# Return ONLY valid JSON with no commentary.
+# """
+#     response = client.chat.completions.create(
+#         model=model,
+#         messages=[
+#             {"role": "system", "content": "You create unique product concepts"},
+#             {"role": "user", "content": prompt}
+#         ],
+#         temperature=0.75,  # Slightly higher for diversity
+#         max_tokens=2500,
+#         response_format={"type": "json_object"}
+#     )
+    
+#     try:
+#         return json.loads(response.choices[0].message.content)
+#     except:
+#         return None
+
+# def validate_product(new_product, existing_products):
+#     """Ensure product is unique and complete"""
+#     if not new_product:
+#         return False
+    
+#     # Check required keys
+#     required_keys = [
+#         "product_name", "technical_explanation", "consumer_pitch",
+#         "competitor_reaction", "five_year_projection", "consumer_discussion",
+#         "presentation", "priority", "consumer_qa", "investor_evaluation",
+#         "advertisor_slogans", "ai_report_card"
+#     ]
+#     if not all(key in new_product for key in required_keys):
+#         return False
+    
+#     # Check name uniqueness
+#     new_name = new_product["product_name"].lower()
+#     existing_names = [p["product_name"].lower() for p in existing_products]
+    
+#     if new_name in existing_names:
+#         return False
+    
+#     # Check word uniqueness
+#     new_words = set(new_name.split())
+#     for existing in existing_products:
+#         existing_words = set(existing["product_name"].lower().split())
+#         if new_words & existing_words:  # Any shared words
+#             return False
+    
+#     return True
+
+# def run(all_agent_outputs, progress_callback=None):
+#     client = OpenAI(api_key=aii)
+#     insights_str = flatten_agent_outputs(all_agent_outputs)
+#     products = []
+    
+#     # Progress setup
+#     total_products = 3
+#     progress = 0
+#     progress_step = 100 / (total_products * 1.5)  # Account for potential retries
+    
+#     def update_progress(message):
+#         nonlocal progress
+#         progress = min(100, progress + progress_step)
+#         if progress_callback:
+#             progress_callback(int(progress), message)
+    
+#     update_progress("🚀 Starting product generation...")
+    
+#     # Generate 3 unique products
+#     for i in range(total_products):
+#         update_progress(f"⚙️ Generating product {i+1}/3...")
+#         attempts = 0
+        
+#         while attempts < 3:  # Max 3 attempts per product
+#             new_product = generate_single_product(
+#                 client, 
+#                 insights_str, 
+#                 products,
+#                 model="gpt-4.1-nano"
+#             )
+            
+#             if validate_product(new_product, products):
+#                 products.append(new_product)
+#                 update_progress(f"✅ Generated: {new_product['product_name']}")
+#                 break
+                
+#             attempts += 1
+#             update_progress(f"🔄 Retrying product {i+1} (attempt {attempts})...")
+        
+#         if attempts >= 3:
+#             update_progress(f"⚠️ Failed to generate unique product {i+1}")
+    
+#     # Final sorting and progress
+#     products = sorted(products, key=lambda x: x.get("priority", 0), reverse=True)
+#     update_progress(f"🏆 Generated {len(products)} unique products!")
+    
+#     return products
+
+
+
+
+
+
+import json
+import time
+import threading
+from openai import OpenAI
+from config import aii
+
+class ProgressManager:
+    def __init__(self, progress_callback, total_products=3):
+        self.progress = 0
+        self.lock = threading.Lock()
+        self.progress_callback = progress_callback
+        self.total_products = total_products
+        self.completed_products = 0
+        self.last_update_time = time.time()
+        self.active = True
+        self.status_message = "Starting..."
+        
+        # Start background updater thread
+        self.updater_thread = threading.Thread(target=self.update_thread, daemon=True)
+        self.updater_thread.start()
+    
+    def update_thread(self):
+        """Background thread to send progress updates every 2 seconds"""
+        while self.active:
+            with self.lock:
+                current_progress = self.progress
+                message = self.status_message
+            if self.progress_callback:
+                self.progress_callback(int(current_progress), message)
+            time.sleep(2)
+    
+    def update(self, progress_delta, message):
+        """Update progress with new information"""
+        with self.lock:
+            self.progress = min(100, self.progress + progress_delta)
+            self.status_message = message
+            self.last_update_time = time.time()
+    
+    def complete_product(self, product_name):
+        """Mark a product as completed"""
+        with self.lock:
+            self.completed_products += 1
+            progress_per_product = 100 / self.total_products
+            self.progress = min(100, self.completed_products * progress_per_product)
+            self.status_message = f"✅ Generated: {product_name}"
+    
+    def close(self):
+        """Clean up resources"""
+        self.active = False
+        if self.progress_callback:
+            self.progress_callback(100, self.status_message)
+
 def generate_single_product(client, insights_str, existing_products, model="gpt-4.1-nano"):
     """Generate a single product that's unique from existing ones"""
-    # Create list of forbidden names/words
+   #     # Create list of forbidden names/words
     forbidden_names = [p['product_name'] for p in existing_products]
     forbidden_words = []
     for name in forbidden_names:
@@ -424,11 +639,11 @@ Return ONLY valid JSON with no commentary.
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": "You create unique product concepts"},
+            {"role": "system", "content": "Create unique product concepts"},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.75,  # Slightly higher for diversity
-        max_tokens=2500,
+        temperature=0.75,
+        max_tokens=1800,
         response_format={"type": "json_object"}
     )
     
@@ -442,12 +657,10 @@ def validate_product(new_product, existing_products):
     if not new_product:
         return False
     
-    # Check required keys
+    # Essential keys only for faster validation
     required_keys = [
         "product_name", "technical_explanation", "consumer_pitch",
-        "competitor_reaction", "five_year_projection", "consumer_discussion",
-        "presentation", "priority", "consumer_qa", "investor_evaluation",
-        "advertisor_slogans", "ai_report_card"
+        "priority", "ai_report_card"
     ]
     if not all(key in new_product for key in required_keys):
         return False
@@ -463,7 +676,7 @@ def validate_product(new_product, existing_products):
     new_words = set(new_name.split())
     for existing in existing_products:
         existing_words = set(existing["product_name"].lower().split())
-        if new_words & existing_words:  # Any shared words
+        if new_words & existing_words:
             return False
     
     return True
@@ -472,26 +685,44 @@ def run(all_agent_outputs, progress_callback=None):
     client = OpenAI(api_key=aii)
     insights_str = flatten_agent_outputs(all_agent_outputs)
     products = []
-    
-    # Progress setup
     total_products = 3
-    progress = 0
-    progress_step = 100 / (total_products * 1.5)  # Account for potential retries
     
-    def update_progress(message):
+    # Progress tracking without threads
+    start_time = time.time()
+    last_update_time = time.time()
+    progress = 0
+    
+    def update_progress(new_progress, message):
         nonlocal progress
-        progress = min(100, progress + progress_step)
+        progress = new_progress
         if progress_callback:
             progress_callback(int(progress), message)
     
-    update_progress("🚀 Starting product generation...")
+    update_progress(0, "🚀 Starting product generation...")
     
-    # Generate 3 unique products
+    # Generate products with main-thread updates
     for i in range(total_products):
-        update_progress(f"⚙️ Generating product {i+1}/3...")
-        attempts = 0
+        # Update progress at least every 2 seconds
+        if time.time() - last_update_time > 2:
+            update_progress(
+                min(90, int(i * 100 / total_products)),
+                f"⚙️ Working on product {i+1}/3..."
+            )
+            last_update_time = time.time()
         
-        while attempts < 3:  # Max 3 attempts per product
+        attempt = 1
+        product_generated = False
+        
+        while not product_generated and attempt <= 3:
+            # Send update if it's been more than 2 seconds
+            if time.time() - last_update_time > 2:
+                update_progress(
+                    min(90, int((i * 100 + (attempt-1) * 10) / total_products)),
+                    f"🔧 Attempt {attempt} for product {i+1}..."
+                )
+                last_update_time = time.time()
+            
+            # Generate product
             new_product = generate_single_product(
                 client, 
                 insights_str, 
@@ -499,19 +730,33 @@ def run(all_agent_outputs, progress_callback=None):
                 model="gpt-4.1-nano"
             )
             
-            if validate_product(new_product, products):
+            # Validate
+            if new_product and validate_product(new_product, products):
                 products.append(new_product)
-                update_progress(f"✅ Generated: {new_product['product_name']}")
-                break
-                
-            attempts += 1
-            update_progress(f"🔄 Retrying product {i+1} (attempt {attempts})...")
+                update_progress(
+                    min(90, int((i+1) * 100 / total_products)),
+                    f"✅ Generated: {new_product['product_name']}"
+                )
+                last_update_time = time.time()
+                product_generated = True
+            else:
+                attempt += 1
         
-        if attempts >= 3:
-            update_progress(f"⚠️ Failed to generate unique product {i+1}")
+        if not product_generated:
+            update_progress(
+                min(90, int((i+1) * 100 / total_products)),
+                f"⚠️ Couldn't generate product {i+1}"
+            )
+            last_update_time = time.time()
     
-    # Final sorting and progress
+    # Final processing
     products = sorted(products, key=lambda x: x.get("priority", 0), reverse=True)
-    update_progress(f"🏆 Generated {len(products)} unique products!")
+    total_time = time.time() - start_time
+    
+    if products:
+        names = [p["product_name"] for p in products]
+        update_progress(100, f"🏆 Generated in {total_time:.1f}s: {', '.join(names)}")
+    else:
+        update_progress(100, f"❌ No products generated in {total_time:.1f}s")
     
     return products
