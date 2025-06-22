@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 import json
 import ast
 import os
@@ -83,6 +83,7 @@ from scraper.scraper import ScraperClient
 
 
 import queue
+
 def get_scraper_data(hashtag, update_queue=None):
     from concurrent.futures import ThreadPoolExecutor, as_completed
     
@@ -159,8 +160,6 @@ def get_scraper_data(hashtag, update_queue=None):
             augmented_posts.append(future.result())
 
     return augmented_posts
-
-
 
 # aa=get_scraper_data("sleepgood")
 # print(aa)

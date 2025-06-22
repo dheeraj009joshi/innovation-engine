@@ -82,22 +82,3 @@ def run(text: str,
             # print(out)
             raw_items.append(out)
         return combine_blobs(raw_items)
-            # extract JSON array
-    #         try:
-    #             start, end = out.index("["), out.rindex("]")+1
-    #             arr = json.loads(out[start:end])
-    #             if isinstance(arr, list):
-    #                 raw_items.extend(arr)
-    #         except:
-    #             continue
-
-    # # assign IDs & dedupe
-    # final, seen = [], set()
-    # for obj in raw_items:
-    #     uid = str(uuid.uuid4())
-    #     obj["MoA_Technology_ID"] = uid
-    #     if uid not in seen:
-    #         seen.add(uid)
-    #         final.append(obj)
-
-    # return final

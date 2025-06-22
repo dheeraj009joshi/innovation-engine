@@ -500,6 +500,14 @@ class AnalysisUI:
         return r.json()
 
     def run_agents(self):
+        import streamlit.components.v1 as components
+
+        # Scroll to top of page
+        components.html("""
+            <script>
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            </script>
+        """, height=0)
         st.subheader("⚙️ Running Digester")
         
         # Create a visually appealing header
@@ -512,20 +520,7 @@ class AnalysisUI:
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Show loading animations
-        # col1, col2, col3 = st.columns(3)
-        # with col1:
-        #     st_lottie(self.load_lottie_url('https://assets8.lottiefiles.com/packages/lf20_raiw2hpe.json'), 
-        #             height=100, key="lottie1")
-        # with col2:
-        #     st_lottie(self.load_lottie_url('https://assets1.lottiefiles.com/packages/lf20_3rwasyjy.json'), 
-        #             height=100, key="lottie2")
-        # with col3:
-        #     st_lottie(self.load_lottie_url('https://assets1.lottiefiles.com/packages/lf20_soCRuE.json'), 
-        #             height=100, key="lottie3")
-        
-        # Status information
+     
         st.info("⏳ This may take a few minutes. Please don't close your browser.")
         status_text = st.empty()
         
@@ -569,7 +564,7 @@ class AnalysisUI:
         
         # Set initial status
         for agent in agents:
-            status_messages[agent].info(f"🟡 {agent.replace('Agent', '')} waiting to start")
+            status_messages[agent].info(f"🟡 Starting...  {agent.replace('Agent', '')} ")
         
         # Run agents with ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
@@ -600,7 +595,7 @@ class AnalysisUI:
         status_text.success("🎉 All agents completed!")
         
         # Celebration effect
-        st.balloons()
+        # st.balloons()
         st.success("Digester analysis complete! Ready to review results.")
         
         # Save results and move to next step
@@ -644,102 +639,7 @@ class AnalysisUI:
             st.error(f"📊 Formatting error: {str(e)}")
             return pd.DataFrame({"Raw Data": [str(clean_data)]})
 
-    # def show_results(self):
-    #     st.subheader("📊 Digester Results")
-        
-    #     if not st.session_state.agent_outputs:
-    #         st.warning("No Digester results found")
-    #         return
 
-    #     # Initialize selected_agent_outputs if it doesn't exist
-    #     if "selected_agent_outputs" not in st.session_state:
-    #         st.session_state.selected_agent_outputs = {}
-
-    #     # Display each agent's results in expandable sections
-    #     for agent_name, agent_data in st.session_state.agent_outputs.items():
-    #         if agent_name == "ProductGenerationAgent":
-    #             continue
-
-    #         df = self.format_dataframe(agent_data)
-            
-    #         # Add _selected column if it doesn't exist
-    #         if "_selected" not in df.columns:
-    #             df["_selected"] = False
-                
-    #         # Only show expander if DataFrame is not empty
-    #         if not df.empty:
-    #             with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}", expanded=False):
-    #                 # Create a unique key for the dataframe
-    #                 dataframe_key = f"df_{agent_name}"
-                    
-    #                 # Display editable dataframe
-    #                 edited_df = st.data_editor(
-    #                     df,
-    #                     use_container_width=True,
-    #                     key=dataframe_key,
-    #                     num_rows="dynamic",
-    #                     disabled=[col for col in df.columns if col != "_selected"]  # Only allow selecting
-    #                 )
-                    
-    #                 # Get the selected rows from session state
-    #                 if f"df_{agent_name}" in st.session_state:
-    #                     selected_rows = st.session_state[f"df_{agent_name}"]["edited_rows"]
-                        
-    #                     # Filter the dataframe to only include selected rows
-    #                     selected_indices = [i for i, val in selected_rows.items() if val.get("_selected", False)]
-    #                     if selected_indices:
-    #                         selected_data = edited_df.iloc[selected_indices]
-    #                         print(selected_data)
-    #                         st.session_state.selected_agent_outputs[agent_name] = selected_data.to_dict('records')
-    #                     else:
-    #                         # Remove agent from selection if nothing is selected
-    #                         if agent_name in st.session_state.selected_agent_outputs:
-    #                             del st.session_state.selected_agent_outputs[agent_name]
-
-    #                 # Checkbox to show raw JSON
-    #                 show_raw = st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}")
-    #                 if show_raw:
-    #                     st.json(agent_data)
-
-    #     # Show generate study button if there are selected outputs (OUTSIDE THE LOOP)
-    #     if st.session_state.selected_agent_outputs:
-    #         print("inside selected ")
-    #         col1, col2 = st.columns(2)
-    #         with col1:
-    #             if st.button("🚀 Generate Study from Selected Results", type="primary"):
-    #                 # Here you would call whatever function generates the study
-    #                 st.success("Generating study from selected results...")
-    #                 # You can access the selected outputs via st.session_state.selected_agent_outputs
-    #                 st.json(st.session_state.selected_agent_outputs)  # Just for demonstration
-            
-    #         with col2:
-    #             if st.button("🔄 Clear Selections"):
-    #                 st.session_state.selected_agent_outputs = {}
-    #                 st.rerun()
-
-    #     # Navigation buttons
-    #     col1, col2 = st.columns([1,1])
-    #     with col1:
-    #         if st.button("← Back to File Upload", key="back_to_step1"):
-    #             st.session_state.wizard_step = 1
-    #             st.rerun()
-
-    #     with col2:
-    #         # Check if product ideas exist
-    #         has_products = "ProductGenerationAgent" in st.session_state.agent_outputs
-    #         has_generations = has_products and st.session_state.agent_outputs["ProductGenerationAgent"].get("generations")
-            
-    #         if has_generations:
-    #             if st.button("View Product Ideas →", key="view_products"):
-    #                 st.session_state.wizard_step = 4
-    #                 st.rerun()
-    #         else:
-    #             if st.button("Generate Product Ideas →", key="generate_products"):
-    #                 with st.spinner("Generating product ideas..."):
-    #                     if self.generate_products():
-    #                         st.rerun()
-    
-   
 
   
 
