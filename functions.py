@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import ast
 import os
@@ -83,34 +83,80 @@ from scraper.scraper import ScraperClient
 
 
 import queue
-
 def get_scraper_data(hashtag, update_queue=None):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    
     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
+    
+    # Phase 1: Find hashtag
     hashtag_id = aa.get_hastag_id_by_tag_name(hashtag)
+    
+    # Phase 2: Get posts
     posts = aa.get_hastag_posts_by_id(hashtag_id, 20)
-
+    total_posts = len(posts)
+    
+    if update_queue:
+        update_queue.put(("total", total_posts, f"Found {total_posts} posts for #{hashtag}"))
+    
+    # Create a list to track completion status
+    completed_posts = [False] * total_posts
+    
     def process_post(post, idx):
         try:
+            # Update status for this post
+            if update_queue:
+                update_queue.put(("status", idx, f"Starting post #{idx+1}"))
+            
+            # Download video
             video_file = download_tiktok_video(post["videoUrl"], f"video{idx}")
+            
+            # Transcribe audio
+            if update_queue:
+                update_queue.put(("status", idx, f"Transcribing video #{idx+1}"))
             post["transcript"] = transcribe_with_whisper(video_file)
+            
+            # Get comments
+            if update_queue:
+                update_queue.put(("status", idx, f"Fetching comments #{idx+1}"))
             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
+            
+            # Clean up
             if os.path.exists(f"video{idx}"):
                 try:
                     os.remove(f"video{idx}")
                 except:
                     pass
+                    
+            # Mark as completed
+            completed_posts[idx] = True
+            
+            # Count completed posts
+            completed_count = sum(completed_posts)
+            
+            # Send progress update
+            if update_queue:
+                update_queue.put(("progress", completed_count, f"Completed post #{idx+1}"))
+                
         except Exception as error:
-            print(error)
-            pass
+            # Mark as completed even if error occurs
+            completed_posts[idx] = True
+            completed_count = sum(completed_posts)
+            if update_queue:
+                update_queue.put(("progress", completed_count, f"Error with post #{idx+1}"))
+            print(f"Error processing post: {error}")
+            
         return post
 
     augmented_posts = []
     with ThreadPoolExecutor(max_workers=5) as executor:
-        results = executor.map(process_post, posts, range(len(posts)))
-        for processed in results:
-            if update_queue:
-                update_queue.put((len(augmented_posts) + 1, len(posts)))
-            augmented_posts.append(processed)
+        # Submit all posts for processing
+        futures = []
+        for idx, post in enumerate(posts):
+            futures.append(executor.submit(process_post, post, idx))
+        
+        # Collect results as they complete
+        for future in as_completed(futures):
+            augmented_posts.append(future.result())
 
     return augmented_posts
 
