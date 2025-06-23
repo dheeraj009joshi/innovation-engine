@@ -30,39 +30,46 @@ class AuthUI:
         st.success("You have been logged out.")
         st.session_state.page = "login"
         st.rerun()
+
+
+
     def login_form(self):
         with st.container():
             st.markdown(
-        "<div style='text-align: center;'>"
-        "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
-        "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
-        "</div>",
-        unsafe_allow_html=True
-    )
+                "<div style='text-align: center;'>"
+                "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
+                "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+                "</div>",
+                unsafe_allow_html=True
+            )
             st.title("🔐 Login")
             with st.form("login_form"):
-                username = st.text_input("Username")
+                identifier = st.text_input("Username or Email")
                 col1, col2 = st.columns([4, 1])
                 password = st.text_input("Password", type="password")
 
                 st.markdown('<a href="?page=forgot">Forgot Password?</a>', unsafe_allow_html=True)
 
-
                 submitted = st.form_submit_button("Sign In")
 
                 if submitted:
-                    user = self.auth.verify_user(username, password)
-                    if user:
+                    user = self.auth.users.find_one({
+                        "$or": [
+                            {"username": identifier},
+                            {"email": identifier}
+                        ]
+                    })
+
+                    if not user:
+                        st.error("❌ User not found. Please check your username or email.")
+                    elif user["password"] != self.auth.hash_password(password):
+                        st.error("❌ Incorrect password. Please try again.")
+                    else:
                         st.session_state.authenticated = True
                         st.session_state.current_user = user
-
-
-                        # After user successfully logs in:
                         st.session_state.auth_token = str(user["_id"])
                         self.cookies["auth_token"] = st.session_state.auth_token
 
-
-                        # Restore project
                         if user.get("current_project"):
                             project = self.auth.projects.find_one({"_id": user["current_project"]})
                             if project:
@@ -77,8 +84,6 @@ class AuthUI:
 
                         st.session_state.page = "projects"
                         st.rerun()
-                    else:
-                        st.error("Invalid credentials")
 
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("Create New Account"):
