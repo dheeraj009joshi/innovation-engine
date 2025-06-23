@@ -118,6 +118,8 @@ class ProjectUI:
         st.session_state.wizard_step = project.get("wizard_step", 1)
         st.session_state.completed_steps = project.get("completed_steps", [])
         st.session_state.file_metadata = project.get("file_metadata", {})
+        st.session_state.hashtags_list = []
+        st.session_state.social_media_data={}
         
         self.auth.users.update_one(
             {"_id": st.session_state.current_user["_id"]},

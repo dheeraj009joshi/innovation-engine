@@ -267,67 +267,294 @@ class AnalysisUI:
                 mkt_files.extend(public_mkt)
             st.session_state.mkt_files = mkt_files
 
-        # Social Media Scraper Section
-        with st.expander("📱 Social Media Scraper", expanded=True):
-            hashtags = st.text_input(
-                "Enter a single word to scrape:",
-                placeholder="cleanbeauty",
-                key="hashtag_input"
-            )
-            hashtags_list = hashtags.split(" ")
-            if len(hashtags_list) > 1:
-                st.error(f"Please enter a single hashtag. You entered: {hashtags_list}")
+        # # Social Media Scraper Section
+        # with st.expander("📱 Social Media Scraper", expanded=True):
+        #     hashtags = st.text_input(
+        #         "Enter a single word to scrape:",
+        #         placeholder="cleanbeauty",
+        #         key="hashtag_input"
+        #     )
+        #     hashtags_list = hashtags.split(" ")
+        #     if len(hashtags_list) > 1:
+        #         st.error(f"Please enter a single hashtag. You entered: {hashtags_list}")
 
-            hashtags = hashtags.replace("#", "")
+        #     hashtags = hashtags.replace("#", "")
+        #     if st.button("🌐 Scrape 🎵 TikTok", key="scrape_button"):
+        #         if not hashtags.strip():
+        #             st.error("Please enter at least one hashtag")
+        #         else:
+        #             # Create progress elements
+        #             progress_bar = st.progress(0)
+        #             status_text = st.empty()
+        #             status_text.info("🎵 Starting TikTok scraping...")
+                    
+        #             # Initialize progress tracking
+        #             update_queue = queue.Queue()
+                    
+        #             # Create placeholders for final results
+        #             result_holder = {"data": None}
+        #             error_holder = {"error": None}
+                    
+        #             # Thread target function
+        #             def run_scraper():
+        #                 try:
+        #                     return get_scraper_data(hashtags, update_queue)
+        #                 except Exception as e:
+        #                     error_holder["error"] = str(e)
+        #                     return None
+                    
+        #             # Start the scraper thread
+        #             scraper_thread = Thread(target=lambda: result_holder.update({"data": run_scraper()}))
+        #             scraper_thread.start()
+                    
+        #             # Main thread: process progress updates
+        #             total_posts = 0
+        #             completed = 0
+                    
+        #             while scraper_thread.is_alive():
+        #                 try:
+        #                     # Process all available messages in the queue
+        #                     while True:
+        #                         try:
+        #                             msg_type, value, message = update_queue.get_nowait()
+        #                             if msg_type == "progress":
+        #                                 # Only update if progress increases
+        #                                 if value > completed:
+        #                                     completed = value
+        #                                     progress_percent = int((completed / total_posts) * 100)
+        #                                     progress_bar.progress(progress_percent)
+        #                                     status_text.info(f"🔄 {message} ({completed}/{total_posts} posts)")
+        #                             elif msg_type == "total":
+        #                                 total_posts = value
+        #                                 status_text.info(f"📊 Found {total_posts} posts for #{hashtags}")
+        #                             elif msg_type == "status":
+        #                                 status_text.info(message)
+        #                         except queue.Empty:
+        #                             break
+        #                     time.sleep(0.1)
+        #                 except Exception as e:
+        #                     st.error(f"Error processing queue: {str(e)}")
+        #                     break
+                    
+        #             # After thread completes, process any remaining messages
+        #             while not update_queue.empty():
+        #                 try:
+        #                     msg_type, value, message = update_queue.get_nowait()
+        #                     if msg_type == "progress" and value > completed:
+        #                         completed = value
+        #                         progress_percent = int((completed / total_posts) * 100)
+        #                         progress_bar.progress(progress_percent)
+        #                         status_text.info(f"🔄 {message} ({completed}/{total_posts} posts)")
+        #                     elif msg_type == "status":
+        #                         status_text.info(message)
+        #                 except queue.Empty:
+        #                     break
+                    
+        #             # Handle thread completion
+        #             scraper_thread.join()
+                    
+        #             # Check for errors
+        #             if error_holder["error"]:
+        #                 st.error(f"Scraping failed: {error_holder['error']}")
+        #             elif result_holder["data"] is None:
+        #                 st.error("Scraping failed: No data returned")
+        #             else:
+        #                 scraped_data = result_holder["data"]
+        #                 st.session_state.social_media_data = scraped_data
+        #                 st.session_state.last_hashtags = hashtags
+                        
+        #                 # Save to MongoDB
+        #                 try:
+        #                     self.auth.update_project(
+        #                         st.session_state.current_project["_id"],
+        #                         {
+        #                             "social_media_data": scraped_data,
+        #                             "last_hashtags": st.session_state.last_hashtags
+        #                         }
+        #                     )
+        #                     progress_bar.progress(100)
+        #                     status_text.success(f"✅ Scraped {len(scraped_data)} posts successfully!")
+        #                 except Exception as e:
+        #                     status_text.error(f"Failed to save scraped data: {str(e)}")
+
+
+        # if st.session_state.get('social_media_data') or st.session_state.current_project.get('social_media_data'):
+            # st.markdown("### Scraped Data Preview")
+            # st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags') or st.session_state.last_hashtags}")
+
+            # try:
+            #     data = st.session_state.current_project.get('social_media_data').copy() 
+            # except:
+            #     data = st.session_state.get('social_media_data').copy()
+
+            # # Process data for display
+            # for item in data:
+            #     if isinstance(item.get("comments"), list):
+            #         item["comments"] = " | ".join(
+            #             c.get("text", "") for c in item["comments"] if isinstance(c, dict))
+            
+            # df = pd.json_normalize(data)
+            # st.dataframe(df, use_container_width=True)
+
+            # # CSV download
+            # csv_buffer = io.StringIO()
+            # df.to_csv(csv_buffer, index=False)
+            # st.download_button(
+            #     label="📥 Download as CSV",
+            #     data=csv_buffer.getvalue(),
+            #     file_name="scraped_social_data.csv",
+            #     mime="text/csv"
+            # )
+
+
+        
+                # Initialize session state
+        
+        # Initialize session state
+        if 'hashtags_list' not in st.session_state:
+            st.session_state.hashtags_list = []
+        if 'hashtag_input' not in st.session_state:
+            st.session_state.hashtag_input = ""
+        if 'notification' not in st.session_state:
+            st.session_state.notification = None
+        if 'notification_time' not in st.session_state:
+            st.session_state.notification_time = None
+
+        def add_hashtag():
+            cleaned_hashtag = st.session_state.hashtag_input.strip().replace("#", "").lower()
+            
+            
+            if cleaned_hashtag in [h.lower() for h in st.session_state.hashtags_list]:
+                show_notification("warning", f"#{cleaned_hashtag} already exists!")
+                st.session_state.hashtag_input = ""
+                return
+            
+            if len(st.session_state.hashtags_list) > 3:
+                show_notification("error", "Maximum 3 hashtags allowed")
+                return
+            
+            st.session_state.hashtags_list.append(cleaned_hashtag)
+            st.session_state.hashtag_input = ""
+            show_notification("success", f"Added #{cleaned_hashtag}")
+
+        def remove_hashtag(index):
+            removed = st.session_state.hashtags_list.pop(index)
+            show_notification("info", f"Removed #{removed}")
+
+        def show_notification(type, message):
+            st.session_state.notification = {"type": type, "message": message}
+            
+        def clear_notification_if_rerun():
+            # If it exists and wasn't just set this run, clear it
+            if st.session_state.get("notification") and not st.session_state.get("notification_just_set"):
+                st.session_state.notification = None
+                st.session_state.notification_just_set = False  # reset the flag
+            elif st.session_state.get("notification_just_set"):
+                st.session_state.notification_just_set = False  # reset for next run
+
+        # UI Layout
+        with st.expander("📱 Social Media Scraper", expanded=True):
+            # Display notifications
+            if st.session_state.notification:
+                if st.session_state.notification["type"] == "error":
+                    st.error(st.session_state.notification["message"])
+                elif st.session_state.notification["type"] == "warning":
+                    st.warning(st.session_state.notification["message"])
+                elif st.session_state.notification["type"] == "success":
+                    st.success(st.session_state.notification["message"])
+                else:
+                    st.info(st.session_state.notification["message"])
+            
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.text_input(
+                    "Add a hashtag (max 3):",
+                    placeholder="cleanbeauty",
+                    key="hashtag_input"
+                )
+            
+            with col2:
+                st.write("")  # Spacer
+                st.button("➕ Add", key="add_hashtag", on_click=add_hashtag)
+            
+            # Display current hashtags
+            if st.session_state.hashtags_list:
+                st.write("Current hashtags:")
+                for idx, hashtag in enumerate(st.session_state.hashtags_list):
+                    cols = st.columns([3, 1])
+                    with cols[0]:
+                        st.write(f"#{hashtag}")
+                    with cols[1]:
+                        st.button(
+                            "Remove", 
+                            key=f"remove_{idx}",
+                            on_click=remove_hashtag,
+                            args=(idx,)
+                        )
+    
+            # Always run this early in app
+            clear_notification_if_rerun()
             if st.button("🌐 Scrape 🎵 TikTok", key="scrape_button"):
-                if not hashtags.strip():
-                    st.error("Please enter at least one hashtag")
+                if not st.session_state.hashtags_list:
+                    st.error("Please add at least one hashtag")
                 else:
                     # Create progress elements
                     progress_bar = st.progress(0)
                     status_text = st.empty()
-                    status_text.info("🎵 Starting TikTok scraping...")
+                    status_text.info(f"🎵 Starting TikTok scraping for {len(st.session_state.hashtags_list)} hashtags...")
                     
                     # Initialize progress tracking
                     update_queue = queue.Queue()
+                    result_holder = {"data": {}}
+                    error_holder = {"errors": []}
                     
-                    # Create placeholders for final results
-                    result_holder = {"data": None}
-                    error_holder = {"error": None}
+                    # Make a local copy of hashtags
+                    hashtags_to_process = st.session_state.hashtags_list.copy()
+                    total_hashtags = len(hashtags_to_process)
                     
-                    # Thread target function
-                    def run_scraper():
+                    # Track progress per hashtag
+                    progress_tracker = {hashtag: {"completed": 0, "total": 0} for hashtag in hashtags_to_process}
+                    
+                    def run_scraper(hashtag):
                         try:
-                            return get_scraper_data(hashtags, update_queue)
+                            def progress_callback(completed, total):
+                                # Update progress for this hashtag
+                                progress_tracker[hashtag]["completed"] = completed
+                                progress_tracker[hashtag]["total"] = total
+                                
+                                # Calculate overall progress
+                                total_completed = sum(p["completed"] for p in progress_tracker.values())
+                                total_posts = sum(p["total"] for p in progress_tracker.values())
+                                
+                                if total_posts > 0:
+                                    overall_progress = (total_completed / total_posts) * 100
+                                    update_queue.put(("progress", min(100, overall_progress), 
+                                                    f"#{hashtag}: {completed}/{total} posts"))
+                            
+                            # Call the scraper function
+                            return get_scraper_data(hashtag, progress_callback)
                         except Exception as e:
-                            error_holder["error"] = str(e)
+                            error_holder["errors"].append(f"Error scraping #{hashtag}: {str(e)}")
                             return None
                     
-                    # Start the scraper thread
-                    scraper_thread = Thread(target=lambda: result_holder.update({"data": run_scraper()}))
-                    scraper_thread.start()
+                    # Start threads
+                    threads = []
+                    for hashtag in hashtags_to_process:
+                        thread = Thread(
+                            target=lambda h=hashtag: result_holder["data"].update({h: run_scraper(h)})
+                        )
+                        threads.append(thread)
+                        thread.start()
                     
-                    # Main thread: process progress updates
-                    total_posts = 0
-                    completed = 0
-                    
-                    while scraper_thread.is_alive():
+                    # Process updates
+                    while any(t.is_alive() for t in threads):
                         try:
-                            # Process all available messages in the queue
                             while True:
                                 try:
                                     msg_type, value, message = update_queue.get_nowait()
                                     if msg_type == "progress":
-                                        # Only update if progress increases
-                                        if value > completed:
-                                            completed = value
-                                            progress_percent = int((completed / total_posts) * 100)
-                                            progress_bar.progress(progress_percent)
-                                            status_text.info(f"🔄 {message} ({completed}/{total_posts} posts)")
-                                    elif msg_type == "total":
-                                        total_posts = value
-                                        status_text.info(f"📊 Found {total_posts} posts for #{hashtags}")
-                                    elif msg_type == "status":
+                                        # Convert percentage to 0-1 range for Streamlit
+                                        progress_bar.progress(value / 100)
                                         status_text.info(message)
                                 except queue.Empty:
                                     break
@@ -336,75 +563,111 @@ class AnalysisUI:
                             st.error(f"Error processing queue: {str(e)}")
                             break
                     
-                    # After thread completes, process any remaining messages
-                    while not update_queue.empty():
-                        try:
-                            msg_type, value, message = update_queue.get_nowait()
-                            if msg_type == "progress" and value > completed:
-                                completed = value
-                                progress_percent = int((completed / total_posts) * 100)
-                                progress_bar.progress(progress_percent)
-                                status_text.info(f"🔄 {message} ({completed}/{total_posts} posts)")
-                            elif msg_type == "status":
-                                status_text.info(message)
-                        except queue.Empty:
-                            break
+                    # Clean up threads
+                    for thread in threads:
+                        thread.join()
                     
-                    # Handle thread completion
-                    scraper_thread.join()
+                    # Handle results
+                    if error_holder["errors"]:
+                        for error in error_holder["errors"]:
+                            st.error(error)
                     
-                    # Check for errors
-                    if error_holder["error"]:
-                        st.error(f"Scraping failed: {error_holder['error']}")
-                    elif result_holder["data"] is None:
-                        st.error("Scraping failed: No data returned")
-                    else:
-                        scraped_data = result_holder["data"]
+                    # Store successful results
+                    scraped_data = {
+                        hashtag: result_holder["data"][hashtag] 
+                        for hashtag in hashtags_to_process 
+                        if result_holder["data"].get(hashtag)
+                    }
+                    
+                    if scraped_data:
                         st.session_state.social_media_data = scraped_data
-                        st.session_state.last_hashtags = hashtags
-                        
-                        # Save to MongoDB
-                        try:
-                            self.auth.update_project(
+                        self.auth.update_project(
                                 st.session_state.current_project["_id"],
                                 {
                                     "social_media_data": scraped_data,
-                                    "last_hashtags": st.session_state.last_hashtags
                                 }
                             )
-                            progress_bar.progress(100)
-                            status_text.success(f"✅ Scraped {len(scraped_data)} posts successfully!")
-                        except Exception as e:
-                            status_text.error(f"Failed to save scraped data: {str(e)}")
+                        progress_bar.progress(1.0)
+                        status_text.success(f"✅ Scraping completed for {len(scraped_data)} hashtags!")
+
+        try:
+            # Display results
+            if 'social_media_data' in (st.session_state and st.session_state.social_media_data) or st.session_state.current_project.get('social_media_data'):
+                social_data = st.session_state.get('social_media_data') or \
+                (st.session_state.get('current_project') or {}).get('social_media_data')
+
+                st.subheader("Scraping Results")
+                
+                # Prepare combined DataFrame for all hashtags
+                all_data = []
+                
+                for hashtag, data in social_data.items():
+                    with st.expander(f"Results for #{hashtag} ({len(data)} posts)", expanded=False):
+                        if data:
+                            # Process data for display (same as your original structure)
+                            processed_data = []
+                            for item in data:
+                                processed_item = item.copy()
+                                if isinstance(item.get("comments"), list):
+                                    processed_item["comments"] = " | ".join(
+                                        c.get("text", "") for c in item["comments"] if isinstance(c, dict))
+                                processed_item["hashtag"] = hashtag  # Add hashtag column
+                                processed_data.append(processed_item)
+                            
+                            # Create DataFrame for this hashtag
+                            df = pd.json_normalize(processed_data)
+                            st.dataframe(df, use_container_width=True)
+                            
+                            # Add to combined data
+                            all_data.extend(processed_data)
+                        else:
+                            st.warning(f"No data found for #{hashtag}")
+                
+                # Create combined CSV for download
+                if all_data:
+                    combined_df = pd.json_normalize(all_data)
+                    
+                    # CSV download button (same as your original structure)
+                    csv_buffer = io.StringIO()
+                    combined_df.to_csv(csv_buffer, index=False)
+                    st.download_button(
+                        label="📥 Download All Data as CSV",
+                        data=csv_buffer.getvalue(),
+                        file_name="scraped_social_data.csv",
+                        mime="text/csv"
+                    )
+        except:
+
+            if st.session_state.get('social_media_data') or st.session_state.current_project.get('social_media_data'):
+                st.markdown("### Scraped Data Preview")
+                st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags') or st.session_state.last_hashtags}")
+
+                try:
+                    data = st.session_state.current_project.get('social_media_data').copy() 
+                except:
+                    data = st.session_state.get('social_media_data').copy()
+
+                # Process data for display
+                for item in data:
+                    if isinstance(item.get("comments"), list):
+                        item["comments"] = " | ".join(
+                            c.get("text", "") for c in item["comments"] if isinstance(c, dict))
+                
+                df = pd.json_normalize(data)
+                st.dataframe(df, use_container_width=True)
+
+                # CSV download
+                csv_buffer = io.StringIO()
+                df.to_csv(csv_buffer, index=False)
+                st.download_button(
+                    label="📥 Download as CSV",
+                    data=csv_buffer.getvalue(),
+                    file_name="scraped_social_data.csv",
+                    mime="text/csv"
+                )
 
 
-        if st.session_state.get('social_media_data') or st.session_state.current_project.get('social_media_data'):
-            st.markdown("### Scraped Data Preview")
-            st.markdown(f"#### Last Hashtag {st.session_state.current_project.get('last_hashtags') or st.session_state.last_hashtags}")
 
-            try:
-                data = st.session_state.current_project.get('social_media_data').copy() 
-            except:
-                data = st.session_state.get('social_media_data').copy()
-
-            # Process data for display
-            for item in data:
-                if isinstance(item.get("comments"), list):
-                    item["comments"] = " | ".join(
-                        c.get("text", "") for c in item["comments"] if isinstance(c, dict))
-            
-            df = pd.json_normalize(data)
-            st.dataframe(df, use_container_width=True)
-
-            # CSV download
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False)
-            st.download_button(
-                label="📥 Download as CSV",
-                data=csv_buffer.getvalue(),
-                file_name="scraped_social_data.csv",
-                mime="text/csv"
-            )
 
         # Navigation buttons
         col1, col2 = st.columns([1, 1])
