@@ -680,7 +680,7 @@ def validate_product(new_product, existing_products):
             return False
     
     return True
-
+ 
 def run(all_agent_outputs, progress_callback=None):
     client = OpenAI(api_key=aii)
     insights_str = flatten_agent_outputs(all_agent_outputs)

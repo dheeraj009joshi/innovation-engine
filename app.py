@@ -130,14 +130,15 @@ def main():
                         st.info("Export feature coming soon!")
 
                 st.markdown("---")
+        
                 if st.button("\U0001F6AA Logout", use_container_width=True):
                     auth_service.users.update_one(
                         {"_id": st.session_state.current_user["_id"]},
                         {"$set": {"current_project": None}}
                     )
-                    st.session_state.clear()
-                    
-                    st.rerun()
+                    auth_ui.logout()
+                   
+                  
 
             if st.session_state.page == "projects":
                 project_ui.projects_dashboard()

@@ -1,24 +1,20 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import io
 import json
+from multiprocessing.pool import ThreadPool
 import queue
+import threading
 import time
-import docx2txt
 from pandas import json_normalize
-import pdfplumber
 import streamlit as st
+from docx import Document
+from io import BytesIO
+import pdfplumber
 from datetime import datetime
 import uuid
-from docx import Document
-from datetime import datetime
 import pandas as pd
-import io
-import queue
-import time
 import requests
-from streamlit_lottie import st_lottie
 from threading import Thread
-import pandas as pd
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
 from agents.benefits_agent import run as run_benefits
@@ -90,25 +86,102 @@ class AnalysisUI:
                         st.session_state.wizard_step = step_num
                         st.rerun()
         
-       
+        
 
-    def process_files(self, files):
+    def extract_pdf_page_text_worker(self,index, page, result_queue, update_queue):
+        """Worker function that sends both results and progress updates"""
+        try:
+            text = page.extract_text() or ""
+            result_queue.put(('result', index, text))
+            update_queue.put(('progress', index+1, f"Processed page {index+1}"))  # +1 for 1-based numbering
+        except Exception as e:
+            result_queue.put(('error', index, f"[Error on page {index+1}] {str(e)}"))
+            update_queue.put(('progress', index+1, f"Error on page {index+1}"))
+
+    def process_files(self,files):
         text = ""
         for f in files:
             try:
+                file_size_mb = len(f.getvalue()) / (1024 * 1024)
+                
+                # Setup UI elements - using a single container for stability
+                processing_container = st.empty()
+                
+                with processing_container.container():
+                    # Create all UI elements we'll need to update
+                    status_area = st.status(f"🔍 Processing {f.name}", expanded=True)
+                    progress_bar = st.progress(0)
+                    progress_text = st.empty()
+                    
+                    # Initial messages
+                    if file_size_mb > 3:
+                        st.warning("This is a large file (>3MB). This may take a moment...")
+                    
+                    progress_text.markdown(f"🔹 Detected file: {f.name} ({file_size_mb:.2f} MB)")
+                    time.sleep(0.5)  # Let users read the initial messages
+
                 if f.name.endswith(".pdf"):
+                    progress_text.markdown("Opening PDF file...")
+                    
                     with pdfplumber.open(f) as pdf:
-                        text += "\n".join(p.extract_text() or "" for p in pdf.pages)
-                elif f.name.endswith(".docx"):
-                    text += docx2txt.process(f)
-                else:
-                    text += f.read().decode("utf-8")
+                        total_pages = len(pdf.pages)
+                        result_queue = queue.Queue()
+                        threads = []
+                        
+                        # Start all worker threads
+                        for i, page in enumerate(pdf.pages):
+                            t = threading.Thread(
+                                target=self.extract_pdf_page_text_worker,
+                                args=(i, page, result_queue)
+                            )
+                            t.start()
+                            threads.append(t)
+                        
+                        # Process results with progress updates
+                        page_results = {}
+                        processed_pages = 0
+                        
+                        while processed_pages < total_pages:
+                            # Get results with timeout
+                            try:
+                                i, page_text = result_queue.get(timeout=0.1)
+                                page_results[i] = page_text
+                                processed_pages += 1
+                                
+                                # Update progress in main thread
+                                progress = processed_pages / total_pages
+                                progress_bar.progress(progress)
+                                progress_text.markdown(
+                                    f"Processed page {processed_pages}/{total_pages} "
+                                    f"({progress:.0%})"
+                                )
+                                
+                            except queue.Empty:
+                                # Just continue if no results yet
+                                continue
+                        
+                        # Combine results in order
+                        for i in sorted(page_results):
+                            text += page_results[i] + "\n\n"
+                        
+                        # Final update
+                        progress_bar.progress(1.0)
+                        progress_text.success(f"Completed processing {total_pages} pages")
+                        time.sleep(0.5)  # Let user see completion
+                        
+                        # Clean up threads
+                        for t in threads:
+                            t.join()
+
+                # [Rest of your file processing code...]
+                
             except Exception as e:
-                st.error(f"Error processing {f.name}: {str(e)}")
+                st.error(f"❌ Error processing {f.name}: {str(e)}")
+            finally:
+                # Clear the processing container when done
+                processing_container.empty()
+        
         return text
-
-
-
     def save_files_to_azure(self, files, file_type):
         """Save files to Azure and return metadata"""
         file_metadata = []
@@ -763,14 +836,6 @@ class AnalysisUI:
         return r.json()
 
     def run_agents(self):
-        import streamlit.components.v1 as components
-
-        # Scroll to top of page
-        components.html("""
-            <script>
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            </script>
-        """, height=0)
         st.subheader("⚙️ Running Digester")
         
         # Create a visually appealing header

@@ -13,7 +13,23 @@ class AuthUI:
         self.auth = auth_service
         self.cookies=cookies
 
-    
+    def logout(self):
+        # Clear session state
+        if "authenticated" in st.session_state:
+            del st.session_state.authenticated
+        if "current_user" in st.session_state:
+            del st.session_state.current_user
+        if "auth_token" in st.session_state:
+            del st.session_state.auth_token
+
+        # Clear cookies
+        if "auth_token" in self.cookies:
+            del self.cookies["auth_token"]
+
+        # Optionally rerun or redirect
+        st.success("You have been logged out.")
+        st.session_state.page = "login"
+        st.rerun()
     def login_form(self):
         with st.container():
             st.markdown(
