@@ -218,11 +218,19 @@ def inject_custom_css():
 
     html, body, [class*="css"] {
         font-family: 'Anek Devanagari', sans-serif !important;
+        background: #f9fafb;    
     }
         .main {
             max-width: 1200px;
             padding: 2rem;
+            background: #000000;
         }
+        section[data-testid="stSidebar"] {
+        border-right: 1px solid #e5e7eb;
+        # width: 180px !important;
+        background: #ffffff;   
+        }
+                
         .auth-container {
             max-width: 400px;
             margin: 2rem auto;
