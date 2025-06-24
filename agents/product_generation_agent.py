@@ -526,6 +526,7 @@ import time
 import threading
 from openai import OpenAI
 from config import aii
+import streamlit as st
 
 class ProgressManager:
     def __init__(self, progress_callback, total_products=3):
@@ -582,6 +583,9 @@ def generate_single_product(client, insights_str, existing_products, model="gpt-
         forbidden_words.extend(name.lower().split())
     
     prompt = f"""
+Background :{st.session_state.current_project["description"]}
+
+
 You are the Mind Genome Inventor AI. Generate ONE unique product idea that:
 1. Has a completely unique name (3 words, no shared words/substrings with existing products)
 2. Is technically feasible and emotionally compelling

@@ -9,7 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
-
+import streamlit as st
 # load_dotenv()
 llm = ChatOpenAI(
     model="gpt-4.1-nano",  # 🔥 specify nano model
@@ -21,6 +21,9 @@ llm = ChatOpenAI(
 # Prompt setup
 PROMPT = PromptTemplate(
     template="""
+
+Background :{description}
+
 You are a specialized AI Formulation & Composition Analyst. Your primary objective is to analyze provided technical documents (e.g., scientific papers, patent filings, product specifications, formulation sheets, bills of materials) to identify and extract specific Ingredients or core Components that constitute a product, material, or system.
 Input: A collection of documents detailing the composition, formulation, or architecture of products, materials, or technological systems.
 Definitions:
@@ -46,7 +49,7 @@ Output Format: Provide the extracted information as a list of JSON objects. Each
 TEXT:
 {input_text}
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
 chain = LLMChain(llm=llm, prompt=PROMPT)
 
@@ -65,7 +68,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
 
             out = f.result()['text']

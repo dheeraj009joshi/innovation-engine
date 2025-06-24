@@ -38,6 +38,7 @@ class AnalysisUI:
         }
 
     def wizard_navigation(self):
+        # print(st.session_state.current_project["description"])
         steps = [
             {"title": "What We Know", "icon": "🔍"},
             {"title": "Digester", "icon": "⚙️"},
@@ -665,7 +666,7 @@ class AnalysisUI:
 
         try:
             # Display results
-            if 'social_media_data' in (st.session_state and st.session_state.social_media_data) or st.session_state.current_project.get('social_media_data'):
+            if 'social_media_data' in st.session_state and st.session_state.social_media_data or st.session_state.current_project.get('social_media_data'):
                 social_data = st.session_state.get('social_media_data') or \
                 (st.session_state.get('current_project') or {}).get('social_media_data')
 

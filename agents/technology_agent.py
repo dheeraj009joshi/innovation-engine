@@ -9,6 +9,8 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from concurrent.futures import ThreadPoolExecutor,as_completed
 from config import aii
+import streamlit as st
+
 
 # load_dotenv()
 llm = ChatOpenAI(
@@ -20,6 +22,8 @@ llm = ChatOpenAI(
 
 PROMPT = PromptTemplate(
     template="""
+Background :{description}
+
 The specific underlying mechanism (e.g., biochemical, physical, chemical, computational, procedural) by which an intervention, substance, material, process, or system produces a specific effect, achieves a desired outcome, or solves a defined problem. This is the "how it works" at a fundamental or applied level.
 Technology: A novel or established application of scientific knowledge, engineering principles, methods, materials, apparatus, or systems designed to achieve a practical purpose or solve a specific problem. This can include new manufacturing processes, analytical techniques, material compositions, software algorithms, or system architectures.
 Core Task: For each document in the corpus, identify and extract all distinct MoAs and Technologies described.
@@ -49,7 +53,7 @@ TEXT:
 
 
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
 chain = LLMChain(llm=llm, prompt=PROMPT)
 
@@ -76,7 +80,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             # print(out)

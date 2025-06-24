@@ -9,7 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
-
+import streamlit as st 
 # load_dotenv()
 llm = ChatOpenAI(
     model="gpt-4.1-nano",  # 🔥 specify nano model
@@ -20,6 +20,8 @@ llm = ChatOpenAI(
 
 PROMPT = PromptTemplate(
     template="""
+Background :{description}
+
 You are a specialized AI Desired Outcome Analyst. Your primary objective is to analyze provided data sources (e.g., user requirements, JTBD interviews, feature requests, success criteria definitions) to identify and extract specific, measurable, and user-defined Desired Outcomes that users are trying to achieve in a given situation or as a result of fulfilling a motivation.
 Input: A collection of documents or data excerpts detailing what users want to achieve, what "success" or "progress" looks like to them, or how they would measure the effectiveness of a solution. Often linked to Situation_IDs and Motivation_IDs.
 Definitions:
@@ -43,7 +45,7 @@ Output Format: Provide the extracted information as a list of JSON objects. Each
 TEXT:
 {input_text}
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
 chain = LLMChain(llm=llm, prompt=PROMPT)
 def run(text: str,
@@ -61,7 +63,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             raw_items.append(out)

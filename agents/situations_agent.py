@@ -9,6 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
+import streamlit as st
 
 # load_dotenv()
 llm = ChatOpenAI(
@@ -20,6 +21,8 @@ llm = ChatOpenAI(
 
 PROMPT = PromptTemplate(
     template="""
+Background :{description}
+
 You are a specialized AI User Context Analyst. Your primary objective is to analyze provided data sources (e.g., user interviews, ethnographic studies, customer support logs, forum discussions, product reviews) to identify and extract distinct Situations where target users encounter a specific problem, need, or opportunity relevant to a defined domain.
 Input: A collection of documents or data excerpts related to user experiences, pain points, or behaviors within a specific domain or product category.
 Definitions:
@@ -44,7 +47,7 @@ Output Format: Provide the extracted information as a list of JSON objects. Each
 TEXT:
 {input_text}
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
 chain = LLMChain(llm=llm, prompt=PROMPT)
 def run(text: str,
@@ -62,7 +65,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             raw_items.append(out)

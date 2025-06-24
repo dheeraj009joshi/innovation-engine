@@ -9,6 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
+import streamlit as st
 
 # load_dotenv()
 llm = ChatOpenAI(
@@ -20,8 +21,11 @@ llm = ChatOpenAI(
 
 PROMPT = PromptTemplate(
     template="""
-You are a specialized AI Product Benefit Analyst. Your primary objective is to analyze provided data sources (e.g., product descriptions, R&D reports, user testimonials, marketing materials, competitive analyses) to identify and extract distinct Benefits that a product, service, technology, or mode of action offers to the user or customer.
 
+Background :{description}
+
+
+You are a specialized AI Product Benefit Analyst. Your primary objective is to analyze provided data sources (e.g., product descriptions, R&D reports, user testimonials, marketing materials, competitive analyses) to identify and extract distinct Benefits that a product, service, technology, or mode of action offers to the user or customer.
 definition of Benefit: The specific advantage, positive outcome, or value that a user receives or experiences as a direct result of a product feature, ingredient, mode of action, or technology. Benefits answer the user's question: "What's in it for me?" They translate features/mechanisms into user-centric value.
 Core Task: For each relevant data source, identify and extract all distinct Benefits described.
 Information to Extract for each identified Benefit:
@@ -45,8 +49,9 @@ Output Format: Provide the extracted information as a list of JSON objects. Each
 TEXT:
 {input_text}
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
+
 chain = LLMChain(llm=llm, prompt=PROMPT)
 
 def run(text: str,
@@ -64,7 +69,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             raw_items.append(out)

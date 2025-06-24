@@ -9,7 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
-
+import streamlit as st 
 # load_dotenv()
 llm = ChatOpenAI(
     model="gpt-4.1-nano",  # 🔥 specify nano model
@@ -19,7 +19,10 @@ llm = ChatOpenAI(
 )
 
 PROMPT = PromptTemplate(
-    template="""You are a specialized AI User Motivation Analyst. Your primary objective is to analyze provided data sources (e.g., user interviews, survey responses with open-ended questions, psychological profiles, JTBD research) to identify and extract the underlying Motivations that drive user behavior and decision-making within specific situations or in pursuit of certain goals.
+    template="""
+    Background :{description}
+
+    You are a specialized AI User Motivation Analyst. Your primary objective is to analyze provided data sources (e.g., user interviews, survey responses with open-ended questions, psychological profiles, JTBD research) to identify and extract the underlying Motivations that drive user behavior and decision-making within specific situations or in pursuit of certain goals.
 Input: A collection of documents or data excerpts related to user needs, desires, goals, frustrations, and decision-making processes, often linked to specific Situation_IDs.
 Definitions:
 Motivation: The underlying reason, driver, or "why" behind a user's actions or their desire to achieve a particular outcome. Motivations can be functional (task-oriented), emotional (related to feelings), or social (related to self-perception or perception by others).
@@ -44,7 +47,7 @@ Output Format: Provide the extracted information as a list of JSON objects. Each
 TEXT:
 {input_text}
 """,
-    input_variables=["input_text"],
+    input_variables=["description", "input_text"]
 )
 chain = LLMChain(llm=llm, prompt=PROMPT)
 
@@ -63,7 +66,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             # extract JSON array
