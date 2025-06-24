@@ -18,10 +18,10 @@ llm = ChatOpenAI(
     max_tokens=2000,          # optional
     openai_api_key=aii# or use env variable
 )
-
+#  Background :{description}
 PROMPT = PromptTemplate(
     template="""
-Background :{description}
+
 
 You are a specialized AI User Context Analyst. Your primary objective is to analyze provided data sources (e.g., user interviews, ethnographic studies, customer support logs, forum discussions, product reviews) to identify and extract distinct Situations where target users encounter a specific problem, need, or opportunity relevant to a defined domain.
 Input: A collection of documents or data excerpts related to user experiences, pain points, or behaviors within a specific domain or product category.

@@ -573,7 +573,7 @@ class ProgressManager:
         self.active = False
         if self.progress_callback:
             self.progress_callback(100, self.status_message)
-
+# Background :{project_description}
 def generate_single_product(client, insights_str, existing_products, project_description,model="gpt-4.1-nano"):
     """Generate a single product that's unique from existing ones"""
    #     # Create list of forbidden names/words
@@ -583,7 +583,7 @@ def generate_single_product(client, insights_str, existing_products, project_des
         forbidden_words.extend(name.lower().split())
     
     prompt = f"""
-Background :{project_description}
+
 
 
 You are the Mind Genome Inventor AI. Generate ONE unique product idea that:

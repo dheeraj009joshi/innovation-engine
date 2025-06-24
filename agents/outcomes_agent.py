@@ -17,10 +17,10 @@ llm = ChatOpenAI(
     max_tokens=2000,          # optional
     openai_api_key=aii  # or use env variable
 )
-
+# Background :{description}
 PROMPT = PromptTemplate(
     template="""
-Background :{description}
+
 
 You are a specialized AI Desired Outcome Analyst. Your primary objective is to analyze provided data sources (e.g., user requirements, JTBD interviews, feature requests, success criteria definitions) to identify and extract specific, measurable, and user-defined Desired Outcomes that users are trying to achieve in a given situation or as a result of fulfilling a motivation.
 Input: A collection of documents or data excerpts detailing what users want to achieve, what "success" or "progress" looks like to them, or how they would measure the effectiveness of a solution. Often linked to Situation_IDs and Motivation_IDs.

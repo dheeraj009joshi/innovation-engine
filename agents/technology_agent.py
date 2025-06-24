@@ -20,9 +20,9 @@ llm = ChatOpenAI(
     openai_api_key=aii # or use env variable
 )
 
+#  Background :{description}
 PROMPT = PromptTemplate(
     template="""
-Background :{description}
 
 The specific underlying mechanism (e.g., biochemical, physical, chemical, computational, procedural) by which an intervention, substance, material, process, or system produces a specific effect, achieves a desired outcome, or solves a defined problem. This is the "how it works" at a fundamental or applied level.
 Technology: A novel or established application of scientific knowledge, engineering principles, methods, materials, apparatus, or systems designed to achieve a practical purpose or solve a specific problem. This can include new manufacturing processes, analytical techniques, material compositions, software algorithms, or system architectures.

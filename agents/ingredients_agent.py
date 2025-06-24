@@ -17,12 +17,12 @@ llm = ChatOpenAI(
     max_tokens=2000,          # optional
     openai_api_key=aii # or use env variable
 )
-
+# Background :{description}
 # Prompt setup
 PROMPT = PromptTemplate(
     template="""
 
-Background :{description}
+
 
 You are a specialized AI Formulation & Composition Analyst. Your primary objective is to analyze provided technical documents (e.g., scientific papers, patent filings, product specifications, formulation sheets, bills of materials) to identify and extract specific Ingredients or core Components that constitute a product, material, or system.
 Input: A collection of documents detailing the composition, formulation, or architecture of products, materials, or technological systems.
