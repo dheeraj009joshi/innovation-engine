@@ -38,7 +38,7 @@ class AnalysisUI:
         }
 
     def wizard_navigation(self):
-        # print(st.session_state.current_project["description"])
+        print(st.session_state.current_project["description"])
         steps = [
             {"title": "What We Know", "icon": "🔍"},
             {"title": "Digester", "icon": "⚙️"},
@@ -89,100 +89,101 @@ class AnalysisUI:
         
         
 
-    def extract_pdf_page_text_worker(self,index, page, result_queue, update_queue):
+    def extract_pdf_page_text_worker(self, index, page, result_queue, update_queue):
         """Worker function that sends both results and progress updates"""
         try:
             text = page.extract_text() or ""
             result_queue.put(('result', index, text))
-            update_queue.put(('progress', index+1, f"Processed page {index+1}"))  # +1 for 1-based numbering
+            update_queue.put(('progress', index, f"Processed page {index+1}"))  # UI-friendly
         except Exception as e:
             result_queue.put(('error', index, f"[Error on page {index+1}] {str(e)}"))
-            update_queue.put(('progress', index+1, f"Error on page {index+1}"))
+            update_queue.put(('progress', index, f"Error on page {index+1}"))
 
-    def process_files(self,files):
+    def process_files(self, files):
         text = ""
         for f in files:
             try:
                 file_size_mb = len(f.getvalue()) / (1024 * 1024)
-                
-                # Setup UI elements - using a single container for stability
+
                 processing_container = st.empty()
-                
                 with processing_container.container():
-                    # Create all UI elements we'll need to update
                     status_area = st.status(f"🔍 Processing {f.name}", expanded=True)
                     progress_bar = st.progress(0)
                     progress_text = st.empty()
-                    
-                    # Initial messages
+
                     if file_size_mb > 3:
                         st.warning("This is a large file (>3MB). This may take a moment...")
-                    
+
                     progress_text.markdown(f"🔹 Detected file: {f.name} ({file_size_mb:.2f} MB)")
-                    time.sleep(0.5)  # Let users read the initial messages
+                    time.sleep(0.5)
 
                 if f.name.endswith(".pdf"):
                     progress_text.markdown("Opening PDF file...")
-                    
+
+                    import pdfplumber
+                    import queue
+                    import threading
+
                     with pdfplumber.open(f) as pdf:
                         total_pages = len(pdf.pages)
                         result_queue = queue.Queue()
+                        update_queue = queue.Queue()
                         threads = []
-                        
-                        # Start all worker threads
+
                         for i, page in enumerate(pdf.pages):
                             t = threading.Thread(
                                 target=self.extract_pdf_page_text_worker,
-                                args=(i, page, result_queue)
+                                args=(i, page, result_queue, update_queue)
                             )
                             t.start()
                             threads.append(t)
-                        
-                        # Process results with progress updates
+
                         page_results = {}
                         processed_pages = 0
-                        
+
                         while processed_pages < total_pages:
-                            # Get results with timeout
                             try:
-                                i, page_text = result_queue.get(timeout=0.1)
-                                page_results[i] = page_text
-                                processed_pages += 1
-                                
-                                # Update progress in main thread
-                                progress = processed_pages / total_pages
-                                progress_bar.progress(progress)
-                                progress_text.markdown(
-                                    f"Processed page {processed_pages}/{total_pages} "
-                                    f"({progress:.0%})"
-                                )
-                                
+                                msg_type, i, payload = result_queue.get(timeout=0.1)
+                                if msg_type == "result":
+                                    page_results[i] = payload
+                                    processed_pages += 1
+
+                                    progress = processed_pages / total_pages
+                                    progress_bar.progress(progress)
+                                    progress_text.markdown(
+                                        f"Processed page {processed_pages}/{total_pages} ({progress:.0%})"
+                                    )
+
                             except queue.Empty:
-                                # Just continue if no results yet
-                                continue
-                        
-                        # Combine results in order
+                                pass
+
+                            # Handle UI updates from update_queue (non-blocking)
+                            try:
+                                while not update_queue.empty():
+                                    msg_type, idx, msg = update_queue.get_nowait()
+                                    if msg_type == "progress":
+                                        progress_text.markdown(msg)  # ✅ correct usage
+                            except queue.Empty:
+                                pass
+
                         for i in sorted(page_results):
                             text += page_results[i] + "\n\n"
-                        
-                        # Final update
+
                         progress_bar.progress(1.0)
-                        progress_text.success(f"Completed processing {total_pages} pages")
-                        time.sleep(0.5)  # Let user see completion
-                        
-                        # Clean up threads
+                        progress_text.success(f"✅ Completed processing {total_pages} pages")
+                        time.sleep(0.5)
+
                         for t in threads:
                             t.join()
 
-                # [Rest of your file processing code...]
-                
             except Exception as e:
                 st.error(f"❌ Error processing {f.name}: {str(e)}")
             finally:
-                # Clear the processing container when done
                 processing_container.empty()
-        
+
         return text
+
+    
     def save_files_to_azure(self, files, file_type):
         """Save files to Azure and return metadata"""
         file_metadata = []
@@ -837,8 +838,20 @@ class AnalysisUI:
         return r.json()
 
     def run_agents(self):
+
+
+        # print("in run agents runner")
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
+        # print(st.session_state.current_project["description"])
         st.subheader("⚙️ Running Digester")
-        
+        # time.sleep(200)
         # Create a visually appealing header
         st.markdown("""
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -866,17 +879,16 @@ class AnalysisUI:
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
-        
+        project_description=st.session_state.current_project["description"]
         # Define agents
         agents = {
-            "IngredientsAgent": (run_ingredients, rnd_text),
-            "TechnologyAgent": (run_technology, rnd_text),
-            "BenefitsAgent": (run_benefits, rnd_text),
-            "SituationsAgent": (run_situations, mkt_text),
-            "MotivationsAgent": (run_motivations, mkt_text),
-            "OutcomesAgent": (run_outcomes, mkt_text)
+            "IngredientsAgent": (run_ingredients, rnd_text, project_description),
+            "TechnologyAgent": (run_technology, rnd_text, project_description),
+            "BenefitsAgent": (run_benefits, rnd_text, project_description),
+            "SituationsAgent": (run_situations, mkt_text, project_description),
+            "MotivationsAgent": (run_motivations, mkt_text, project_description),
+            "OutcomesAgent": (run_outcomes, mkt_text, project_description),
         }
-        
         # Create progress bar
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -897,7 +909,7 @@ class AnalysisUI:
         
         # Run agents with ThreadPoolExecutor
         with ThreadPoolExecutor() as executor:
-            futures = {executor.submit(fn, text): agent for agent, (fn, text) in agents.items()}
+            futures = {executor.submit(fn, text,description): agent for agent, (fn, text,description) in agents.items()}
             
             for i, future in enumerate(as_completed(futures)):
                 agent = futures[future]
@@ -1185,10 +1197,10 @@ class AnalysisUI:
         def progress_callback(percent, message):
             progress_bar.progress(percent)
             status_text.text(message)
-        
+        project_description=st.session_state.current_project["description"]
         try:
             # Run product generation agent
-            product_ideas = run_product_generation(all_agent_outputs, progress_callback=progress_callback)
+            product_ideas = run_product_generation(all_agent_outputs,project_description, progress_callback=progress_callback)
             
             # Store the results in session
             if "ProductGenerationAgent" not in st.session_state.agent_outputs:

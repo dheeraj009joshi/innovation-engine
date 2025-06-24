@@ -574,7 +574,7 @@ class ProgressManager:
         if self.progress_callback:
             self.progress_callback(100, self.status_message)
 
-def generate_single_product(client, insights_str, existing_products, model="gpt-4.1-nano"):
+def generate_single_product(client, insights_str, existing_products, project_description,model="gpt-4.1-nano"):
     """Generate a single product that's unique from existing ones"""
    #     # Create list of forbidden names/words
     forbidden_names = [p['product_name'] for p in existing_products]
@@ -583,7 +583,7 @@ def generate_single_product(client, insights_str, existing_products, model="gpt-
         forbidden_words.extend(name.lower().split())
     
     prompt = f"""
-Background :{st.session_state.current_project["description"]}
+Background :{project_description}
 
 
 You are the Mind Genome Inventor AI. Generate ONE unique product idea that:
@@ -685,7 +685,7 @@ def validate_product(new_product, existing_products):
     
     return True
  
-def run(all_agent_outputs, progress_callback=None):
+def run(all_agent_outputs,project_description,progress_callback=None):
     client = OpenAI(api_key=aii)
     insights_str = flatten_agent_outputs(all_agent_outputs)
     products = []
@@ -731,7 +731,9 @@ def run(all_agent_outputs, progress_callback=None):
                 client, 
                 insights_str, 
                 products,
+                project_description,
                 model="gpt-4.1-nano"
+                
             )
             
             # Validate

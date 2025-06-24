@@ -55,6 +55,7 @@ TEXT:
 chain = LLMChain(llm=llm, prompt=PROMPT)
 
 def run(text: str,
+        description:str,
         max_chars: int = 20000,
         overlap: int = 200,
         max_workers: int = 10
@@ -69,7 +70,7 @@ def run(text: str,
     # parallel calls
     raw_items: List[Dict] = []
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = {exe.submit(chain.invoke, {"input_text": c,"description": st.session_state.current_project["description"]}): c for c in chunks}
+        futures = {exe.submit(chain.invoke, {"input_text": c,"description": description}): c for c in chunks}
         for f in as_completed(futures):
             out = f.result()["text"]
             raw_items.append(out)
