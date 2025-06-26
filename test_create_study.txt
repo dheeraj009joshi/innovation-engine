@@ -1,0 +1,124 @@
+(venv) dheeraj@Dheerajs-MacBook-Air innovation engine % python3 create_study.py
+Login successful! Now on dashboard.
+Clicked 'Create New Study' button.
+Filled study name: NeuroVibe Echo
+Checked the agree box.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Found 4 fields for questions (filtered out search boxes).
+Filled visible field 1 with: Describe a situation that is important to you personally when you want to relax and reduce stress after a busy day.
+Filled visible field 2 with: Describe a situation that is important to you personally when you want to boost your creativity and get inspired.
+Filled visible field 3 with: Describe a situation that is important to you personally when you are trying to understand or explore your feelings better.
+Filled visible field 4 with: Describe a situation that is important to you personally when you hope to improve your mental focus and cognitive flexibility during the day.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+[Q1 answers] Will fill 4 answer fields (filtered out search boxes).
+[Q1 answers] Filled answer field 1 with: Listening to calming sounds and feeling gentle touches helps me unwind.
+[Q1 answers] Filled answer field 2 with: I need to forget about work and just focus on feeling good.
+[Q1 answers] Filled answer field 3 with: I want to feel more peaceful and in control of my emotions.
+[Q1 answers] Filled answer field 4 with: Taking time for myself to relax makes me happier and less anxious.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+[Q2 answers] Will fill 4 answer fields (filtered out search boxes).
+[Q2 answers] Filled answer field 1 with: Listening to uplifting soundscapes helps my ideas flow.
+[Q2 answers] Filled answer field 2 with: Feeling the tactile feedback sparks new thoughts.
+[Q2 answers] Filled answer field 3 with: I need a mental space that energizes my imagination.
+[Q2 answers] Filled answer field 4 with: Experiencing different emotions helps me come up with fresh ideas.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+[Q3 answers] Will fill 4 answer fields (filtered out search boxes).
+[Q3 answers] Filled answer field 1 with: I want to connect with my emotions more deeply.
+[Q3 answers] Filled answer field 2 with: Feeling subtle physical cues helps me recognize what I really feel.
+[Q3 answers] Filled answer field 3 with: Getting personalized feedback helps me learn more about myself.
+[Q3 answers] Filled answer field 4 with: I need a safe way to express and explore my inner thoughts.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+[Q4 answers] Will fill 4 answer fields (filtered out search boxes).
+[Q4 answers] Filled answer field 1 with: Listening to soundscapes helps me concentrate better.
+[Q4 answers] Filled answer field 2 with: Gentle tactile sensations help me stay present and alert.
+[Q4 answers] Filled answer field 3 with: I want to switch between different thoughts easily.
+[Q4 answers] Filled answer field 4 with: Creating a calming environment helps me think more clearly.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Filled classification question 1.
+Filling 3 answer fields for classification 1.
+Filled classification answer field 1 with: I listen to music and focus on relaxation techniques.
+Filled classification answer field 2 with: I prefer engaging in physical activities to clear my mind.
+Filled classification answer field 3 with: I immerse myself in creative hobbies to de-stress.
+Clicked 'Add Classification Question' for classification_question_2.
+Filled classification question 2.
+Filling 3 answer fields for classification 2.
+Filled classification answer field 1 with: Natural environments often spark my imagination effortlessly.
+Filled classification answer field 2 with: Deep conversations tend to ignite new thoughts in me.
+Filled classification answer field 3 with: Browsing art or music helps me find fresh inspiration.
+Clicked 'Add Classification Question' for classification_question_3.
+Filled classification question 3.
+Filling 3 answer fields for classification 3.
+Filled classification answer field 1 with: Journaling allows me to process my feelings honestly.
+Filled classification answer field 2 with: Sharing with close friends helps me understand myself better.
+Filled classification answer field 3 with: Mindfulness practices help me connect with my inner world.
+Clicked 'Add Classification Question' for classification_question_4.
+Filled classification question 4.
+Filling 3 answer fields for classification 4.
+Filled classification answer field 1 with: I challenge my assumptions to see new perspectives.
+Filled classification answer field 2 with: Taking short breaks helps rebuild my mental agility.
+Filled classification answer field 3 with: I seek out new experiences to expand my thinking.
+Clicked 'Add Classification Question' for classification_question_5.
+Filled classification question 5.
+Filling 3 answer fields for classification 5.
+Filled classification answer field 1 with: It helps me access calming experiences quickly when needed.
+Filled classification answer field 2 with: I enjoy using apps that promote mindfulness and relaxation.
+Filled classification answer field 3 with: Technology is a tool for creativity and self-discovery.
+Clicked 'Add Classification Question' for classification_question_6.
+Filled classification question 6.
+Filling 3 answer fields for classification 6.
+Filled classification answer field 1 with: Regular check-ins help me stay aligned with my feelings.
+Filled classification answer field 2 with: I rarely pause unless overwhelmed by my emotions.
+Filled classification answer field 3 with: Reflections ensure I understand my mood shifts better.
+Clicked 'Add Classification Question' for classification_question_7.
+Filled classification question 7.
+Filling 3 answer fields for classification 7.
+Filled classification answer field 1 with: I focus on fostering calmness and serenity within.
+Filled classification answer field 2 with: Seeking inspiration fuels my sense of purpose.
+Filled classification answer field 3 with: Balancing confidence and vulnerability is important to me.
+Clicked 'Add Classification Question' for classification_question_8.
+Filled classification question 8.
+Filling 3 answer fields for classification 8.
+Filled classification answer field 1 with: I listen to energizing soundscapes to trigger ideas.
+Filled classification answer field 2 with: Feeling tactile feedback helps me unlock creativity.
+Filled classification answer field 3 with: I change my environment to stimulate my imagination.
+Done with 8 classification questions, clicking forward arrow to Pre-Presentation screen...
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'Pre-Presentation' screen...
+Detected Pre-Presentation screen.
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Clicked arrow to advance from Pre-Presentation screen.
+Waiting for 'OPEN ENDED QUESTION' screen...
+ERROR: 'OPEN ENDED QUESTION' heading not found, proceeding anyway!
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'RESPONDENT ORIENTATION' screen...
+ERROR: 'RESPONDENT ORIENTATION' heading not found, proceeding anyway!
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'RATING SCALE' screen...
+ERROR: 'RATING SCALE' screen not found, proceeding anyway!
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'POST-PRESENTATION' screen...
+ERROR: 'POST-PRESENTATION' heading not found, proceeding anyway!
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'OPEN ENDED QUESTION' screen...
+ERROR: 'OPEN ENDED QUESTION' heading not found, proceeding anyway!
+Simulated real mouse click at center of right fa-layers (after scroll).
+Forward arrow clicked successfully.
+Waiting for 'FINAL THOUGHTS' screen...
+Login or study creation step failed.
+Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("textarea[rows=\"5\"]") to be visible
+
+(venv) dheeraj@Dheerajs-MacBook-Air innovation engine % 

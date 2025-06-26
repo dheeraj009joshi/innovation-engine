@@ -584,6 +584,11 @@ def generate_single_product(client, insights_str, existing_products, project_des
     
     prompt = f"""
 
+Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
+
+[RULESET — DO NOT ANALYZE]
+{project_description}
+[/RULESET ENDS]
 
 
 You are the Mind Genome Inventor AI. Generate ONE unique product idea that:

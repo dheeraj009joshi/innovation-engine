@@ -18,11 +18,16 @@ llm = ChatOpenAI(
     max_tokens=2000,          # optional
     openai_api_key=aii  # or use env variable
 )
-# Background :{description}
+
 PROMPT = PromptTemplate(
     template="""
 
 
+Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
+
+[RULESET — DO NOT ANALYZE]
+{description}
+[/RULESET ENDS]
 
 
 You are a specialized AI Product Benefit Analyst. Your primary objective is to analyze provided data sources (e.g., product descriptions, R&D reports, user testimonials, marketing materials, competitive analyses) to identify and extract distinct Benefits that a product, service, technology, or mode of action offers to the user or customer.

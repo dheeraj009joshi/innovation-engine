@@ -52,6 +52,7 @@ class ProjectUI:
         
         # Display projects
         st.subheader("📦 Your Projects")
+        st.markdown("____")
         projects = list(self.auth.projects.find({
             "owner": st.session_state.current_user["username"]
         }).sort("created_at", -1))

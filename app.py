@@ -36,7 +36,9 @@ def init_session_state():
                 "study_name": "",
                 "study_description": "",
                 "questions": [],
-                "prelim_questions": []
+                "prelim_questions": [],
+                        "final_thoughts":"",
+                "respondent_orientation":""
             },
         "page": "login",
         "last_hashtags": ""
@@ -136,7 +138,7 @@ def main():
                         {"_id": st.session_state.current_user["_id"]},
                         {"$set": {"current_project": None}}
                     )
-                    auth_ui.logout()
+                    auth_ui.logout
                    
                   
 

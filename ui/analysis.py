@@ -1009,7 +1009,7 @@ class AnalysisUI:
             if not df.empty:
                 # Initialize agent's select all state
                 if agent_name not in st.session_state.select_all_states:
-                    st.session_state.select_all_states[agent_name] = False
+                    st.session_state.select_all_states[agent_name] = True
                 
                 # Add Select column initialized with select all state
                 df.insert(0, "Select", st.session_state.select_all_states[agent_name])
@@ -1098,16 +1098,16 @@ class AnalysisUI:
                     st.session_state.select_all_states = {k: False for k in st.session_state.select_all_states}
                     st.session_state.clear_clicked = True
                     st.rerun()
-            # Now handle study generation AFTER loop (full-width)
-            if st.session_state.get("study_step", 0) >= 0:
-                # selected_idx = st.session_state.get("selected_idea_idx", 0)
-                selected_idea = st.session_state.selected_rows
-                from .study import StudyGenerationProcess
-                study_gen = StudyGenerationProcess(self.auth, selected_idea,type="results")
-                study_gen.run()
-        # Reset clear flag after render
-        if st.session_state.clear_clicked:
-            st.session_state.clear_clicked = False
+            # # Now handle study generation AFTER loop (full-width)
+            # if st.session_state.get("study_step", 0) >= 0:
+            #     # selected_idx = st.session_state.get("selected_idea_idx", 0)
+            #     selected_idea = st.session_state.selected_rows
+            #     from .study import StudyGenerationProcess
+            #     study_gen = StudyGenerationProcess(self.auth, selected_idea,type="results")
+            #     study_gen.run()
+        # # Reset clear flag after render
+        # if st.session_state.clear_clicked:
+        #     st.session_state.clear_clicked = False
     def _handle_select_all(self, agent_name):
         """Handle select all checkbox changes"""
         # Toggle the select all state
@@ -1417,7 +1417,7 @@ class AnalysisUI:
                         
                         st.markdown("---")
                     with cols[1]:
-                        if st.button("📚 Generate Study", type="primary", key=f"gen-study-{idx}"):
+                        if st.button("📚 Prepare Study", type="primary", key=f"gen-study-{idx}"):
                             st.session_state["study_step"] = 0
                             st.session_state["selected_idea_idx"] = idx - 1  # store 0-based index
 

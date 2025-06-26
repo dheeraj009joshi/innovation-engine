@@ -17,10 +17,17 @@ llm = ChatOpenAI(
     max_tokens=2000,          # optional
     openai_api_key=aii# or use env variable
 )
-
+    # Background :{description}
 PROMPT = PromptTemplate(
     template="""
-    Background :{description}
+
+
+Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
+
+[RULESET — DO NOT ANALYZE]
+{description}
+[/RULESET ENDS]
+
 
     You are a specialized AI User Motivation Analyst. Your primary objective is to analyze provided data sources (e.g., user interviews, survey responses with open-ended questions, psychological profiles, JTBD research) to identify and extract the underlying Motivations that drive user behavior and decision-making within specific situations or in pursuit of certain goals.
 Input: A collection of documents or data excerpts related to user needs, desires, goals, frustrations, and decision-making processes, often linked to specific Situation_IDs.

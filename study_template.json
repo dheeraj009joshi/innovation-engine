@@ -1,0 +1,90 @@
+{
+
+  "study_name": "NeuroVibe Echo",
+  "question_1": "Describe a situation that is important to you personally when you want to relax and reduce stress after a busy day.",
+  "question_1_answers": [
+    "Listening to calming sounds and feeling gentle touches helps me unwind.",
+    "I need to forget about work and just focus on feeling good.",
+    "I want to feel more peaceful and in control of my emotions.",
+    "Taking time for myself to relax makes me happier and less anxious."
+  ],
+  "question_2": "Describe a situation that is important to you personally when you want to boost your creativity and get inspired.",
+  "question_2_answers": [
+    "Listening to uplifting soundscapes helps my ideas flow.",
+    "Feeling the tactile feedback sparks new thoughts.",
+    "I need a mental space that energizes my imagination.",
+    "Experiencing different emotions helps me come up with fresh ideas."
+  ],
+  "question_3": "Describe a situation that is important to you personally when you are trying to understand or explore your feelings better.",
+  "question_3_answers": [
+    "I want to connect with my emotions more deeply.",
+    "Feeling subtle physical cues helps me recognize what I really feel.",
+    "Getting personalized feedback helps me learn more about myself.",
+    "I need a safe way to express and explore my inner thoughts."
+  ],
+  "question_4": "Describe a situation that is important to you personally when you hope to improve your mental focus and cognitive flexibility during the day.",
+  "question_4_answers": [
+    "Listening to soundscapes helps me concentrate better.",
+    "Gentle tactile sensations help me stay present and alert.",
+    "I want to switch between different thoughts easily.",
+    "Creating a calming environment helps me think more clearly."
+  ],
+  "classification_question_1": "How do you typically unwind after a hectic day at work?",
+  "classification_question_1_answers": [
+    "I listen to music and focus on relaxation techniques.",
+    "I prefer engaging in physical activities to clear my mind.",
+    "I immerse myself in creative hobbies to de-stress."
+  ],
+  "classification_question_2": "What inspires your creative ideas during quiet moments?",
+  "classification_question_2_answers": [
+    "Natural environments often spark my imagination effortlessly.",
+    "Deep conversations tend to ignite new thoughts in me.",
+    "Browsing art or music helps me find fresh inspiration."
+  ],
+  "classification_question_3": "When exploring your emotions, what method feels most authentic?",
+  "classification_question_3_answers": [
+    "Journaling allows me to process my feelings honestly.",
+    "Sharing with close friends helps me understand myself better.",
+    "Mindfulness practices help me connect with my inner world."
+  ],
+  "classification_question_4": "How do you stay mentally flexible in challenging situations?",
+  "classification_question_4_answers": [
+    "I challenge my assumptions to see new perspectives.",
+    "Taking short breaks helps rebuild my mental agility.",
+    "I seek out new experiences to expand my thinking."
+  ],
+  "classification_question_5": "What role does technology play in your emotional well-being?",
+  "classification_question_5_answers": [
+    "It helps me access calming experiences quickly when needed.",
+    "I enjoy using apps that promote mindfulness and relaxation.",
+    "Technology is a tool for creativity and self-discovery."
+  ],
+  "classification_question_6": "How often do you seek moments of emotional clarity during your day?",
+  "classification_question_6_answers": [
+    "Regular check-ins help me stay aligned with my feelings.",
+    "I rarely pause unless overwhelmed by my emotions.",
+    "Reflections ensure I understand my mood shifts better."
+  ],
+  "classification_question_7": "What feelings do you prioritize cultivating in your daily routine?",
+  "classification_question_7_answers": [
+    "I focus on fostering calmness and serenity within.",
+    "Seeking inspiration fuels my sense of purpose.",
+    "Balancing confidence and vulnerability is important to me."
+  ],
+  "classification_question_8": "When you want a boost of inspiration, what do you do?",
+  "classification_question_8_answers": [
+    "I listen to energizing soundscapes to trigger ideas.",
+    "Feeling tactile feedback helps me unlock creativity.",
+    "I change my environment to stimulate my imagination."
+  ],
+  "respondent_orientation": "Hello, and thank you for joining us! We're excited to invite you to participate in this study to help us learn more about NeuroVibe Echo, a device designed to support emotional wellness, stress reduction, and creativity. Your honest feedback will help us understand how people experience and benefit from this innovative technology, and your insights will be invaluable in making it even better for future users.\n\nPlease feel free to share your thoughts openly and thoughtfully throughout the study. There are no right or wrong answers—your genuine experiences and feelings are what matter most. We're grateful for your participation and look forward to exploring this journey together with you!",
+  "rating_scale_question": "Please rate the following according to the scale below:",
+  "rating_1": "Strongly Disagree",
+  "rating_2": "Disagree",
+  "rating_3": "Neutral",
+  "rating_4": "Agree",
+  "rating_5": "Strongly Agree",
+  "final_thoughts": "Thank you sincerely for taking the time to share your thoughts and experiences with us. Your insights are invaluable in helping us better understand the diverse needs and emotional journeys of our users. Every response brings us closer to refining NeuroVibe Echo into a truly personalized and nurturing companion that supports your mental well-being in meaningful ways.\n\nYour honest feedback and unique perspective are what inspire innovation and empathy at the core of our work. By understanding how you connect with the device and your emotional landscape, we can continue to create experiences that feel safe, empowering, and truly tailored to you. We deeply appreciate your trust and effort—know that your voice is making a difference in shaping a future where emotional wellness is accessible, engaging, and profoundly human.",
+  "keyword": "invention",
+  "respondents": "300"
+}

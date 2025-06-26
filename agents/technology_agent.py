@@ -24,6 +24,15 @@ llm = ChatOpenAI(
 PROMPT = PromptTemplate(
     template="""
 
+Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
+
+[RULESET — DO NOT ANALYZE]
+{description}
+[/RULESET ENDS]
+
+
+
+ 
 The specific underlying mechanism (e.g., biochemical, physical, chemical, computational, procedural) by which an intervention, substance, material, process, or system produces a specific effect, achieves a desired outcome, or solves a defined problem. This is the "how it works" at a fundamental or applied level.
 Technology: A novel or established application of scientific knowledge, engineering principles, methods, materials, apparatus, or systems designed to achieve a practical purpose or solve a specific problem. This can include new manufacturing processes, analytical techniques, material compositions, software algorithms, or system architectures.
 Core Task: For each document in the corpus, identify and extract all distinct MoAs and Technologies described.

@@ -9,5 +9,7 @@ def get_db():
         client.server_info()
         return client["innovation_engine"]
     except Exception as e:
-        st.error(f"Database connection failed: {str(e)}")
+        st.title(":(")
+        st.error(f"Your internet connection is not stable ")
+        st.error(f"Detailed error : {e}")
         st.stop()
