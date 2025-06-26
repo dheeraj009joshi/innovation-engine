@@ -70,10 +70,9 @@ def download_tiktok_video(video_url: str, output_path: str = "tiktok_video.mp4")
     else:
         print(f"❌ Failed to download video. Status Code: {response.status_code}, Reason: {response.reason}")
 
-
+model = whisper.load_model("base")
 def transcribe_with_whisper(video_path):
     print("Transcribing...")
-    model = whisper.load_model("base")  # You can use 'small', 'medium', 'large'
     result = model.transcribe(video_path)
     return result["text"]
 

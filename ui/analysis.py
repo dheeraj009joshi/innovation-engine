@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import io
 import json
-from multiprocessing.pool import ThreadPool
 import queue
 import threading
 import time
@@ -10,11 +9,19 @@ import streamlit as st
 from docx import Document
 from io import BytesIO
 import pdfplumber
+import pdfplumber
+import queue
+import threading
 from datetime import datetime
 import uuid
 import pandas as pd
+import concurrent.futures
 import requests
 from threading import Thread
+import fitz  # PyMuPDF
+import pytesseract
+from PIL import Image
+import io
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
 from agents.benefits_agent import run as run_benefits
@@ -86,28 +93,32 @@ class AnalysisUI:
                     ):
                         st.session_state.wizard_step = step_num
                         st.rerun()
-        
+    
         
 
-    def extract_pdf_page_text_worker(self, index, page, result_queue, update_queue):
-        """Worker function that sends both results and progress updates"""
+    def extract_text_from_page(self,page):
         try:
-            text = page.extract_text() or ""
-            result_queue.put(('result', index, text))
-            update_queue.put(('progress', index, f"Processed page {index+1}"))  # UI-friendly
+            text = page.get_text("text")
+            if text and text.strip():
+                return text
+            # Fallback to OCR
+            pix = page.get_pixmap(dpi=300)
+            image = Image.open(io.BytesIO(pix.tobytes("png")))
+            ocr_text = pytesseract.image_to_string(image)
+            return f"[OCR Page]\n{ocr_text.strip()}"
         except Exception as e:
-            result_queue.put(('error', index, f"[Error on page {index+1}] {str(e)}"))
-            update_queue.put(('progress', index, f"Error on page {index+1}"))
+            return f"[ERROR] Failed to extract page: {e}"
+
 
     def process_files(self, files):
         text = ""
         for f in files:
             try:
                 file_size_mb = len(f.getvalue()) / (1024 * 1024)
-
                 processing_container = st.empty()
+
                 with processing_container.container():
-                    status_area = st.status(f"🔍 Processing {f.name}", expanded=True)
+                    st.status(f"🔍 Processing {f.name}", expanded=True)
                     progress_bar = st.progress(0)
                     progress_text = st.empty()
 
@@ -118,72 +129,68 @@ class AnalysisUI:
                     time.sleep(0.5)
 
                 if f.name.endswith(".pdf"):
-                    progress_text.markdown("Opening PDF file...")
+                    progress_text.markdown("Reading PDF file...")
 
-                    import pdfplumber
-                    import queue
-                    import threading
+                    doc = fitz.open(stream=f.getvalue(), filetype="pdf")
+                    total_pages = len(doc)
+                    page_results = [None] * total_pages
+                    errors = []
 
-                    with pdfplumber.open(f) as pdf:
-                        total_pages = len(pdf.pages)
-                        result_queue = queue.Queue()
-                        update_queue = queue.Queue()
-                        threads = []
+                    def process_page(i):
+                        try:
+                            return i, self.extract_text_from_page(doc[i])
+                        except Exception as e:
+                            return i, f"[ERROR] {str(e)}"
 
-                        for i, page in enumerate(pdf.pages):
-                            t = threading.Thread(
-                                target=self.extract_pdf_page_text_worker,
-                                args=(i, page, result_queue, update_queue)
-                            )
-                            t.start()
-                            threads.append(t)
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+                        futures = [executor.submit(process_page, i) for i in range(total_pages)]
+                        for count, future in enumerate(concurrent.futures.as_completed(futures), start=1):
+                            i, result = future.result()
+                            page_results[i] = result
+                            if "[ERROR]" in result:
+                                errors.append(f"Page {i+1}: {result}")
+                            if count % 5 == 0 or count == total_pages:
+                                progress = count / total_pages
+                                progress_bar.progress(progress)
+                                progress_text.markdown(f"Processed {count}/{total_pages} pages")
 
-                        page_results = {}
-                        processed_pages = 0
+                    text = "\n\n".join(page_results)
 
-                        while processed_pages < total_pages:
-                            try:
-                                msg_type, i, payload = result_queue.get(timeout=0.1)
-                                if msg_type == "result":
-                                    page_results[i] = payload
-                                    processed_pages += 1
+                    if errors:
+                        st.warning(f"⚠️ {len(errors)} pages failed to extract text. Example: {errors[0]}")
 
-                                    progress = processed_pages / total_pages
-                                    progress_bar.progress(progress)
-                                    progress_text.markdown(
-                                        f"Processed page {processed_pages}/{total_pages} ({progress:.0%})"
-                                    )
-
-                            except queue.Empty:
-                                pass
-
-                            # Handle UI updates from update_queue (non-blocking)
-                            try:
-                                while not update_queue.empty():
-                                    msg_type, idx, msg = update_queue.get_nowait()
-                                    if msg_type == "progress":
-                                        progress_text.markdown(msg)  # ✅ correct usage
-                            except queue.Empty:
-                                pass
-
-                        for i in sorted(page_results):
-                            text += page_results[i] + "\n\n"
-
+                    progress_bar.progress(1.0)
+                    progress_text.success(f"✅ Completed processing {total_pages} pages")
+                    time.sleep(0.5)
+                elif f.name.endswith(".docx"):
+                    progress_text.markdown("Reading DOCX file...")
+                    try:
+                        doc = Document(f)
+                        paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+                        text += "\n\n".join(paragraphs)
                         progress_bar.progress(1.0)
-                        progress_text.success(f"✅ Completed processing {total_pages} pages")
-                        time.sleep(0.5)
+                        progress_text.success("✅ Completed reading DOCX file")
+                    except Exception as e:
+                        st.error(f"❌ Error reading DOCX: {str(e)}")
 
-                        for t in threads:
-                            t.join()
-
+                elif f.name.endswith(".txt"):
+                    progress_text.markdown("Reading TXT file...")
+                    try:
+                        text += f.getvalue().decode("utf-8", errors="ignore")
+                        progress_bar.progress(1.0)
+                        progress_text.success("✅ Completed reading TXT file")
+                    except Exception as e:
+                       st.error(f"❌ Error reading TXT: {str(e)}")
             except Exception as e:
                 st.error(f"❌ Error processing {f.name}: {str(e)}")
             finally:
                 processing_container.empty()
-
         return text
 
-    
+
+
+
+
     def save_files_to_azure(self, files, file_type):
         """Save files to Azure and return metadata"""
         file_metadata = []
