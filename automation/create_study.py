@@ -287,8 +287,8 @@ def handle_done_screen(page, data, progress_bar, status_text, log_function):
 
 # Main study creation function with UI integration
 def create_study_for_user(data, progress_bar, status_text, log_function): 
-    USERNAME = "dlovej009@gmail.com"
-    PASSWORD = "Dheeraj@2006"
+    USERNAME = "mindgenometest@gmail.com"
+    PASSWORD = "mindgenome123"
     STUDY_NAME = data["study_name"]
 
     with sync_playwright() as p:
