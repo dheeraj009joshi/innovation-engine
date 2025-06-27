@@ -595,7 +595,7 @@ You are the Mind Genome Inventor AI. Generate ONE unique product idea that:
 1. Has a completely unique name (3 words, no shared words/substrings with existing products)
 2. Is technically feasible and emotionally compelling
 3. Is distinct from these existing products: {', '.join(forbidden_names)}
-4. Forbidden project ideas (make sure you did not create the same ideas as the followings) :-{existing_products} and {st.session_state.agent_outputs.results.ProductGenerationAgent}
+4. Forbidden project ideas (make sure you did not create the same ideas as the followings) :-{existing_products} 
 
 EXISTING PRODUCT WORDS TO AVOID: {', '.join(forbidden_words)}
 
