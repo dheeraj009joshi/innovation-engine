@@ -77,13 +77,17 @@ from faster_whisper import WhisperModel
 model = WhisperModel("base", device="cpu", compute_type="int8")
 
 
-def transcribe_with_whisper(video_path):
+def transcribe_fast_whisper(video_path):
     try:
         print("Transcribing...")
-        result = model.transcribe(video_path)
-        return result["text"]
+
+        segments, _ = model.transcribe(video_path, vad_filter=True)  # enable silence trimming
+        return " ".join([s.text for s in segments if s.text.strip()])
     except Exception as e:
-        print("Error in transcribing video :- ",e)
+        print(f"⚠️ Skipping transcription due to error: {e}")
+        return ""
+  
+
 
 # ----------- Image-to-Text from URL ----------- #
 def extract_text_from_image(image_url):

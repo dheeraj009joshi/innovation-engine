@@ -352,7 +352,7 @@ All questions must speak directly to the user and every answer must help us unde
                 "rating_5": "Strongly Agree",
                 "final_thoughts": study_data['final_thoughts'],
                 "keyword": "invention",
-                "respondents": "300"
+                "respondents": "100"
             })
 
             

@@ -78,7 +78,7 @@ def upload_to_azure(file):
         return None
 
 
-from scraper.helper import download_tiktok_video, transcribe_with_whisper
+from scraper.helper import download_tiktok_video, transcribe_fast_whisper
 from scraper.scraper import ScraperClient
 
 
@@ -187,7 +187,7 @@ def get_scraper_data(hashtag, progress_callback=None):
             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
             
             # Transcribe audio
-            post["transcript"] = transcribe_with_whisper(video_file)
+            post["transcript"] = transcribe_fast_whisper(video_file)
             
             # Get comments
             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
