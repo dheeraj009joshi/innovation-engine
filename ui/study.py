@@ -137,13 +137,13 @@ class StudyGenerationProcess:
 
 For each question, provide exactly 3 radically different answers . Each answer should be a full sentence with 5-10 words. The answers must be rich with information and should reveal how the user thinks, their rituals, emotions, habits, or worldview in relation to the situation. The answers MUST NOT BE in second person.
 
-Next, return to the description of the product. Create 18 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
+Next, return to the description of the product. Create 8 questions that directly ask the user about their experience with the product and what it reveals about their life (e.g., if the product is a health product, ask how it fits into their health rituals or mindset).
 
 Now, imagine you’re looking at this product and asking:
 “What does this product reveal about you?”
-Write 18 classification questions that each directly ask the user to identify something about themselves—how they think, act, or feel—through the lens of the product.
+Write 8 classification questions that each directly ask the user to identify something about themselves—how they think, act, or feel—through the lens of the product.
 
-Each of the 18 questions should include 3 mutually exclusive and unexpected answers that:
+Each of the 8 questions should include 3 mutually exclusive and unexpected answers that:
 
     The answers are written as full sentences (max 10 words)
 
@@ -401,7 +401,7 @@ All questions must speak directly to the user and every answer must help us unde
                     del st.session_state['study_data']
                 
                 # Show success message
-                st.success("✅ Study created successfully! Report has been sent to your email.")
+                st.success("✅ Study created successfully! Check your email.")
                 
                 # Clear progress elements after delay
                 time.sleep(3)
