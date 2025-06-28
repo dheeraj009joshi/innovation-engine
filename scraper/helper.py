@@ -75,13 +75,30 @@ def download_tiktok_video(video_url: str, output_path: str = "tiktok_video.mp4")
 
 
 
+import torchaudio
+import os
+model = whisper.load_model("tiny",device="cpu")
 
-model = whisper.load_model("tiny")
+def is_valid_audio(file_path):
+    try:
+        audio, sr = torchaudio.load(file_path)
+        return audio.numel() > 0
+    except Exception as e:
+        print(f"Invalid or unreadable audio in file: {file_path} ({e})")
+        return False
 
 def transcribe_with_whisper(video_path):
+    if not os.path.exists(video_path):
+        print(f"File not found: {video_path}")
+        return None
+
+    if not is_valid_audio(video_path):
+        print(f"Skipping transcription due to empty or broken audio: {video_path}")
+        return "[Invalid or empty audio]"
+
     try:
         print("Transcribing...")
-        result = model.transcribe(video_path)
+        result = model.transcribe(video_path, fp16=False)
         return result.get("text", "")
     except Exception as e:
         print("Error in transcribing video:", e)
