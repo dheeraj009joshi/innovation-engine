@@ -83,7 +83,7 @@ model = whisper.load_model("tiny",device="cpu")
 
 
 from multiprocessing import Queue, Process
-from services.workers.whisper_worker import whisper_worker
+from services.transcribe_worker import whisper_worker
 
 class WhisperManager:
     def __init__(self):
