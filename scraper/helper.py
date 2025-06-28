@@ -80,6 +80,29 @@ import torchaudio
 import os
 model = whisper.load_model("tiny",device="cpu")
 
+
+
+from multiprocessing import Queue, Process
+from services.workers.whisper_worker import whisper_worker
+
+class WhisperManager:
+    def __init__(self):
+        self.task_queue = Queue()
+        self.result_queue = Queue()
+        self.worker = Process(target=whisper_worker, args=(self.task_queue, self.result_queue))
+        self.worker.start()
+
+    def transcribe(self, idx, video_path):
+        self.task_queue.put((idx, video_path))
+        return self.result_queue.get()  # (idx, transcript)
+
+    def shutdown(self):
+        self.task_queue.put("STOP")
+        self.worker.join()
+
+
+
+
 def is_valid_audio(file_path):
     try:
         audio, sr = torchaudio.load(file_path)

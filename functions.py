@@ -82,8 +82,9 @@ from scraper.helper import download_tiktok_video, safe_transcribe
 from scraper.scraper import ScraperClient
 
 
-
+from scraper.helper import WhisperManager
 def get_scraper_data(hashtag, progress_callback=None):
+    whisper_manager = WhisperManager()
     from concurrent.futures import ThreadPoolExecutor, as_completed
     
     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
@@ -107,7 +108,8 @@ def get_scraper_data(hashtag, progress_callback=None):
             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
             
             # Transcribe audio
-            post["transcript"] = safe_transcribe(video_file)
+            _, transcript = whisper_manager.transcribe(idx, video_file)
+            post["transcript"] = transcript or ""
             
             # Get comments
             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
