@@ -140,7 +140,7 @@ def get_scraper_data(hashtag, progress_callback=None):
         return post
 
     augmented_posts = []
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         # Submit all posts for processing
         futures = []
         for idx, post in enumerate(posts):
