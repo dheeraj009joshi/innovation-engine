@@ -163,25 +163,89 @@ import queue
 
 
 
-def get_scraper_data(hashtag, progress_callback=None):
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+# def get_scraper_data(hashtag, progress_callback=None):
+#     from concurrent.futures import ThreadPoolExecutor, as_completed
     
+#     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
+    
+#     # Phase 1: Find hashtag
+#     hashtag_id = aa.get_hastag_id_by_tag_name(hashtag)
+    
+#     # Phase 2: Get posts
+#     posts = aa.get_hastag_posts_by_id(hashtag_id, 30,progress_callback)
+#     total_posts = len(posts)
+    
+#     if progress_callback:
+#         progress_callback(0, total_posts)
+    
+#     # Create a list to track completion status
+#     completed_posts = [False] * total_posts
+    
+#     def process_post(post, idx):
+#         try:
+#             # Download video
+#             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
+            
+#             # Transcribe audio
+#             post["transcript"] = transcribe_with_whisper(video_file)
+            
+#             # Get comments
+#             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
+            
+#             # Clean up
+#             if os.path.exists(f"video_{hashtag}_{idx}"):
+#                 try:
+#                     os.remove(f"video_{hashtag}_{idx}")
+#                 except:
+#                     pass
+                    
+#             # Mark as completed
+#             completed_posts[idx] = True
+#             completed_count = sum(completed_posts)
+            
+#             # Send progress update
+#             if progress_callback:
+#                 progress_callback(completed_count, total_posts)
+                
+#         except Exception as error:
+#             # Mark as completed even if error occurs
+#             completed_posts[idx] = True
+#             completed_count = sum(completed_posts)
+#             if progress_callback:
+#                 progress_callback(completed_count, total_posts)
+#             print(f"Error processing post: {error}")
+            
+#         return post
+
+#     augmented_posts = []
+#     with ThreadPoolExecutor(max_workers=5) as executor:
+#         # Submit all posts for processing
+#         futures = []
+#         for idx, post in enumerate(posts):
+#             futures.append(executor.submit(process_post, post, idx))
+        
+#         # Collect results as they complete
+#         for future in as_completed(futures):
+#             augmented_posts.append(future.result())
+
+#     return augmented_posts
+
+def get_scraper_data(hashtag, progress_callback=None):
     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
     
     # Phase 1: Find hashtag
     hashtag_id = aa.get_hastag_id_by_tag_name(hashtag)
     
     # Phase 2: Get posts
-    posts = aa.get_hastag_posts_by_id(hashtag_id, 30,progress_callback)
+    posts = aa.get_hastag_posts_by_id(hashtag_id, 30, progress_callback)
     total_posts = len(posts)
     
     if progress_callback:
         progress_callback(0, total_posts)
     
-    # Create a list to track completion status
-    completed_posts = [False] * total_posts
+    augmented_posts = []
     
-    def process_post(post, idx):
+    for idx, post in enumerate(posts):
         try:
             # Download video
             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
@@ -192,44 +256,25 @@ def get_scraper_data(hashtag, progress_callback=None):
             # Get comments
             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
             
-            # Clean up
+            # Clean up downloaded file
             if os.path.exists(f"video_{hashtag}_{idx}"):
                 try:
                     os.remove(f"video_{hashtag}_{idx}")
-                except:
+                except Exception:
                     pass
-                    
-            # Mark as completed
-            completed_posts[idx] = True
-            completed_count = sum(completed_posts)
             
-            # Send progress update
+            # Report progress
             if progress_callback:
-                progress_callback(completed_count, total_posts)
+                progress_callback(idx + 1, total_posts)
                 
         except Exception as error:
-            # Mark as completed even if error occurs
-            completed_posts[idx] = True
-            completed_count = sum(completed_posts)
+            print(f"Error processing post {idx}: {error}")
             if progress_callback:
-                progress_callback(completed_count, total_posts)
-            print(f"Error processing post: {error}")
-            
-        return post
-
-    augmented_posts = []
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        # Submit all posts for processing
-        futures = []
-        for idx, post in enumerate(posts):
-            futures.append(executor.submit(process_post, post, idx))
+                progress_callback(idx + 1, total_posts)
         
-        # Collect results as they complete
-        for future in as_completed(futures):
-            augmented_posts.append(future.result())
+        augmented_posts.append(post)
 
     return augmented_posts
-
 
 
 # aa=get_scraper_data("sleepgood")
