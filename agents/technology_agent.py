@@ -24,13 +24,6 @@ llm = ChatOpenAI(
 PROMPT = PromptTemplate(
     template="""
 
-Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
-
-[RULESET — DO NOT ANALYZE]
-{description}
-[/RULESET ENDS]
-
-
 
  
 The specific underlying mechanism (e.g., biochemical, physical, chemical, computational, procedural) by which an intervention, substance, material, process, or system produces a specific effect, achieves a desired outcome, or solves a defined problem. This is the "how it works" at a fundamental or applied level.

@@ -43,7 +43,7 @@ class ScraperClient:
         out=[]
         if progress_callback:
             progress_callback(0, len(out))
-        for i in range(5):
+        for i in range(2):
 
             params = {
             "id":hastag_id,

@@ -21,11 +21,6 @@ llm = ChatOpenAI(
 PROMPT = PromptTemplate(
     template="""
 
-Use the following **ruleset strictly as guidance only** — do not analyze it or extract information from it.
-
-[RULESET — DO NOT ANALYZE]
-{description}
-[/RULESET ENDS]
 
 
 
