@@ -1,3 +1,4 @@
+import subprocess
 import requests
 import whisper
 import pytesseract
@@ -87,21 +88,27 @@ def is_valid_audio(file_path):
         print(f"Invalid or unreadable audio in file: {file_path} ({e})")
         return False
 
-def transcribe_with_whisper(video_path):
-    if not os.path.exists(video_path):
-        print(f"File not found: {video_path}")
+def safe_transcribe(video_path):
+    try:
+        result = subprocess.run(
+            ["python3", "workers/transcribe_worker.py", video_path],
+            capture_output=True,
+            text=True,
+            timeout=120  # avoid hanging forever
+        )
+
+        if result.returncode != 0:
+            print(f"❌ Subprocess failed: {result.stderr.strip()}")
+            return None
+
+        return result.stdout.strip()
+
+    except subprocess.TimeoutExpired:
+        print(f"⏱️ Timeout while transcribing {video_path}")
         return None
 
-    if not is_valid_audio(video_path):
-        print(f"Skipping transcription due to empty or broken audio: {video_path}")
-        return "[Invalid or empty audio]"
-
-    try:
-        print("Transcribing...")
-        result = model.transcribe(video_path, fp16=False)
-        return result.get("text", "")
     except Exception as e:
-        print("Error in transcribing video:", e)
+        print(f"⚠️ Unexpected error in subprocess: {e}")
         return None
 
 # ----------- Image-to-Text from URL ----------- #
