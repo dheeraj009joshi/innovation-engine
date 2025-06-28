@@ -705,17 +705,6 @@ class AnalysisUI:
 
     def run_agents(self):
 
-
-        # print("in run agents runner")
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
-        # print(st.session_state.current_project["description"])
         st.subheader("⚙️ Running Digester")
         # time.sleep(200)
         # Create a visually appealing header
@@ -735,13 +724,19 @@ class AnalysisUI:
         # Process files
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
-        
-        # Add research content to Digester
-        if st.session_state.get('research_result'):
+
+        # Append research result if available
+        if st.session_state.get("research_result"):
             rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)
+
+        # Append social media data if available
         if st.session_state.get("social_media_data"):
             mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
-            rnd_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
+
+        # If rnd_text is empty or whitespace, add fallback content
+        if not rnd_text.strip():
+            rnd_text = "RND data\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.get("social_media_data", ""))
+
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
