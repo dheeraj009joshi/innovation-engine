@@ -1,5 +1,5 @@
 import requests
-# import whisper
+import whisper
 import pytesseract
 from PIL import Image
 from io import BytesIO
@@ -72,22 +72,20 @@ def download_tiktok_video(video_url: str, output_path: str = "tiktok_video.mp4")
             print(f"❌ Failed to download video. Status Code: {response.status_code}, Reason: {response.reason}")
     except Exception as e:
         print("Error in downloading video :- ",e)
-from faster_whisper import WhisperModel
-
-model = WhisperModel("base", device="cpu", compute_type="int8")
 
 
-def transcribe_fast_whisper(video_path):
+
+
+model = whisper.load_model("tiny")
+
+def transcribe_with_whisper(video_path):
     try:
         print("Transcribing...")
-
-        segments, _ = model.transcribe(video_path, vad_filter=True)  # enable silence trimming
-        return " ".join([s.text for s in segments if s.text.strip()])
+        result = model.transcribe(video_path)
+        return result.get("text", "")
     except Exception as e:
-        print(f"⚠️ Skipping transcription due to error: {e}")
-        return ""
-  
-
+        print("Error in transcribing video:", e)
+        return None
 
 # ----------- Image-to-Text from URL ----------- #
 def extract_text_from_image(image_url):

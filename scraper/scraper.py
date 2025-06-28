@@ -39,44 +39,54 @@ class ScraperClient:
         return details["challengeInfo"]["challenge"]["id"]
     
 
-    def get_hastag_posts_by_id(self,hastag_id, count):
-        params = {
-        "id":hastag_id,
-        "count":count,
-        "access_key":self.token
-        } 
-        res=requests.get(f"{self.url}/hashtag/medias",params=params)
+    def get_hastag_posts_by_id(self,hastag_id, count,progress_callback):
         out=[]
-        print(res.json())
-        for item in res.json()["itemList"]:
-            try:
-                data={}
-                data["description"]=item["desc"]
-                data["id"]=item["id"]
-                data["videoUrl"]=item["video"]["bitrateInfo"][0]["PlayAddr"]["UrlList"][-1]
-                data["user_info"]={
-                    "name":item["author"]["nickname"],
-                    "bio":item["author"]["signature"],
-                    "username":item["author"]["uniqueId"],
-                    "followers":item["authorStats"]["followerCount"],
-                    "followings":item["authorStats"]["followingCount"],
-                    "totalLikes":item["authorStats"]["heart"]
-                }
-                data["createTime"]=datetime.fromtimestamp(item["createTime"]).isoformat()
-                data["collectCount"]=item["stats"]["collectCount"]
-                data["commentCount"]=item["stats"]["commentCount"]
-                data["playCount"]=item["stats"]["playCount"]
-                data["shareCount"]=item["stats"]["shareCount"]
-                out.append(data)
-            except:
-                pass
-            
+        if progress_callback:
+            progress_callback(0, len(out))
+        for i in range(5):
+
+            params = {
+            "id":hastag_id,
+            "count":count,
+            "cursor":len(out),
+            "access_key":self.token
+            } 
+            res=requests.get(f"{self.url}/hashtag/medias",params=params)
+            print(res.json())
+            if "itemList" in res.json():
+                for item in res.json()["itemList"]:
+                    try:
+                        data={}
+                        data["description"]=item["desc"]
+                        data["id"]=item["id"]
+                        data["videoUrl"]=item["video"]["bitrateInfo"][0]["PlayAddr"]["UrlList"][-1]
+                        data["user_info"]={
+                            "name":item["author"]["nickname"],
+                            "bio":item["author"]["signature"],
+                            "username":item["author"]["uniqueId"],
+                            "followers":item["authorStats"]["followerCount"],
+                            "followings":item["authorStats"]["followingCount"],
+                            "totalLikes":item["authorStats"]["heart"]
+                        }
+                        data["createTime"]=datetime.fromtimestamp(item["createTime"]).isoformat()
+                        data["collectCount"]=item["stats"]["collectCount"]
+                        data["commentCount"]=item["stats"]["commentCount"]
+                        data["playCount"]=item["stats"]["playCount"]
+                        data["shareCount"]=item["stats"]["shareCount"]
+                        out.append(data)
+                        if res.json()["hasMore"]==False:
+                            break
+                    except:
+                        pass
+            print(len(out)) 
         return out
     
 
     def get_post_comments_by_post_id(self,postId,count):
         out=[]
+        
         try: 
+            
             params = {
             "id":postId,
             "count":count,
@@ -97,11 +107,11 @@ class ScraperClient:
             pass
 
     
-# aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
+aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
 
-# tt=aa.get_hastag_info("cleandeodorant")
+# tt=aa.get_hastag_info("dove")
 # print(tt)
-# res=aa.get_hastag_posts_by_id(1681086669362181,20)
+res=aa.get_hastag_posts_by_id(1681086669362181,30,"")
 # print(res)
 
 # res=aa.get_post_comments_by_post_id(7242381942933490971,100)
