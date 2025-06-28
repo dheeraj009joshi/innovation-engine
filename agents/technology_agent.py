@@ -16,7 +16,7 @@ import streamlit as st
 llm = ChatOpenAI(
     model="gpt-4.1-nano",  # 🔥 specify nano model
     temperature=0.7,
-    max_tokens=2000,          # optional
+    max_tokens=1000,          # optional
     openai_api_key=aii # or use env variable
 )
 
@@ -70,7 +70,7 @@ def chunk_text(text: str, max_chars=2000, overlap=200) -> List[str]:
 
 def run(text: str,
         description:str,
-        max_chars: int = 20000,
+        max_chars: int = 2000,
         overlap: int = 200,
         max_workers: int = 10
 ) -> List[Dict]:
