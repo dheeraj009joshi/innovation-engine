@@ -12,10 +12,10 @@ from config import aii
 import streamlit as st 
 # load_dotenv()
 llm = ChatOpenAI(
-    model="gpt-4.1-nano",  # 🔥 specify nano model
+    model="gpt-4.1-nano",
     temperature=0.7,
-    max_tokens=1000,          # optional
-    openai_api_key=aii  # or use env variable
+    max_tokens=1000,        
+    openai_api_key=aii 
 )
 # Background :{description}
 PROMPT = PromptTemplate(
@@ -73,22 +73,4 @@ def run(text: str,
             out = f.result()['text']
             raw_items.append(out)
         return combine_blobs(raw_items)
-            # extract JSON array
-            # try:
-            #     start, end = out.index("["), out.rindex("]")+1
-            #     arr = json.loads(out[start:end])
-            #     if isinstance(arr, list):
-            #         raw_items.extend(arr)
-            # except:
-            #     continue
-
-    # assign IDs & dedupe
-    # final, seen = [], set()
-    # for obj in raw_items:
-    #     uid = str(uuid.uuid4())
-    #     obj["Outcome_ID"] = uid
-    #     if uid not in seen:
-    #         seen.add(uid)
-    #         final.append(obj)
-
-    # return final
+            
