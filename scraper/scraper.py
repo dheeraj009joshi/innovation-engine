@@ -153,10 +153,10 @@ class ScraperClient:
     
 aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
 
-# tt=aa.get_hastag_info("sleep")
-# print(tt)
-res=aa.get_hastag_posts_by_id_cursor(12563,10000)
-print(res)
+# # tt=aa.get_hastag_info("sleep")
+# # print(tt)
+# res=aa.get_hastag_posts_by_id_cursor(12563,10000)
+# print(res)
 
 # res=aa.get_post_comments_by_post_id(7242381942933490971,100)
 # print(res)
