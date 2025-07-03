@@ -738,6 +738,7 @@ def run(all_agent_outputs,project_description,progress_callback=None):
                 insights_str, 
                 products,
                 project_description,
+                # model="gpt-4o"
                 model="gpt-4.1-nano"
                 
             )

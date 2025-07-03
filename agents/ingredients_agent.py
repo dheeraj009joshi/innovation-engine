@@ -12,7 +12,7 @@ from config import aii
 import streamlit as st
 # load_dotenv()
 llm = ChatOpenAI(
-    model="gpt-4.1-nano",  # 🔥 specify nano model
+    model="gpt-4-1106-preview",  # 🔥 specify nano model
     temperature=0.7,
     max_tokens=1000,          # optional
     openai_api_key=aii # or use env variable
