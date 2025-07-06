@@ -105,14 +105,14 @@ def get_scraper_data(hashtag, progress_callback=None):
     def process_post(post, idx):
         try:
             # Download video
-            # video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
+            video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
             
-            # # Transcribe audio
+            # Transcribe audio
 
 
             
-            # _, transcript = whisper_manager.transcribe(idx, video_file)
-            post["transcript"] = ""
+            _, transcript = whisper_manager.transcribe(idx, video_file)
+            post["transcript"] = transcript
             
             # Get comments
             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 20)
