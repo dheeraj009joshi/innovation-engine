@@ -148,7 +148,7 @@ class ScraperClient:
                     except:
                         pass
             print(len(out)) 
-        return out
+        return out[:count]
     
     
 aa=ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")

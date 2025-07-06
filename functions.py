@@ -115,7 +115,7 @@ def get_scraper_data(hashtag, progress_callback=None):
             post["transcript"] = ""
             
             # Get comments
-            post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
+            post["comments"] = aa.get_post_comments_by_post_id(post["id"], 20)
             
             # Clean up
             if os.path.exists(f"video_{hashtag}_{idx}"):

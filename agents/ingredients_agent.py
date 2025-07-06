@@ -10,13 +10,16 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import aii
 import streamlit as st
+from config import AGENT_MAX_TOKENS,MODEL_NAME,MAX_CHUNKS
+
 # load_dotenv()
 llm = ChatOpenAI(
-    model="gpt-4.1-nano",  # 🔥 specify nano model
+    model=MODEL_NAME,  # 🔥 specify nano model
     temperature=0.7,
-    max_tokens=1000,          # optional
+    max_tokens=AGENT_MAX_TOKENS,          # optional
     openai_api_key=aii # or use env variable
 )
+
 # Background :{description}
 # Prompt setup
 
@@ -62,7 +65,7 @@ chain = LLMChain(llm=llm, prompt=PROMPT)
 
 def run(text: str,
         description:str,
-        max_chars: int = 2000,
+        max_chars: int = MAX_CHUNKS,
         overlap: int = 200,
         max_workers: int = 10
 ) -> List[Dict]:
