@@ -79,7 +79,7 @@ class ScraperClient:
                     except:
                         pass
             print(len(out)) 
-        return out
+        return out[:20]
     
 
     def get_post_comments_by_post_id(self,postId,count):
