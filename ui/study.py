@@ -308,14 +308,14 @@ All questions must speak directly to the user and every answer must help us unde
         st.markdown(f"**Respondent Orientation:** {study_data['respondent_orientation']}")
         st.markdown(f"**Final Thoughts  :** {study_data['final_thoughts']}")
 
-        st.subheader("Study Questions")
+        st.subheader("Study Questions (4x4)")
         for i, q in enumerate(study_data["questions"]):
             with st.expander(f"Question #{i+1}: {q['question']}", expanded=False):
                 # st.markdown(f"{i+1}. {q['question']}")
                 for j, opt in enumerate(q["options"]):
                     st.markdown(f"    {chr(65+j)}. {opt}")
 
-        st.subheader("Preliminary Questions")
+        st.subheader("Classification Questions")
         for i, q in enumerate(study_data["prelim_questions"]):
             with st.expander(f"Prelim #{i+1}: {q['question'].replace(f"{i+1}", "").replace(".","")}", expanded=False):
                 # st.markdown(f"{i+1}. {q['question']}")
