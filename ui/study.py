@@ -145,6 +145,14 @@ Write 8 classification questions that each directly ask the user to identify som
 
 Each of the 8 questions should include 3 mutually exclusive and unexpected answers that:
 
+    The first answer is phrased with strong love
+
+    The second answer is phrased with indifference
+
+    The third answer is phrased with strong hate
+
+    The answers should be directly relevant to the question, and be realistic and socially acceptable
+
     The answers are written as full sentences (max 10 words)
 
     The answers are rich in meaning and emotionally vivid
@@ -152,8 +160,7 @@ Each of the 8 questions should include 3 mutually exclusive and unexpected answe
     The answers are something distinct and usable for segmentation
 
     The answers are not in second person
-
-   
+    
 
 All questions must speak directly to the user and every answer must help us understand who they are on a deeper level. Avoid generic phrasing—these should feel personal, human, and revealing.
 

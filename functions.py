@@ -107,9 +107,6 @@ def get_scraper_data(hashtag, progress_callback=None):
             # Download video
             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
             
-            # Transcribe audio
-
-
             
             _, transcript = whisper_manager.transcribe(idx, video_file)
             post["transcript"] = transcript
