@@ -322,7 +322,7 @@ All questions must speak directly to the user and every answer must help us unde
                 for j, opt in enumerate(q["options"]):
                     st.markdown(f"    {chr(65+j)}. {opt}")
 
-        if st.button("💾 Create study report"):
+        if st.button("💾 Run the study with 100 synthetic respondents"):
             project_id = st.session_state.current_project["_id"]
             user = st.session_state.current_user
             username = user.get("email", "unknown_user@example.com")
