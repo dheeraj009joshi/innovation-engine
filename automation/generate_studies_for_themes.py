@@ -856,8 +856,8 @@ class StudyGenerationFromFinalizeSheet:
 
 if __name__ == "__main__":
 
-    filename="Situations-Study-Final.csv"
-    segment_column="Situation"
+    filename="Motivations-Study-Final.csv"
+    segment_column="Motivation"
     number_of_respondents=100
     worker=StudyGenerationFromFinalizeSheet(filename, segment_column)
     # worker_list_csv_objects=json.loads(worker.process_csv())  # for main 
