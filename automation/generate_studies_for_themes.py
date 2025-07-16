@@ -673,7 +673,7 @@ class StudyGenerationFromFinalizeSheet:
             page = browser.new_page()
             
             # Login process
-            progress_bar.progress(5)
+            # progress_bar.progress(5)
             # status_text.info("🚀 Starting study creation...")
             print("Initializing browser")
             
@@ -692,19 +692,19 @@ class StudyGenerationFromFinalizeSheet:
             page.locator("text=SIGN IN").click()
             print("Clicked SIGN IN")
             
-            progress_bar.progress(15)
+            # progress_bar.progress(15)
             # status_text.info("🔐 Logging in...")
 
             try:
                 page.wait_for_url("**/dashboard", timeout=10000)
-                progress_bar.progress(25)
+                # progress_bar.progress(25)
                 # status_text.info("✅ Login successful")
                 print("Now on dashboard")
                 
                 page.locator("text=Create New Study").click()
                 print("Clicked 'Create New Study'")
                 
-                progress_bar.progress(30)
+                # progress_bar.progress(30)
                 status_text.info("📝 Creating study...")
                 
                 page.wait_for_selector('input[placeholder="My Study"]', timeout=5000)
@@ -720,7 +720,7 @@ class StudyGenerationFromFinalizeSheet:
                 self.click_forward_arrow(page)
                 time.sleep(2)
                 
-                progress_bar.progress(35)
+                # progress_bar.progress(35)
                 status_text.info("❓ Adding questions...")
                 
                 max_wait = 10
@@ -757,30 +757,30 @@ class StudyGenerationFromFinalizeSheet:
                     
                 self.click_forward_arrow(page)
                 
-                progress_bar.progress(45)
+                # progress_bar.progress(45)
                 status_text.info("📝 Adding answers...")
                 
                 self.fill_answers_screen(page, data["question_1_answers"], "Q1 answers")
-                progress_bar.progress(50)
+                # progress_bar.progress(50)
                 self.fill_answers_screen(page, data["question_2_answers"], "Q2 answers")
-                progress_bar.progress(55)
+                # progress_bar.progress(55)
                 self.fill_answers_screen(page, data["question_3_answers"], "Q3 answers")
-                progress_bar.progress(60)
+                # progress_bar.progress(60)
                 self.fill_answers_screen(page, data["question_4_answers"], "Q4 answers")
                 
-                progress_bar.progress(65)
+                # progress_bar.progress(65)
                 status_text.info("👥 Adding classification questions...")
                 self.fill_classification_questions(page, data)
                 
-                progress_bar.progress(70)
+                # progress_bar.progress(70)
                 status_text.info("📋 Configuring pre-presentation...")
                 self.wait_for_heading_and_advance(page, "Pre-Presentation", progress_bar, status_text)
                 
-                progress_bar.progress(75)
+                # progress_bar.progress(75)
                 status_text.info("📝 Adding open-ended questions...")
                 self.wait_for_heading_and_advance(page, "OPEN ENDED QUESTION", progress_bar, status_text)
                 
-                progress_bar.progress(80)
+                # progress_bar.progress(80)
                 status_text.info("🧭 Setting respondent orientation...")
                 self.wait_for_heading_and_advance(
                     page, 
@@ -791,22 +791,22 @@ class StudyGenerationFromFinalizeSheet:
                     fill_value=data.get("respondent_orientation", "")
                 )
                 
-                progress_bar.progress(85)
+                # progress_bar.progress(85)
                 self.fill_rating_scale(page, data, progress_bar, status_text)
                 
-                progress_bar.progress(90)
+                # progress_bar.progress(90)
                 status_text.info("📊 Configuring post-presentation...")
                 self.wait_for_heading_and_advance(page, "POST-PRESENTATION", progress_bar, status_text)
-                
-                progress_bar.progress(92)
+                # V
+                # progress_bar.progress(92)
                 status_text.info("📝 Adding final thoughts...")
                 self.wait_for_heading_and_advance(page, "OPEN ENDED QUESTION", progress_bar, status_text)
                 
-                progress_bar.progress(95)
+                # progress_bar.progress(95)
                 status_text.info("👥 Selecting respondents...")
                 self.fill_final_thoughts(page, data)
                 
-                progress_bar.progress(97)
+                # progress_bar.progress(97)
                 status_text.info("🔍 Setting sample...")
                 self.handle_custom_sample(page)
                 
