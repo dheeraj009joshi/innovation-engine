@@ -2,6 +2,11 @@ import time
 import streamlit as st
 from playwright.sync_api import sync_playwright
 
+
+
+
+
+
 def click_forward_arrow(page, log_function):
     page.wait_for_selector('div.nav-chevron', timeout=5000)
     clicked = False
