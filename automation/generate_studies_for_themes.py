@@ -6,10 +6,7 @@ import os
 from openai import OpenAI
 import streamlit as st
 from playwright.sync_api import sync_playwright
-load_dotenv()
-
-# Access the variables
-aii = os.getenv("aii")
+from config import aii
 
 
 class StudyGenerationFromFinalizeSheet:
