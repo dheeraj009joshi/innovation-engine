@@ -822,12 +822,6 @@ class StudyGenerationFromFinalizeSheet:
                 return False
             finally:
                 browser.close()
-
-
-
-
-
-
             
     def process_csv(self):
 
@@ -847,12 +841,6 @@ class StudyGenerationFromFinalizeSheet:
      
         print(questions)
         return [questions[i:i + 4] for i in range(0, len(questions), 4)]
-
-
-
-       
-
-    
 
 if __name__ == "__main__":
 
