@@ -903,7 +903,6 @@ class AnalysisUI:
 
         # Track current selections
         current_selections_exist = False
-
         for agent_name, agent_data in st.session_state.agent_outputs.items():
             if agent_name == "ProductGenerationAgent":
                 continue
@@ -954,7 +953,72 @@ class AnalysisUI:
                     if st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}"):
                         st.json(agent_data)
 
+        st.markdown("---")
+
+        if 'theme_outputs' in st.session_state and st.session_state.theme_outputs != {}:
+            st.subheader("📊 Digester Themes")
+            for agent_name, categories in st.session_state.theme_outputs.items():
+                if agent_name == "ProductGenerationAgent":
+                    continue
+                
+                agent_title = agent_name.replace("Agent", "").strip()
+                with st.expander(f"🔎 {agent_title}", expanded=False):
+                    if isinstance(categories, list):
+                        for category in categories:
+                            theme = category.get("Theme", "Theme")
+                            description = category.get("Description", "")
+                            
+                            st.markdown(f"### 🧩 {theme}")
+                            if description:
+                                st.markdown(f"<i>{description}</i>", unsafe_allow_html=True)
+                            
+                            subthemes = category.get("Subthemes", [])
+                            for sub in subthemes:
+                                sub_title = sub.get("Subtheme", "Subtheme")
+                                sub_desc = sub.get("Description", "")
+
+                                # Simulate nesting using tabs (one per subtheme)
+                                with st.container():
+                                    st.markdown(f"#### ➤ {sub_title}")
+                                    if sub_desc:
+                                        st.markdown(f"<small><i>{sub_desc}</i></small>", unsafe_allow_html=True)
+                                    
+                                    section_keys = ["Situations", "Outcomes", "Motivations", "Technologys", "Benefits"]
+                                    available_tabs = [k for k in section_keys if sub.get(k)]
+                                    
+                                    if available_tabs:
+                                        tabs = st.tabs(available_tabs)
+                                        for idx, key in enumerate(available_tabs):
+                                            with tabs[idx]:
+                                                items = sub.get(key, [])
+                                                for itm in items[:1]:
+                                                    name = itm.get(f"{key[:-1]} Name", "")
+                                                    desc = itm.get(f"{key[:-1]} Description", "")
+                                                    consumer = itm.get("Consumer Statement", "")
+                                                    evidence = itm.get("Evidence_Snippets", "")
+                                                    
+                                                    if name:
+                                                        st.markdown(f"**🔸 {name}**")
+                                                    if desc:
+                                                        st.markdown(f"{desc}")
+                                                    if consumer:
+                                                        st.markdown(f"💬 _Consumer:_ {consumer}")
+                                                    if evidence:
+                                                        st.markdown(f"🧠 _Evidence:_ {evidence}")
+                                                    st.markdown("---")
+                    else:
+                        st.write(categories)
+        else:
+            print("themes outputs not found", st.session_state.theme_outputs)
+            if st.button("Generate Themes →", key="generate_themes"):
+                with st.spinner("Generating themes..."):
+                    if self.run_themes():
+                        st.rerun()
+                
+            
+
         
+
         st.info("You can select the specific raws from the above tables to proceed with the study from results directly")
         # Navigation buttons
         st.markdown("---")
@@ -979,13 +1043,11 @@ class AnalysisUI:
                     with st.spinner("Generating product ideas..."):
                         if self.generate_products():
                             st.rerun()
-    
+
         # Clear selections handler
-        if st.button("Generate Themes →", key="generate_themes"):
-            with st.spinner("Generating themes..."):
-                if self.run_themes():
-                    st.rerun()
-      
+       
+            
+        
         
     def _handle_select_all(self, agent_name):
         """Handle select all checkbox changes"""
@@ -1003,13 +1065,13 @@ class AnalysisUI:
 
 
 
-
     
     def run_themes(self):
         project_description=st.session_state.current_project["description"]
-
-        agents_output = st.session_state.agent_outputs["results"]
-
+        print(st.session_state.agent_outputs)
+        print("Running themes with project description:", project_description)
+        agents_output = st.session_state.agent_outputs
+        print("got the output ")
         # Dictionary to hold all generated texts
         agents_text = {}
 
@@ -1084,13 +1146,13 @@ class AnalysisUI:
         # Celebration effect
         # st.balloons()
         st.success("Digester analysis complete! Ready to review results.")
-        agents_output["ThemeGenerationAgent"] = theme_results
+        theme_results
         # Save results and move to next step
         if theme_results:
             timestamp2 = datetime.now().isoformat()
             # logging.info(f"{timestamp2}, Digester results saved with {len(str(results))} agents")
-            self.auth.save_agent_results(st.session_state.current_project["_id"], agents_output)
-            st.session_state.agent_outputs = agents_output
+            self.auth.save_themes_results(st.session_state.current_project["_id"], theme_results)
+            st.session_state.theme_outputs = theme_results
             st.session_state.completed_steps = [1, 2, 3]
             st.session_state.wizard_step = 3
             

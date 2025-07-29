@@ -15,6 +15,7 @@ class AuthService:
         self.users = self.db["users"]
         self.projects = self.db["projects"]
         self.results = self.db["agent_results"]
+        self.theme_results = self.db["theme_results"]
 
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
@@ -47,6 +48,30 @@ class AuthService:
     def save_agent_results(self, project_id, results):
         try:
             self.results.update_one(
+                {"project_id": project_id},
+                {"$set": {
+                    "results": results,
+                    "updated_at": datetime.now()
+                }},
+                upsert=True
+            )
+            self.projects.update_one(
+                {"_id": project_id},
+                {"$set": {
+                    "wizard_step": 3,
+                    "completed_steps": [1, 2, 3],
+                    "updated_at": datetime.now()
+                }}
+            )
+            return True
+        except Exception as e:
+            st.error(f"Error saving results: {str(e)}")
+            return False
+        
+        
+    def save_themes_results(self, project_id, results):
+        try:
+            self.theme_results.update_one(
                 {"project_id": project_id},
                 {"$set": {
                     "results": results,

@@ -23,6 +23,7 @@ def init_session_state():
         "current_user": None,
         "current_project": None,
         "agent_outputs": {},
+        "theme_outputs": {},
         "wizard_step": 1,
         "completed_steps": [],
         "rnd_files": [],

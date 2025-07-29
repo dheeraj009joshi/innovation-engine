@@ -193,8 +193,10 @@ def run(text: str,
             if "Themes" in i:
                 for j in i["Themes"]:
                     if "Theme" in j:
+                        print(j)
                         themes.append(j)
             else:
+                print(i)
                 themes.append(i)
         return themes
 

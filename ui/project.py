@@ -115,6 +115,7 @@ class ProjectUI:
         # print(st.session_state)
         st.session_state.study_step = 10
         st.session_state.pop("study_data")
+        st.session_state.pop("theme_outputs")
         st.session_state.current_project = project
         st.session_state.wizard_step = project.get("wizard_step", 1)
         st.session_state.completed_steps = project.get("completed_steps", [])
@@ -160,6 +161,16 @@ class ProjectUI:
                         {"_id": results["_id"]},
                         {"$set": {"results.ProductGenerationAgent": new_pg_data}}
                     )
-                
+
+
+        theme_results = self.auth.theme_results.find_one({"project_id": project["_id"]})
+        if theme_results:
+            theme_data = theme_results.get("results", {})
+            st.session_state.theme_outputs = theme_data    
+
+
+
+
+
         st.session_state.page = "dashboard"
         st.rerun()
