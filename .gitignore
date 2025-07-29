@@ -4,3 +4,4 @@ cavs/
 *.dylib
 *.so
 *.dll
+.env

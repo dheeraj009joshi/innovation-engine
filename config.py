@@ -1,17 +1,13 @@
-a="sk-proj"
+a="sk-proj-bn6wGmR7oJyA8P"
 b="-"
-c="r1jl"
-d="IYKLBxnY"
-e="09ZcURxW1zme3YC7ELws"
-f="I4vIjblWCK354qjM7vIRx"
-g="uhgBY-vEvhIflyCoxevt"
-h="4T3BlbkFJ0eIM5jNGVGLguwFnvKt9M_IvAtRXJl"
-i="UC3cB0dX1qbuo_A2h_uzHqVUU9n5I_Lzfp6K4P1KAeYA"
+c="uU0dPRBP2JoDvkqHYX70ZyZ-t7tI2iKF"
+d="KvUUDlOqqW3T-anUeMk"
+e="AzkASLaZT3BlbkFJBSNen52wfINsRhsTefFgJgfYUzWdyao9daf1VCJ07OVgWYxEtHMdZAww1gBegApd26j8hXpZgA"
 
 
 product_count = 6
-aii=a+b+c+d+e+f+g+h+i
+aii=a+b+c+d+e
 AGENT_MAX_TOKENS=3000
 MODEL_NAME="gpt-4.1-nano"  
 
-MAX_CHUNKS = 20000
+MAX_CHUNKS = 20000 
