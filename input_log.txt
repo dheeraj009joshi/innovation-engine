@@ -1,0 +1,26 @@
+
+2025-07-09 12:48:36,231 - 2025-07-09T12:48:36.231466,RND text length: 34 characters | MKT text length: 473900 characters
+2025-07-09 12:49:15,465 - 2025-07-09T12:49:15.461281, Digester results saved with 355925 agents
+                                                                         cost := 0.10$
+
+
+
+## FOR posts 2500 - 5497 ()
+2025-07-09 13:19:26,271 - 2025-07-09T13:19:26.271382,RND text length: 34 characters | MKT text length: 4065018 characters
+
+2025-07-09 13:25:00,238 - 2025-07-09T13:25:00.210194, Digester results saved with 3081118 agents
+                                                                         COST :- 1.2$
+
+
+
+## for  post 1250-2500 
+2025-07-09 13:34:18,824 - 2025-07-09T13:34:18.824763,RND text length: 34 characters | MKT text length: 4094441 characters
+
+2025-07-09 13:39:25,477 - 2025-07-09T13:39:25.453040, Digester results saved with 2851935 agents
+                                                                        cost :- 0.9$
+
+
+
+2025-07-09 13:52:56,783 - 2025-07-09T13:52:56.783422,RND text length: 34 characters | MKT text length: 5740222 characters
+2025-07-09 13:59:42,888 - 2025-07-09T13:59:42.862093, Digester results saved with 4019710 agents
+                                                                        cost :- 1.5$

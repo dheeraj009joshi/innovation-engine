@@ -7,20 +7,20 @@ import time
 from pandas import json_normalize
 import streamlit as st
 from docx import Document
-from io import BytesIO
-import pdfplumber
+
 import pdfplumber
 import queue
 import threading
 from datetime import datetime
 import uuid
 import pandas as pd
+import pandas as pd
 import concurrent.futures
 import requests
 from threading import Thread
 import fitz  # PyMuPDF
 import pytesseract
-from PIL import Image
+from functions import upload_to_azure, get_scraper_data
 import io
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
@@ -29,9 +29,19 @@ from agents.situations_agent import run as run_situations
 from agents.motivations_agent import run as run_motivations
 from agents.outcomes_agent import run as run_outcomes
 from agents.product_generation_agent import run as run_product_generation
-from functions import upload_to_azure, get_scraper_data
 
 
+# Theme agents import
+from Themes.motivation_themes import run as motivation_theme_run
+from Themes.outcome_themes import run as outcome_theme_run
+from Themes.situation_themes import run as situation_theme_run
+from Themes.technology_themes import run as technology_theme_run
+from Themes.benefit_themes import run as benefit_theme_run 
+
+
+from datetime import datetime
+import logging
+logging.basicConfig(filename='input_log.txt', level=logging.INFO, format='%(asctime)s - %(message)s')
 class AnalysisUI:
     def __init__(self, auth_service):
         self.auth = auth_service
@@ -181,6 +191,16 @@ class AnalysisUI:
                         progress_text.success("✅ Completed reading TXT file")
                     except Exception as e:
                        st.error(f"❌ Error reading TXT: {str(e)}")
+                elif f.name.endswith(".csv"):
+                    progress_text.markdown("Reading CSV file...")
+                    try:
+                      
+                        df = pd.read_csv(f)
+                        text += df.to_string(index=False)  # Convert the DataFrame to readable text
+                        progress_bar.progress(1.0)
+                        progress_text.success("✅ Completed reading CSV file")
+                    except Exception as e:
+                        st.error(f"❌ Error reading CSV: {str(e)}")
             except Exception as e:
                 st.error(f"❌ Error processing {f.name}: {str(e)}")
             finally:
@@ -228,8 +248,8 @@ class AnalysisUI:
             if not uploaded_files:
                 return True
             
-            MAX_SINGLE_FILE = 7 * 1024 * 1024  # 2MB
-            MAX_TOTAL_SIZE = 17 * 1024 * 1024  # 10MB
+            MAX_SINGLE_FILE = 170 * 1024 * 1024  # 2MB
+            MAX_TOTAL_SIZE = 170 * 1024 * 1024  # 10MB
             
             # Check individual file sizes
             for file in uploaded_files:
@@ -272,7 +292,7 @@ class AnalysisUI:
                 st.markdown("**Private Technical**")
                 private_tech = st.file_uploader(
                     "Upload confidential R&D documents",
-                    type=["pdf", "docx", "txt"],
+                    type=["pdf", "docx", "txt","csv"],
                     accept_multiple_files=True,
                     key="private_tech",
                     label_visibility="collapsed",
@@ -282,7 +302,7 @@ class AnalysisUI:
                 st.markdown("**Public Technical**")
                 public_tech = st.file_uploader(
                     "Upload published technical documents",
-                    type=["pdf", "docx", "txt"],
+                    type=["pdf", "docx", "txt","csv"],
                     accept_multiple_files=True,
                     key="public_tech",
                     label_visibility="collapsed",
@@ -324,7 +344,7 @@ class AnalysisUI:
                 st.markdown("**Private Marketing**")
                 private_mkt = st.file_uploader(
                     "Upload internal marketing materials",
-                    type=["pdf", "docx", "txt"],
+                    type=["pdf", "docx", "txt","csv"],
                     accept_multiple_files=True,
                     key="private_mkt",
                     label_visibility="collapsed",
@@ -334,7 +354,7 @@ class AnalysisUI:
                 st.markdown("**Public Marketing**")
                 public_mkt = st.file_uploader(
                     "Upload public marketing materials",
-                    type=["pdf", "docx", "txt"],
+                    type=["pdf", "docx", "txt","csv"],
                     accept_multiple_files=True,
                     key="public_mkt",
                     label_visibility="collapsed",
@@ -721,7 +741,12 @@ class AnalysisUI:
         st.info("⏳ This may take a few minutes. Please don't close your browser.")
         status_text = st.empty()
         
-        # Process files
+        
+
+        # Optional: Configure logging (writes to a file)
+        
+
+        # Process input files
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
 
@@ -733,13 +758,29 @@ class AnalysisUI:
         if st.session_state.get("social_media_data"):
             mkt_text += "\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.social_media_data)
 
-        # If rnd_text is empty or whitespace, add fallback content
+        # Fallback for empty rnd_text
         if not rnd_text.strip():
             rnd_text = "RND data\n\nSOCIAL MEDIA CONTENT:\n" + str(st.session_state.get("social_media_data", ""))
+
+        # Log the timestamp and input character counts
+        timestamp = datetime.now().isoformat()
+        rnd_length = len(rnd_text)
+        mkt_length = len(mkt_text)
+
+        # Option 1: Log to file (via logging)
+        logging.info(f"{timestamp },RND text length: {rnd_length} characters | MKT text length: {mkt_length} characters")
+
+        # Option 2: Log to Streamlit (visible in the app, for debug purposes)
+        st.write(f"[{timestamp}] RND input length: {rnd_length} chars | MKT input length: {mkt_length} chars")
 
         if not rnd_text and not mkt_text:
             st.error("No valid text extracted from files")
             return
+        
+
+
+
+
         project_description=st.session_state.current_project["description"]
         # Define agents
         agents = {
@@ -802,6 +843,8 @@ class AnalysisUI:
         
         # Save results and move to next step
         if results:
+            timestamp2 = datetime.now().isoformat()
+            logging.info(f"{timestamp2}, Digester results saved with {len(str(results))} agents")
             self.auth.save_agent_results(st.session_state.current_project["_id"], results)
             st.session_state.agent_outputs = results
             st.session_state.completed_steps = [1, 2, 3]
@@ -938,37 +981,12 @@ class AnalysisUI:
                             st.rerun()
     
         # Clear selections handler
-        if "clear_clicked" not in st.session_state:
-            st.session_state.clear_clicked = False
-
-        # Show action buttons only if we have current selections
-        if current_selections_exist or (st.session_state.selected_rows and not st.session_state.clear_clicked):
-            st.markdown("---")
-            st.info(f"You have selected rows from the following digesters :- {', '.join([k.replace('Agent', ' Digester') for k in list(st.session_state.selected_rows.keys())])}")
-            col1, col2 = st.columns(2)
-            with col1:
-                
-                if st.button("📚 Generate Study", type="primary", key=f"gen-study"):
-                    st.info("We are working of this functionality...")
-                            # st.session_state["study_step"] = 0
-                            # st.session_state["selected_idea_idx"] =  1  # store 0-based index
-
-            with col2:
-                if st.button("❌ Clear Selections"):
-                    st.session_state.selected_rows = {}
-                    st.session_state.select_all_states = {k: False for k in st.session_state.select_all_states}
-                    st.session_state.clear_clicked = True
+        if st.button("Generate Themes →", key="generate_themes"):
+            with st.spinner("Generating themes..."):
+                if self.run_themes():
                     st.rerun()
-            # # Now handle study generation AFTER loop (full-width)
-            # if st.session_state.get("study_step", 0) >= 0:
-            #     # selected_idx = st.session_state.get("selected_idea_idx", 0)
-            #     selected_idea = st.session_state.selected_rows
-            #     from .study import StudyGenerationProcess
-            #     study_gen = StudyGenerationProcess(self.auth, selected_idea,type="results")
-            #     study_gen.run()
-        # # Reset clear flag after render
-        # if st.session_state.clear_clicked:
-        #     st.session_state.clear_clicked = False
+      
+        
     def _handle_select_all(self, agent_name):
         """Handle select all checkbox changes"""
         # Toggle the select all state
@@ -979,6 +997,116 @@ class AnalysisUI:
             edited_data = st.session_state[f"editor_{agent_name}"]["edited_rows"]
             for row_idx in edited_data:
                 edited_data[row_idx]["Select"] = st.session_state.select_all_states[agent_name]
+
+
+
+
+
+
+
+    
+    def run_themes(self):
+        project_description=st.session_state.current_project["description"]
+
+        agents_output = st.session_state.agent_outputs["results"]
+
+        # Dictionary to hold all generated texts
+        agents_text = {}
+
+        # Loop through each agent dynamically
+        for agent_name, entries in agents_output.items():
+            df = pd.DataFrame(entries)
+            
+            text = ""
+            for _, row in df.iterrows():
+                entry = "\n".join([
+                    f"{key}: {row.get(key, '')}" for key in df.columns
+                ]) + "\n\n"
+                text += entry
+
+            agents_text[agent_name] = text
+
+        # Define agents
+        theme_agents = {
+        # "IngredientsAgent": (run_ingredients, rnd_text, project_description),
+        "TechnologyAgent": (technology_theme_run, agents_text["TechnologyAgent"], project_description),
+        "BenefitsAgent": (benefit_theme_run, agents_text["BenefitsAgent"], project_description),
+        "SituationsAgent": (situation_theme_run, agents_text["SituationsAgent"], project_description),
+        "MotivationsAgent": (motivation_theme_run, agents_text["MotivationsAgent"], project_description),
+        "OutcomesAgent": (outcome_theme_run, agents_text["OutcomesAgent"], project_description),
+    }
+        # Create progress bar
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        theme_results = {}
+        theme_agent_count = len(theme_agents)
+
+        # Create a container for agent status messages
+        status_container = st.container()
+
+        # Initialize status messages
+        status_messages = {
+            agent: status_container.empty() for agent in theme_agents
+        }
+
+        # Set initial status
+        for agent in theme_agents:
+            status_messages[agent].info(f"🟡 Starting...  {agent.replace('Agent', '')} ")
+
+        # Run agents with ThreadPoolExecutor
+        with ThreadPoolExecutor() as executor:
+            futures = {executor.submit(fn, text,description): agent for agent, (fn, text,description) in theme_agents.items()}
+            
+            for i, future in enumerate(as_completed(futures)):
+                agent = futures[future]
+                
+                try:
+                    result = future.result()
+                    theme_results[agent] = result
+                    # Update status to success
+                    status_messages[agent].success(f"✅ {agent.replace('Agent', '')} completed successfully")
+                    
+                    # Show quick notification
+                    st.toast(f"✨ {agent.replace('Agent', ' Themes')} finished!", icon="✅")
+                except Exception as e:
+                    status_messages[agent].error(f"❌ {agent.replace('Agent', '')} failed: {str(e)}")
+                    st.toast(f"⚠️ {agent.replace('Agent', '')} failed", icon="❌")
+                
+                # Update progress bar
+                progress = int((i + 1) / theme_agent_count * 100)
+                progress_bar.progress(progress)
+                status_text.info(f"⏳ Progress: {progress}% complete | {i+1}/{theme_agent_count} agents finished")
+
+        # Final completion
+        progress_bar.progress(100)
+
+
+        # Celebration effect
+        # st.balloons()
+        st.success("Digester analysis complete! Ready to review results.")
+        agents_output["ThemeGenerationAgent"] = theme_results
+        # Save results and move to next step
+        if theme_results:
+            timestamp2 = datetime.now().isoformat()
+            # logging.info(f"{timestamp2}, Digester results saved with {len(str(results))} agents")
+            self.auth.save_agent_results(st.session_state.current_project["_id"], agents_output)
+            st.session_state.agent_outputs = agents_output
+            st.session_state.completed_steps = [1, 2, 3]
+            st.session_state.wizard_step = 3
+            
+            # Auto-rerun after short delay to show results
+            time.sleep(2)
+            st.rerun()
+
+
+
+
+
+
+
+
+
+
 
 
 

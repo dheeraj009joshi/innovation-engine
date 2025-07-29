@@ -36,6 +36,7 @@ def parse_maybe_json_blob(blob: str) -> Union[Dict, List, None]:
         return None
 
 def combine_blobs(raw_blobs: List[str]) -> List[Dict]:
+    print(raw_blobs)
     combined: List[Dict] = []
     for i, blob in enumerate(raw_blobs):
         obj = parse_maybe_json_blob(blob)
