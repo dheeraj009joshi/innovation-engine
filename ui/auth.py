@@ -141,19 +141,22 @@ class AuthUI:
 
     
                     if not error:
-                        if self.auth.create_user(username, email, password, name, country, gender, dob):
+                        result = self.auth.create_user(username, email, password, name, country, gender, dob)
+                        if isinstance(result, tuple) and result[0]:  # success
+                            hashed_password = result[1]
                             with st.spinner("Creating account..."):
                                 st.info("This may take a few seconds, please wait...")
                                 # Run account creation automation
                                 asyncio.run(create_account({
                                     "name": name,
                                     "email": email,
-                                    "password": password,
+                                    "password": hashed_password,  # Pass the hashed password here
                                     "country": country,
                                     "gender": gender
                                 }))
                                 st.info("Account initialization complete! Please check your email to verify your account.")
                                 time.sleep(10)
+
                             st.success("Account created! Please login.")
                             st.session_state.page = "login"
                             st.rerun()

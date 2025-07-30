@@ -23,6 +23,7 @@ class AuthService:
     def create_user(self, username, email, password, name, country="United States", gender="male", dob=None):
         if self.users.find_one({"$or": [{"username": username}, {"email": email}]}):
             return False
+        has_pass=self.hash_password(password)
         self.users.insert_one({
             "_id": str(uuid.uuid4()),
             "username": username,
@@ -31,12 +32,12 @@ class AuthService:
             "country": country,
             "gender": gender,
             "dob": dob.isoformat() if dob else None,
-            "password": self.hash_password(password),
+            "password":has_pass ,
             "created_at": datetime.now(),
             "last_login": None,
             "current_project": None
         })
-        return True
+        return True, has_pass
 
         
 
