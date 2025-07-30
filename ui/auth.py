@@ -126,6 +126,9 @@ class AuthUI:
                     if len(password) < 8:
                         st.error("Password must be at least 8 characters")
                         error = True
+                    if len(name) < 3:
+                        st.error("Name must be at least 3 characters")
+                        error = True
                     if password != confirm_password:
                         st.error("Passwords don't match")
                         error = True

@@ -6,7 +6,7 @@ from playwright.async_api import async_playwright
 
 async def main(account):
     # Read account info from JSON
-    name = account["name"]+"  " if len(account["name"]) < 3 else account["name"]
+    name = account["name"]
     email = account["email"]
     password = account["password"]
     country = account.get("country", "United States")
