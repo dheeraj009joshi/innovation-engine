@@ -1,11 +1,13 @@
 
+import datetime
 import time
 from functions import send_reset_email
 import streamlit as st
 import re
 from streamlit_cookies_manager import EncryptedCookieManager
-
-
+from automation.account_creation import main as create_account
+import asyncio
+from config import countries
 
 
 class AuthUI:
@@ -94,16 +96,21 @@ class AuthUI:
     def signup_form(self):
         with st.container():
             st.markdown(
-        "<div style='text-align: center;'>"
-        "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
-        "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
-        "</div>",
-        unsafe_allow_html=True
-    )
+                "<div style='text-align: center;'>"
+                "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
+                "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+                "</div>",
+                unsafe_allow_html=True
+            )
             st.title("🚀 Get Started")
+
             with st.form("signup_form"):
+                name = st.text_input("Full Name")
                 username = st.text_input("Username (min 4 characters)")
                 email = st.text_input("Email")
+                country = st.selectbox("Country", options=countries, index=countries.index("United States"))
+                gender = st.selectbox("Gender", options=["male", "female", "other"])
+                dob = st.date_input("Date of Birth",min_value=datetime.date(1800, 1, 1),max_value=datetime.date.today())
                 password = st.text_input("Password (min 8 characters)", type="password")
                 confirm_password = st.text_input("Confirm Password", type="password")
                 submitted = st.form_submit_button("Create Account")
@@ -122,15 +129,34 @@ class AuthUI:
                     if password != confirm_password:
                         st.error("Passwords don't match")
                         error = True
-                    
+                    if not name.strip():
+                        st.error("Name is required")
+                        error = True
+                    if not dob:
+                        st.error("Date of Birth is required")
+                        error = True
+
+    
                     if not error:
-                        if self.auth.create_user(username, email, password):
+                        if self.auth.create_user(username, email, password, name, country, gender, dob):
+                            with st.spinner("Creating account..."):
+                                st.info("This may take a few seconds, please wait...")
+                                # Run account creation automation
+                                asyncio.run(create_account({
+                                    "name": name,
+                                    "email": email,
+                                    "password": password,
+                                    "country": country,
+                                    "gender": gender
+                                }))
+                                st.info("Account initialization complete! Please check your email to verify your account.")
+                                time.sleep(10)
                             st.success("Account created! Please login.")
                             st.session_state.page = "login"
                             st.rerun()
                         else:
                             st.error("Username or email already exists")
-            
+
             st.markdown("</div>", unsafe_allow_html=True)
             if st.button("← Back to Login"):
                 st.session_state.page = "login"

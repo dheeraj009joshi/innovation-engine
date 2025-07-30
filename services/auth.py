@@ -20,20 +20,25 @@ class AuthService:
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
 
-    def create_user(self, username, email, password):
+    def create_user(self, username, email, password, name, country="United States", gender="male", dob=None):
         if self.users.find_one({"$or": [{"username": username}, {"email": email}]}):
             return False
         self.users.insert_one({
             "_id": str(uuid.uuid4()),
             "username": username,
             "email": email,
+            "name": name,
+            "country": country,
+            "gender": gender,
+            "dob": dob.isoformat() if dob else None,
             "password": self.hash_password(password),
             "created_at": datetime.now(),
             "last_login": None,
             "current_project": None
         })
         return True
-    
+
+        
 
     def verify_user(self, username, password):
         user = self.users.find_one({"username": username})
