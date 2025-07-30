@@ -6,14 +6,14 @@ from playwright.async_api import async_playwright
 
 async def main(account):
     # Read account info from JSON
-    name = account["name"]
+    name = account["name"]+"  " if len(account["name"]) < 3 else account["name"]
     email = account["email"]
     password = account["password"]
     country = account.get("country", "United States")
     gender = account.get("gender", "male")
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto("https://www.bimileap.com/signup")
 
