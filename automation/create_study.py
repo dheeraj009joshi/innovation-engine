@@ -297,7 +297,7 @@ def create_study_for_user(data, progress_bar, status_text, log_function):
     STUDY_NAME = data["study_name"]
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         
         # Login process
