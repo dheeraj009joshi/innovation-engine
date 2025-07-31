@@ -916,110 +916,129 @@ class AnalysisUI:
                 
                 # Add Select column initialized with select all state
                 df.insert(0, "Select", st.session_state.select_all_states[agent_name])
-                
-                with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}",expanded=False):
-                    # Select all checkbox with synchronization
-                    select_all = st.checkbox(
-                        "Select all",
-                        value=st.session_state.select_all_states[agent_name],
-                        key=f"select_all_{agent_name}",
-                        on_change=lambda a=agent_name: self._handle_select_all(a)
-                    )
-                    
-                    # Display the dataframe
-                    edited_df = st.data_editor(
-                        df,
-                        key=f"editor_{agent_name}",
-                        use_container_width=True,
-                        disabled=df.columns[1:],  # Only allow editing Select column
-                        hide_index=True
-                    )
-                    
-                    # Update selection states
-                    selected_rows = edited_df[edited_df["Select"]]
-                    if not selected_rows.empty:
-                        st.session_state.selected_rows[agent_name] = selected_rows.to_dict('records')
-                        current_selections_exist = True
-                        # Update select all state if all rows are selected
-                        if len(selected_rows) == len(df):
-                            st.session_state.select_all_states[agent_name] = True
-                        else:
+                cols = st.columns([0.85, 0.15]) 
+                with cols[0]:
+            
+                    with st.expander(f"🔎 {agent_name.replace('Agent', ' Digester')}",expanded=False):
+                        # Select all checkbox with synchronization
+                        select_all = st.checkbox(
+                            "Select all",
+                            value=st.session_state.select_all_states[agent_name],
+                            key=f"select_all_{agent_name}",
+                            on_change=lambda a=agent_name: self._handle_select_all(a)
+                        )
+                        
+                        # Display the dataframe
+                        edited_df = st.data_editor(
+                            df,
+                            key=f"editor_{agent_name}",
+                            use_container_width=True,
+                            disabled=df.columns[1:],  # Only allow editing Select column
+                            hide_index=True
+                        )
+                        
+                        # Update selection states
+                        selected_rows = edited_df[edited_df["Select"]]
+                        if not selected_rows.empty:
+                            st.session_state.selected_rows[agent_name] = selected_rows.to_dict('records')
+                            current_selections_exist = True
+                            # Update select all state if all rows are selected
+                            if len(selected_rows) == len(df):
+                                st.session_state.select_all_states[agent_name] = True
+                            else:
+                                st.session_state.select_all_states[agent_name] = False
+                        elif agent_name in st.session_state.selected_rows:
+                            del st.session_state.selected_rows[agent_name]
                             st.session_state.select_all_states[agent_name] = False
-                    elif agent_name in st.session_state.selected_rows:
-                        del st.session_state.selected_rows[agent_name]
-                        st.session_state.select_all_states[agent_name] = False
 
-                    # Show raw JSON option
-                    if st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}"):
-                        st.json(agent_data)
-
-        st.markdown("---")
-
-        if 'theme_outputs' in st.session_state and st.session_state.theme_outputs != {}:
-            st.subheader("📊 Digester Themes")
-            for agent_name, categories in st.session_state.theme_outputs.items():
-                if agent_name == "ProductGenerationAgent":
-                    continue
+                        # Show raw JSON option
+                        if st.checkbox(f"Show raw JSON for {agent_name}", key=f"raw_{agent_name}"):
+                            st.json(agent_data)
                 
-                agent_title = agent_name.replace("Agent", "").strip()
-                with st.expander(f"🔎 {agent_title}", expanded=False):
-                    if isinstance(categories, list):
-                        for category in categories:
-                            theme = category.get("Theme", "Theme")
-                            description = category.get("Description", "")
-                            
-                            st.markdown(f"### 🧩 {theme}")
-                            if description:
-                                st.markdown(f"<i>{description}</i>", unsafe_allow_html=True)
-                            
-                            subthemes = category.get("Subthemes", [])
-                            for sub in subthemes:
-                                sub_title = sub.get("Subtheme", "Subtheme")
-                                sub_desc = sub.get("Description", "")
+                with cols[1]:
 
-                                # Simulate nesting using tabs (one per subtheme)
-                                with st.container():
-                                    st.markdown(f"#### ➤ {sub_title}")
-                                    if sub_desc:
-                                        st.markdown(f"<small><i>{sub_desc}</i></small>", unsafe_allow_html=True)
+                   if st.button("📚 Prepare Study", type="primary", key=f"gen-study-{agent_name}"):
+                        st.session_state["agent_study_step"] = 0
+                        st.session_state["selected_agent_for_study"] = agent_name # store 0-based index
+                        st.session_state["selected_agent_data_for_study"] = df # store 0-based index
+                        st.session_state["run_agent_study_once"] = True 
+        if st.session_state.get("agent_study_step", 0) >= 0:
+            from .study import AgentsStudyGenerationProcess
+            study_gen = AgentsStudyGenerationProcess(self.auth,st.session_state["selected_agent_for_study"], st.session_state["selected_agent_data_for_study"])
+            study_gen.run()
+
+
+
+        #########################. THEMES CODE STARTS HERE #########################
+
+
+        # st.markdown("---")
+
+        # if 'theme_outputs' in st.session_state and st.session_state.theme_outputs != {}:
+        #     st.subheader("📊 Digester Themes")
+        #     for agent_name, categories in st.session_state.theme_outputs.items():
+        #         if agent_name == "ProductGenerationAgent":
+        #             continue
+                
+        #         agent_title = agent_name.replace("Agent", "").strip()
+        #         with st.expander(f"🔎 {agent_title}", expanded=False):
+        #             if isinstance(categories, list):
+        #                 for category in categories:
+        #                     theme = category.get("Theme", "Theme")
+        #                     description = category.get("Description", "")
+                            
+        #                     st.markdown(f"### 🧩 {theme}")
+        #                     if description:
+        #                         st.markdown(f"<i>{description}</i>", unsafe_allow_html=True)
+                            
+        #                     subthemes = category.get("Subthemes", [])
+        #                     for sub in subthemes:
+        #                         sub_title = sub.get("Subtheme", "Subtheme")
+        #                         sub_desc = sub.get("Description", "")
+
+        #                         # Simulate nesting using tabs (one per subtheme)
+        #                         with st.container():
+        #                             st.markdown(f"#### ➤ {sub_title}")
+        #                             if sub_desc:
+        #                                 st.markdown(f"<small><i>{sub_desc}</i></small>", unsafe_allow_html=True)
                                     
-                                    section_keys = ["Situations", "Outcomes", "Motivations", "Technologys", "Benefits"]
-                                    available_tabs = [k for k in section_keys if sub.get(k)]
+        #                             section_keys = ["Situations", "Outcomes", "Motivations", "Technologys", "Benefits"]
+        #                             available_tabs = [k for k in section_keys if sub.get(k)]
                                     
-                                    if available_tabs:
-                                        tabs = st.tabs(available_tabs)
-                                        for idx, key in enumerate(available_tabs):
-                                            with tabs[idx]:
-                                                items = sub.get(key, [])
-                                                for itm in items[:1]:
-                                                    name = itm.get(f"{key[:-1]} Name", "")
-                                                    desc = itm.get(f"{key[:-1]} Description", "")
-                                                    consumer = itm.get("Consumer Statement", "")
-                                                    evidence = itm.get("Evidence_Snippets", "")
+        #                             if available_tabs:
+        #                                 tabs = st.tabs(available_tabs)
+        #                                 for idx, key in enumerate(available_tabs):
+        #                                     with tabs[idx]:
+        #                                         items = sub.get(key, [])
+        #                                         for itm in items[:1]:
+        #                                             name = itm.get(f"{key[:-1]} Name", "")
+        #                                             desc = itm.get(f"{key[:-1]} Description", "")
+        #                                             consumer = itm.get("Consumer Statement", "")
+        #                                             evidence = itm.get("Evidence_Snippets", "")
                                                     
-                                                    if name:
-                                                        st.markdown(f"**🔸 {name}**")
-                                                    if desc:
-                                                        st.markdown(f"{desc}")
-                                                    if consumer:
-                                                        st.markdown(f"💬 _Consumer:_ {consumer}")
-                                                    if evidence:
-                                                        st.markdown(f"🧠 _Evidence:_ {evidence}")
-                                                    st.markdown("---")
-                    else:
-                        st.write(categories)
-        else:
-            print("themes outputs not found", st.session_state.theme_outputs)
-            if st.button("Generate Themes →", key="generate_themes"):
-                with st.spinner("Generating themes..."):
-                    if self.run_themes():
-                        st.rerun()
+        #                                             if name:
+        #                                                 st.markdown(f"**🔸 {name}**")
+        #                                             if desc:
+        #                                                 st.markdown(f"{desc}")
+        #                                             if consumer:
+        #                                                 st.markdown(f"💬 _Consumer:_ {consumer}")
+        #                                             if evidence:
+        #                                                 st.markdown(f"🧠 _Evidence:_ {evidence}")
+        #                                             st.markdown("---")
+        #             else:
+        #                 st.write(categories)
+        # else:
+        #     print("themes outputs not found", st.session_state.theme_outputs)
+        #     if st.button("Generate Themes →", key="generate_themes"):
+        #         with st.spinner("Generating themes..."):
+        #             if self.run_themes():
+        #                 st.rerun()
                 
             
 
         
 
-        st.info("You can select the specific raws from the above tables to proceed with the study from results directly")
+        # st.info("You can select the specific raws from the above tables to proceed with the study from results directly")
         # Navigation buttons
         st.markdown("---")
          # Navigation buttons
@@ -1473,7 +1492,7 @@ class AnalysisUI:
                             st.session_state["selected_idea_idx"] = idx - 1  # store 0-based index
 
         # Now handle study generation AFTER loop (full-width)
-        if st.session_state.get("study_step", 0) >= 0:
+        if st.session_state.get("study_step", 0) >=0:
             selected_idx = st.session_state.get("selected_idea_idx", 0)
             selected_idea = ideas[selected_idx]
             from .study import StudyGenerationProcess

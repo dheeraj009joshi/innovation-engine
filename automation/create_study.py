@@ -292,12 +292,12 @@ def handle_done_screen(page, data, progress_bar, status_text, log_function):
 
 # Main study creation function with UI integration
 def create_study_for_user(data, progress_bar, status_text, log_function): 
-    USERNAME = "mindgenometest@gmail.com"
-    PASSWORD = "mindgenome123"
+    # USERNAME = "mindgenometest@gmail.com"
+    # PASSWORD = "mindgenome123"
     STUDY_NAME = data["study_name"]
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
         page = browser.new_page()
         
         # Login process
@@ -313,8 +313,8 @@ def create_study_for_user(data, progress_bar, status_text, log_function):
         
         page.wait_for_selector('input[placeholder="Email"]', timeout=5000)
         page.wait_for_selector('input[type="password"]', timeout=5000)
-        page.fill('input[placeholder="Email"]', USERNAME)
-        page.fill('input[type="password"]', PASSWORD)
+        page.fill('input[placeholder="Email"]', data["username"])
+        page.fill('input[type="password"]', data["password"])
         log_function("Filled credentials")
         
         page.locator("text=SIGN IN").click()

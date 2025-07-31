@@ -42,7 +42,18 @@ def init_session_state():
                 "respondent_orientation":""
             },
         "page": "login",
-        "last_hashtags": ""
+        "last_hashtags": "",
+        "selected_agent_for_study":"",
+        "selected_agent_data_for_study":{},
+        "agent_study_data":{
+                "study_name": "",
+                "study_description": "",
+                "questions": [],
+                "prelim_questions": [],
+                "final_thoughts":"",
+                "respondent_orientation":""
+            },
+      
     }
     for key, value in required_keys.items():
         if key not in st.session_state:

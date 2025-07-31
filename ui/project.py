@@ -114,7 +114,9 @@ class ProjectUI:
         # clearing study state so that the study data won't come across the different projects 
         # print(st.session_state)
         st.session_state.study_step = 10
+        st.session_state.agent_study_step = 10
         st.session_state.pop("study_data")
+        st.session_state.pop("agent_study_data")
         st.session_state.pop("theme_outputs")
         st.session_state.current_project = project
         st.session_state.wizard_step = project.get("wizard_step", 1)
