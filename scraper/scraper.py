@@ -147,6 +147,7 @@ class ScraperClient:
                             break
                     except:
                         pass
+           
             print(len(out)) 
         return out[:count]
     

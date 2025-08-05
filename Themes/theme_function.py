@@ -39,11 +39,11 @@ def run_themes():
     # Define agents
     agents = {
         # "IngredientsAgent": (run_ingredients, rnd_text, project_description),
-        "TechnologyAgent": (technology_run, agents_text["TechnologyAgent"], project_description),
-        "BenefitsAgent": (benefit_run, agents_text["BenefitsAgent"], project_description),
-        "SituationsAgent": (situation_run, agents_text["SituationsAgent"], project_description),
-        "MotivationsAgent": (motivation_run, agents_text["MotivationsAgent"], project_description),
-        "OutcomesAgent": (outcome_run, agents_text["OutcomesAgent"], project_description),
+        "TechnologyAgent": (technology_theme_run, agents_text["TechnologyAgent"], project_description),
+        "BenefitsAgent": (benefit_theme_run, agents_text["BenefitsAgent"], project_description),
+        "SituationsAgent": (situation_theme_run, agents_text["SituationsAgent"], project_description),
+        "MotivationsAgent": (motivation_theme_run, agents_text["MotivationsAgent"], project_description),
+        "OutcomesAgent": (outcome_theme_run, agents_text["OutcomesAgent"], project_description),
     }
     # Create progress bar
     progress_bar = st.progress(0)
