@@ -7,7 +7,8 @@ import time
 from pandas import json_normalize
 import streamlit as st
 from docx import Document
-
+import os
+from PyPDF2 import PdfReader
 import pdfplumber
 import queue
 import threading
@@ -20,6 +21,7 @@ import requests
 from threading import Thread
 import fitz  # PyMuPDF
 import pytesseract
+import tempfile
 from functions import upload_to_azure, get_scraper_data
 import io
 from agents.ingredients_agent import run as run_ingredients
@@ -29,7 +31,7 @@ from agents.situations_agent import run as run_situations
 from agents.motivations_agent import run as run_motivations
 from agents.outcomes_agent import run as run_outcomes
 from agents.product_generation_agent import run as run_product_generation
-
+from automation.get_papers_from_google import scrape_scholar_pages
 
 # Theme agents import
 from Themes.motivation_themes import run as motivation_theme_run
@@ -369,7 +371,70 @@ class AnalysisUI:
                 mkt_files.extend(public_mkt)
             st.session_state.mkt_files = mkt_files
 
-        # # Social Media Scraper Section
+
+
+
+        # # # # # # # ####### Scrape Papers ########################
+
+
+        with st.expander("📄 Scrape Papers", expanded=True):
+            query = st.text_input("🔍 Enter your search query")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                start_year = st.number_input("📅 Start Year", min_value=1900, max_value=2100, value=2020)
+            with col2:
+                end_year = st.number_input("📅 End Year", min_value=1900, max_value=2100, value=2024)
+
+            if st.button("🚀 Search Papers"):
+                with st.spinner("Scraping papers..."):
+                    # --- Replace with your actual scraper ---
+                    results = scrape_scholar_pages(f"{query}  filetype:pdf", start_year, end_year)
+                    st.session_state["scholar_search_results"] = results
+                    st.success(f"✅ Found {len(results)} papers.")
+
+            if "scholar_search_results" in st.session_state:
+                st.markdown(" ✅ Select up to 5 papers to process")
+                options = [
+                    f"{res['title']} ({res['year']}) (Cited by {res['cited_by']})" for res in st.session_state["scholar_search_results"]
+                ]
+                selected = st.multiselect("📑 Select Papers", options, max_selections=5)
+
+                selected_papers = [
+                    p for p in st.session_state["scholar_search_results"]
+                    if f"{p['title']} ({p['year']}) " in selected
+                ]
+                if not st.session_state.get("extracted_texts"):
+                    if selected and st.button("⚙️ Process Selected Papers"):
+                        extracted_texts = []
+                        with st.spinner("🔄 Downloading and extracting text..."):
+                            for paper in selected_papers:
+                                try:
+                                    response = requests.get(paper["pdf_link"], timeout=15)
+                                    if response.status_code == 200:
+                                        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
+                                            tmp_pdf.write(response.content)
+                                            tmp_pdf_path = tmp_pdf.name
+
+                                        reader = PdfReader(tmp_pdf_path)
+                                        text = "\n".join([page.extract_text() or "" for page in reader.pages])
+                                        extracted_texts.append({
+                                            "title": paper["title"],
+                                            "text": text.strip()
+                                        })
+
+                                        os.remove(tmp_pdf_path)
+                                except Exception as e:
+                                    st.info(f"❌ Error processing {paper['title']}: {e}. Remove it from the list and add another one.")
+                        st.session_state["extracted_texts"] = "\n\n".join(f"{item['title']}\n{item['text']}" for item in extracted_texts)
+                        print(f"Extracted texts: {st.session_state['extracted_texts']}")
+                        st.success(f"✅  {len(selected_papers)} papers processed.")
+                else:
+                    st.info("### Already processed")
+                    
+                   
+
+       ####### # # Social Media Scraper Section.  ########
 
         # Initialize session state
         if 'hashtags_list' not in st.session_state:
@@ -646,7 +711,7 @@ class AnalysisUI:
                 
                 if st.button("Start Digester →", key="start_Digester", 
                             disabled=not (st.session_state.rnd_files or st.session_state.mkt_files or 
-                                        st.session_state.research_result or st.session_state.social_media_data)):
+                                        st.session_state.research_result or st.session_state.social_media_data or st.session_state.extracted_texts)):
                     # Save files to Azure and update metadata
                     with st.spinner("Saving files to system..."):
                         tech_metadata = self.save_files_to_azure(st.session_state.rnd_files, "technical")
@@ -749,7 +814,10 @@ class AnalysisUI:
         # Process input files
         rnd_text = self.process_files(st.session_state.rnd_files)
         mkt_text = self.process_files(st.session_state.mkt_files)
+        
 
+        if st.session_state.get("extracted_texts"):
+            rnd_text += str(st.session_state.extracted_texts)
         # Append research result if available
         if st.session_state.get("research_result"):
             rnd_text += "\n\nRESEARCH FINDINGS:\n" + str(st.session_state.research_result)

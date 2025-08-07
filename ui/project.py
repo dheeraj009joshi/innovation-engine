@@ -118,6 +118,8 @@ class ProjectUI:
         st.session_state.pop("study_data")
         st.session_state.pop("agent_study_data")
         st.session_state.pop("theme_outputs")
+        st.session_state.pop("extracted_texts",None)
+        st.session_state.pop("scholar_search_results",None)
         st.session_state.current_project = project
         st.session_state.wizard_step = project.get("wizard_step", 1)
         st.session_state.completed_steps = project.get("completed_steps", [])

@@ -14,6 +14,7 @@ class AuthService:
         self.db = get_db()
         self.users = self.db["users"]
         self.projects = self.db["projects"]
+        self.studies = self.db["studies"]
         self.results = self.db["agent_results"]
         self.theme_results = self.db["theme_results"]
 
@@ -184,7 +185,7 @@ class AuthService:
     def save_file_metadata(self, project_id, file_metadata):
         try:
             self.projects.update_one(
-                {"_id": project_id},
+                {"_id": str(uuid.uuid4())},
                 {"$set": {
                     "file_metadata": file_metadata,
                     "updated_at": datetime.now()
@@ -221,7 +222,15 @@ class AuthService:
     def delete_project(self,project_id):
         return self.projects.delete_one({"_id":project_id})
     
+    def save_study_data(self,project_id, study_data):
+        """Save study data to project"""
+        study_data["_id"] = str(uuid.uuid4())
+        study_data["created_at"] = datetime.now()   
+        study_data["project_id"] = project_id
+        return self.studies.insert_one(study_data)
 
+
+        return 
     
     def reset_password(self, token, new_password):
         user = self.users.find_one({"reset_token": token})

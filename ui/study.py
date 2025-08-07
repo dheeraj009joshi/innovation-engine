@@ -405,9 +405,11 @@ All questions must speak directly to the user and every answer must help us unde
             if success:
                 # Clear session data
                 if 'study_data' in st.session_state:
+                    self.auth.save_study_data(project_id, st.session_state.agent_study_data)
                     del st.session_state['study_data']
                 
                 # Show success message
+                
                 st.success("✅ Study created successfully! Check your email.")
                 
                 # Clear progress elements after delay
@@ -866,9 +868,11 @@ All questions must speak directly to the user and every answer must help us unde
             if success:
                 # Clear session data
                 if 'study_data' in st.session_state:
+                    self.auth.save_study_data(project_id, st.session_state.agent_study_data)
                     del st.session_state['study_data']
                 
                 # Show success message
+                
                 st.success("✅ Study created successfully! Check your email.")
                 
                 # Clear progress elements after delay
