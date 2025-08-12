@@ -172,6 +172,7 @@ def load_cookies(driver, url, path=COOKIE_FILE):
 
 # === MAIN SCRAPER ===
 def scrape_scholar_pages(query, start_year, end_year):
+    print("inside ppr scraping ")
     options = Options()
     options.add_argument("--headless")              # <- enables headless mode
     options.add_argument("--disable-gpu")           # <- required for some systems
