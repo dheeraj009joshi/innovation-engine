@@ -386,7 +386,7 @@ class AnalysisUI:
             with col2:
                 end_year = st.number_input("📅 End Year", min_value=1900, max_value=2100, value=2025)
 
-            if st.button("🚀 Search Papers"):
+            if st.button("🚀 Search Papers using google scholar "):
                 with st.spinner("Scraping papers..."):
                     # --- Replace with your actual scraper ---
                     results = scrape_scholar_pages(f"{query}  filetype:pdf", start_year, end_year)
