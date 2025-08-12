@@ -180,7 +180,7 @@ def scrape_scholar_pages(query, start_year, end_year):
     options.add_argument("--window-size=1920,1080") # <- set screen size to avoid layout issues
     options.add_argument("--no-sandbox")            # <- optional, useful in some environments
     options.add_argument("--disable-dev-shm-usage") # <- optional for Docker or limited systems
-
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
     options.add_argument("--start-maximized")
     driver = webdriver.Chrome(options=options)
 
