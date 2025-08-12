@@ -193,9 +193,11 @@ def scrape_scholar_pages(query, start_year, end_year):
             driver.get("https://scholar.google.com")
             load_cookies(driver, url)
         else:
+            print("🍪 No cookies found, starting fresh.")
+
             driver.get(url)
         time.sleep(3)
-
+        print("checking if captcha required ")
         if is_captcha_present(driver):
             print("🛑 CAPTCHA detected. Solving...")
             token = solve_fastcaptcha_dataportal(driver.current_url, SITE_KEY, API_KEY,driver)
