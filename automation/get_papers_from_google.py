@@ -149,6 +149,7 @@ def inject_token(driver, token):
 
 
 def is_captcha_present(driver):
+    print("checking if captcha required ", driver.page_source.lower())
     return "recaptcha" in driver.page_source.lower() or "are you a robot" in driver.page_source.lower()
 
 def save_cookies(driver, path=COOKIE_FILE):
