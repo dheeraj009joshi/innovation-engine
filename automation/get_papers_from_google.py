@@ -3,11 +3,13 @@ import pickle
 import requests
 import os
 import re
+
+import urllib
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from urllib.parse import urlencode
-
+import undetected_chromedriver as uc
 import time
 import pickle
 import requests
@@ -149,7 +151,10 @@ def inject_token(driver, token):
 
 
 def is_captcha_present(driver):
-    print("checking if captcha required ", driver.page_source.lower())
+    print("checking if captcha required ", driver.page_source.lower()[:30000])
+    rrrr=open("aa.html","w")
+    rrrr.write(driver.page_source.lower())
+    rrrr.close()
     return "recaptcha" in driver.page_source.lower() or "are you a robot" in driver.page_source.lower()
 
 def save_cookies(driver, path=COOKIE_FILE):
@@ -170,19 +175,32 @@ def load_cookies(driver, url, path=COOKIE_FILE):
                 pass
     print("🍪 Cookies loaded.")
     driver.get(url)
-
+def get_random_proxy():
+    urls = []
+    resp = urllib.request.urlopen("http://list.didsoft.com/get?email=tikuntechnologies@gmail.com&pass=bwnh68&pid=http1000&showcountry=no&level=1&country=US")
+    data = resp.read().decode('utf-8').strip()
+    urls = data.split("\n")
+    return random.choice(urls) 
 # === MAIN SCRAPER ===
 def scrape_scholar_pages(query, start_year, end_year):
     print("inside ppr scraping ")
-    options = Options()
-    options.add_argument("--headless")              # <- enables headless mode
-    options.add_argument("--disable-gpu")           # <- required for some systems
-    options.add_argument("--window-size=1920,1080") # <- set screen size to avoid layout issues
-    options.add_argument("--no-sandbox")            # <- optional, useful in some environments
-    options.add_argument("--disable-dev-shm-usage") # <- optional for Docker or limited systems
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-    options.add_argument("--start-maximized")
-    driver = webdriver.Chrome(options=options)
+    chrome_options = uc.ChromeOptions()
+    chrome_options.headless = True  # Headless mode for AWS VM
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--disable-blink-features")
+    chrome_options.add_argument("--disable-notifications")
+    chrome_options.add_argument("--disable-popup-blocking")
+
+    # Start undetected Chrome
+    driver = uc.Chrome(options=chrome_options)
 
     results = []
     for start in [0, 10,20]:  # Scrape 2 pages
