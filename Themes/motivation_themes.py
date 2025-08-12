@@ -79,52 +79,32 @@ Good Consumer Statement: “The alarm keeps ringing, but you never really wake u
 
 
 Output Format: Provide the extracted information as a list of JSON objects. Each JSON object should represent one uniquely identified Theme.
-{{
-        "Theme": "Sleep Environment and Posture Optimization",
-        "Description": "Motivations related to creating an optimal sleep environment and maintaining proper posture to improve sleep quality and health.",
-        "Subthemes": [
-            {{
-                "Subtheme": "Sleeping Posture Awareness for Spine Health",
-                "Description": "Motivations focused on awareness and adjustment of sleeping positions to promote spinal health.",
-                "Motivations": [
-                    {{
-                        "Motivation Name": "Sleeping Posture Awareness for Spine Health",
-                        "Motivation Description": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Consumer Statement": "Increasing awareness about proper sleeping positions to support spinal health.",
-                        "Evidence_Snippets": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Motivation References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Interest in Zero-Gravity Sleep Solutions",
-                "Description": "Motivations involving curiosity or desire for sleep solutions that mimic zero-gravity conditions to enhance comfort and reduce pressure.",
-                "Motivations": [
-                    {{
-                        "Motivation Name": "Interest in Zero-Gravity Sleep Solutions",
-                        "Motivation Description": "Expresses interest in sleep systems that simulate zero-gravity to improve sleep comfort.",
-                        "Consumer Statement": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Evidence_Snippets": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Motivation References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Addressing Snoring and Sleep Disruptions",
-                "Description": "Motivations aimed at reducing snoring and resolving sleep interruptions to improve sleep quality.",
-                "Motivations": [
-                    {{
-                        "Motivation Name": "Addressing Snoring and Sleep Disruptions",
-                        "Motivation Description": "Deals with solutions or concerns related to snoring and sleep disturbances.",
-                        "Consumer Statement": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Evidence_Snippets": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Motivation References": 1
-                    }}
-                ]
-            }}
-        ]
-    }},
+Given the input text, extract clean, well-structured JSON using the format shown below.
 
+Return ONLY a valid JSON list of theme objects. DO NOT include any explanation, markdown, or extra text.
+
+Expected JSON structure:
+[
+  {{
+    "Theme": "string",
+    "Description": "string",
+    "Subthemes": [
+      {{
+        "Subtheme": "string",
+        "Description": "string",
+        "Motivations": [
+          {{
+            "Motivation Name": "string",
+            "Motivation Description": "string",
+            "Consumer Statement": "string",
+            "Evidence_Snippets": "string",
+            "Motivation References": 1
+          }}
+        ]
+      }}
+    ]
+  }}
+]
     ## sample theme structure make sure all the theme objects has all the keys 
 
 TEXT:

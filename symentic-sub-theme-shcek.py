@@ -63,8 +63,8 @@ def final_deduplication(df, column):
     return df_final
 
 # ==== CONFIGURATION ======
-semantic_column = "Motivation"
-input_file = "sleep_Motivations_all_themes.csv"
+semantic_column = "Outcome"
+input_file = "outcomes_flattened.csv"
 columns_for_fuzzy = ["Category", "Theme"]
 
 fuzzy_thresholds = 0.5
@@ -81,6 +81,11 @@ df_semantic = semantic_filtering(df_fuzzy, semantic_column, similarity_threshold
 
 # Step 3: Final deduplication
 df_final = final_deduplication(df_semantic, semantic_column)
+
+
+
+# # sorting Category in alphabetical order
+df_final = df_final.sort_values(by="Category", ascending=True).reset_index(drop=True)
 
 # Output
 # Step 4: Reorder columns

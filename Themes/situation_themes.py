@@ -98,61 +98,31 @@ Situation References (count of evidence snippets in the "Evidence_Snippets" colu
 Special Quality Rule:
  If you find yourself about to create a subtheme with a generic or vague label (e.g., “General,” “Miscellaneous,” “Other,” “General Habits & Environment”), STOP and break the situations into more sharply differentiated, specific subthemes. Each subtheme must be clearly understandable and stand alone on its own label and description.
  All output fields must be free from spelling and grammatical errors.
-Example:
-Bad Consumer Statement: “Alarm ringing in byout yoyou are never going to wakeyoup again”
-
-
-Good Consumer Statement: “The alarm keeps ringing, but you never really wake up again.”
- Always produce a “Good” style output—clear, natural, and error-free, but with the original meaning.
-
 
 
 Output Format: Provide the extracted information as a list of JSON objects. Each JSON object should represent one uniquely identified Theme.
-{{
-        "Theme": "Sleep Environment and Posture Optimization",
-        "Description": "Situations related to creating an optimal sleep environment and maintaining proper posture to improve sleep quality and health.",
-        "Subthemes": [
-            {{
-                "Subtheme": "Sleeping Posture Awareness for Spine Health",
-                "Description": "Situations focused on awareness and adjustment of sleeping positions to promote spinal health.",
-                "Situations": [
-                    {{
-                        "Situation Name": "Sleeping Posture Awareness for Spine Health",
-                        "Situation Description": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Consumer Statement": "Increasing awareness about proper sleeping positions to support spinal health.",
-                        "Evidence_Snippets": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Situation References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Interest in Zero-Gravity Sleep Solutions",
-                "Description": "Situations involving curiosity or desire for sleep solutions that mimic zero-gravity conditions to enhance comfort and reduce pressure.",
-                "Situations": [
-                    {{
-                        "Situation Name": "Interest in Zero-Gravity Sleep Solutions",
-                        "Situation Description": "Expresses interest in sleep systems that simulate zero-gravity to improve sleep comfort.",
-                        "Consumer Statement": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Evidence_Snippets": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Situation References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Addressing Snoring and Sleep Disruptions",
-                "Description": "Situations aimed at reducing snoring and resolving sleep interruptions to improve sleep quality.",
-                "Situations": [
-                    {{
-                        "Situation Name": "Addressing Snoring and Sleep Disruptions",
-                        "Situation Description": "Deals with solutions or concerns related to snoring and sleep disturbances.",
-                        "Consumer Statement": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Evidence_Snippets": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Situation References": 1
-                    }}
-                ]
-            }}
+[
+  {{
+    "Theme": "string",
+    "Description": "string",
+    "Subthemes": [
+      {{
+        "Subtheme": "string",
+        "Description": "string",
+        "Situations": [
+          {{
+            "Situation Name": "string",
+            "Situation Description": "string",
+            "Consumer Statement": "string",
+            "Evidence_Snippets": "string",
+            "Situation References": 1
+          }}
         ]
-    }},
+      }}
+    ]
+  }}
+]
+
 
     ## sample theme structure make sure all the theme objects has all the keys 
 

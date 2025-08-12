@@ -384,7 +384,7 @@ class AnalysisUI:
             with col1:
                 start_year = st.number_input("📅 Start Year", min_value=1900, max_value=2100, value=2020)
             with col2:
-                end_year = st.number_input("📅 End Year", min_value=1900, max_value=2100, value=2024)
+                end_year = st.number_input("📅 End Year", min_value=1900, max_value=2100, value=2025)
 
             if st.button("🚀 Search Papers"):
                 with st.spinner("Scraping papers..."):
@@ -1040,67 +1040,67 @@ class AnalysisUI:
         #########################. THEMES CODE STARTS HERE #########################
 
 
-        # st.markdown("---")
+        st.markdown("---")
 
-        # if 'theme_outputs' in st.session_state and st.session_state.theme_outputs != {}:
-        #     st.subheader("📊 Digester Themes")
-        #     for agent_name, categories in st.session_state.theme_outputs.items():
-        #         if agent_name == "ProductGenerationAgent":
-        #             continue
+        if 'theme_outputs' in st.session_state and st.session_state.theme_outputs != {}:
+            st.subheader("📊 Digester Themes")
+            for agent_name, categories in st.session_state.theme_outputs.items():
+                if agent_name == "ProductGenerationAgent":
+                    continue
                 
-        #         agent_title = agent_name.replace("Agent", "").strip()
-        #         with st.expander(f"🔎 {agent_title}", expanded=False):
-        #             if isinstance(categories, list):
-        #                 for category in categories:
-        #                     theme = category.get("Theme", "Theme")
-        #                     description = category.get("Description", "")
+                agent_title = agent_name.replace("Agent", "").strip()
+                with st.expander(f"🔎 {agent_title}", expanded=False):
+                    if isinstance(categories, list):
+                        for category in categories:
+                            theme = category.get("Theme", "Theme")
+                            description = category.get("Description", "")
                             
-        #                     st.markdown(f"### 🧩 {theme}")
-        #                     if description:
-        #                         st.markdown(f"<i>{description}</i>", unsafe_allow_html=True)
+                            st.markdown(f"### 🧩 {theme}")
+                            if description:
+                                st.markdown(f"<i>{description}</i>", unsafe_allow_html=True)
                             
-        #                     subthemes = category.get("Subthemes", [])
-        #                     for sub in subthemes:
-        #                         sub_title = sub.get("Subtheme", "Subtheme")
-        #                         sub_desc = sub.get("Description", "")
+                            subthemes = category.get("Subthemes", [])
+                            for sub in subthemes:
+                                sub_title = sub.get("Subtheme", "Subtheme")
+                                sub_desc = sub.get("Description", "")
 
-        #                         # Simulate nesting using tabs (one per subtheme)
-        #                         with st.container():
-        #                             st.markdown(f"#### ➤ {sub_title}")
-        #                             if sub_desc:
-        #                                 st.markdown(f"<small><i>{sub_desc}</i></small>", unsafe_allow_html=True)
+                                # Simulate nesting using tabs (one per subtheme)
+                                with st.container():
+                                    st.markdown(f"#### ➤ {sub_title}")
+                                    if sub_desc:
+                                        st.markdown(f"<small><i>{sub_desc}</i></small>", unsafe_allow_html=True)
                                     
-        #                             section_keys = ["Situations", "Outcomes", "Motivations", "Technologys", "Benefits"]
-        #                             available_tabs = [k for k in section_keys if sub.get(k)]
+                                    section_keys = ["Situations", "Outcomes", "Motivations", "Technologys", "Benefits"]
+                                    available_tabs = [k for k in section_keys if sub.get(k)]
                                     
-        #                             if available_tabs:
-        #                                 tabs = st.tabs(available_tabs)
-        #                                 for idx, key in enumerate(available_tabs):
-        #                                     with tabs[idx]:
-        #                                         items = sub.get(key, [])
-        #                                         for itm in items[:1]:
-        #                                             name = itm.get(f"{key[:-1]} Name", "")
-        #                                             desc = itm.get(f"{key[:-1]} Description", "")
-        #                                             consumer = itm.get("Consumer Statement", "")
-        #                                             evidence = itm.get("Evidence_Snippets", "")
+                                    if available_tabs:
+                                        tabs = st.tabs(available_tabs)
+                                        for idx, key in enumerate(available_tabs):
+                                            with tabs[idx]:
+                                                items = sub.get(key, [])
+                                                for itm in items[:1]:
+                                                    name = itm.get(f"{key[:-1]} Name", "")
+                                                    desc = itm.get(f"{key[:-1]} Description", "")
+                                                    consumer = itm.get("Consumer Statement", "")
+                                                    evidence = itm.get("Evidence_Snippets", "")
                                                     
-        #                                             if name:
-        #                                                 st.markdown(f"**🔸 {name}**")
-        #                                             if desc:
-        #                                                 st.markdown(f"{desc}")
-        #                                             if consumer:
-        #                                                 st.markdown(f"💬 _Consumer:_ {consumer}")
-        #                                             if evidence:
-        #                                                 st.markdown(f"🧠 _Evidence:_ {evidence}")
-        #                                             st.markdown("---")
-        #             else:
-        #                 st.write(categories)
-        # else:
-        #     print("themes outputs not found", st.session_state.theme_outputs)
-        #     if st.button("Generate Themes →", key="generate_themes"):
-        #         with st.spinner("Generating themes..."):
-        #             if self.run_themes():
-        #                 st.rerun()
+                                                    if name:
+                                                        st.markdown(f"**🔸 {name}**")
+                                                    if desc:
+                                                        st.markdown(f"{desc}")
+                                                    if consumer:
+                                                        st.markdown(f"💬 _Consumer:_ {consumer}")
+                                                    if evidence:
+                                                        st.markdown(f"🧠 _Evidence:_ {evidence}")
+                                                    st.markdown("---")
+                    else:
+                        st.write(categories)
+        else:
+            print("themes outputs not found", st.session_state.theme_outputs)
+            if st.button("Generate Themes →", key="generate_themes"):
+                with st.spinner("Generating themes..."):
+                    if self.run_themes():
+                        st.rerun()
                 
             
 
@@ -1178,8 +1178,8 @@ class AnalysisUI:
         # Define agents
         theme_agents = {
         # "IngredientsAgent": (run_ingredients, rnd_text, project_description),
-        "TechnologyAgent": (technology_theme_run, agents_text["TechnologyAgent"], project_description),
-        "BenefitsAgent": (benefit_theme_run, agents_text["BenefitsAgent"], project_description),
+        # "TechnologyAgent": (technology_theme_run, agents_text["TechnologyAgent"], project_description),
+        # "BenefitsAgent": (benefit_theme_run, agents_text["BenefitsAgent"], project_description),
         "SituationsAgent": (situation_theme_run, agents_text["SituationsAgent"], project_description),
         "MotivationsAgent": (motivation_theme_run, agents_text["MotivationsAgent"], project_description),
         "OutcomesAgent": (outcome_theme_run, agents_text["OutcomesAgent"], project_description),

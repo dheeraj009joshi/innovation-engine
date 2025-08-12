@@ -98,61 +98,36 @@ Outcome References (count of evidence snippets in the "Evidence_Snippets" column
 Special Quality Rule:
  If you find yourself about to create a subtheme with a generic or vague label (e.g., “General,” “Miscellaneous,” “Other,” “General Habits & Environment”), STOP and break the Outcomes into more sharply differentiated, specific subthemes. Each subtheme must be clearly understandable and stand alone on its own label and description.
  All output fields must be free from spelling and grammatical errors.
-Example:
-Bad Consumer Statement: “Alarm ringing in byout yoyou are never going to wakeyoup again”
-
-
-Good Consumer Statement: “The alarm keeps ringing, but you never really wake up again.”
- Always produce a “Good” style output—clear, natural, and error-free, but with the original meaning.
-
 
 
 Output Format: Provide the extracted information as a list of JSON objects. Each JSON object should represent one uniquely identified Theme.
-{{
-        "Theme": "Sleep Environment and Posture Optimization",
-        "Description": "Outcomes related to creating an optimal sleep environment and maintaining proper posture to improve sleep quality and health.",
-        "Subthemes": [
-            {{
-                "Subtheme": "Sleeping Posture Awareness for Spine Health",
-                "Description": "Outcomes focused on awareness and adjustment of sleeping positions to promote spinal health.",
-                "Outcomes": [
-                    {{
-                        "Outcome Name": "Sleeping Posture Awareness for Spine Health",
-                        "Outcome Description": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Consumer Statement": "Increasing awareness about proper sleeping positions to support spinal health.",
-                        "Evidence_Snippets": "Focuses on increasing awareness about correct sleeping postures to support spine health.",
-                        "Outcome References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Interest in Zero-Gravity Sleep Solutions",
-                "Description": "Outcomes involving curiosity or desire for sleep solutions that mimic zero-gravity conditions to enhance comfort and reduce pressure.",
-                "Outcomes": [
-                    {{
-                        "Outcome Name": "Interest in Zero-Gravity Sleep Solutions",
-                        "Outcome Description": "Expresses interest in sleep systems that simulate zero-gravity to improve sleep comfort.",
-                        "Consumer Statement": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Evidence_Snippets": "Interest in sleep systems that simulate zero-gravity to enhance comfort during sleep.",
-                        "Outcome References": 1
-                    }}
-                ]
-            }},
-            {{
-                "Subtheme": "Addressing Snoring and Sleep Disruptions",
-                "Description": "Outcomes aimed at reducing snoring and resolving sleep interruptions to improve sleep quality.",
-                "Outcomes": [
-                    {{
-                        "Outcome Name": "Addressing Snoring and Sleep Disruptions",
-                        "Outcome Description": "Deals with solutions or concerns related to snoring and sleep disturbances.",
-                        "Consumer Statement": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Evidence_Snippets": "Looking for ways to reduce snoring and minimize sleep disruptions.",
-                        "Outcome References": 1
-                    }}
-                ]
-            }}
+Given the input text, extract clean, well-structured JSON using the format shown below.
+
+Return ONLY a valid JSON list of theme objects. DO NOT include any explanation, markdown, or extra text.
+
+Expected JSON structure:
+[
+  {{
+    "Theme": "string",
+    "Description": "string",
+    "Subthemes": [
+      {{
+        "Subtheme": "string",
+        "Description": "string",
+        "Outcomes": [
+          {{
+            "Outcome Name": "string",
+            "Outcome Description": "string",
+            "Consumer Statement": "string",
+            "Evidence_Snippets": "string",
+            "Outcome References": 1
+          }}
         ]
-    }},
+      }}
+    ]
+  }}
+]
+
 
     ## sample theme structure make sure all the theme objects has all the keys 
 

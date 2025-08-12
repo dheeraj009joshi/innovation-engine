@@ -7,7 +7,7 @@ e="AzkASLaZT3BlbkFJBSNen52wfINsRhsTefFgJgfYUzWdyao9daf1VCJ07OVgWYxEtHMdZAww1gBeg
 
 product_count = 6
 aii=a+b+c+d+e
-AGENT_MAX_TOKENS=3000
+AGENT_MAX_TOKENS=5000
 MODEL_NAME="gpt-4.1-nano"  
 
 MAX_CHUNKS = 20000 
