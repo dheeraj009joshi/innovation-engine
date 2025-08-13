@@ -379,17 +379,33 @@ class AnalysisUI:
 
         with st.expander("📄 Scrape Papers", expanded=True):
             print(st.session_state.current_project)
-            desc_prompt = (
-                f"Create a comprehensive google scholar search query. It has to be of 1-2 words only and based on the project name and project description  "
-                f"Project Name:  {st.session_state.current_project["name"]}"
-                f"Project Description : {st.session_state.current_project["description"]} "
-               
-               
-            )
-            get_paper_query= _call_gpt(desc_prompt, max_tokens=400, json_mode=False)
-        
-            query = st.text_input("🔍 Enter your search query", value=get_paper_query)
+            def suggest_query():
+                desc_prompt = (
+                    f"Create a comprehensive google scholar search query. It has to be of 1-2 words only "
+                    f"and based on the project name and project description  "
+                    f"Project Name:  {st.session_state.current_project['name']}"
+                    f"Project Description: {st.session_state.current_project['description']}"
+                    f'Bad output example :- "TestingPPR" "Scraping"'
+                    f"Good example :-  TestingPPR Scraping"
+                )
+                st.session_state.query = _call_gpt(desc_prompt, max_tokens=400, json_mode=False)
+
+           
+            if "query" not in st.session_state:
+                st.session_state.query = "🔍 Enter your search query"
+
+            col1, col_spacer, col2 = st.columns([8, 0.3, 2])  # 80% input, small margin, 20% button
+    
+            with col1:
+                query=st.text_input(
+                    "🔍 Enter your search query",
+                    key="query",
+                    label_visibility="collapsed"  # hides label for cleaner row look
+                )
             
+            with col2:
+                st.button("💡 Suggest", on_click=suggest_query)
+
             col1, col2 = st.columns(2)
             with col1:
                 start_year = st.number_input("📅 Start Year", min_value=1900, max_value=2100, value=2020)
