@@ -43,49 +43,6 @@ REFERERS = [
 ]
 
 
-class ProxyManager:
-    """Manage proxy rotation and failure tracking"""
-    
-    def __init__(self):
-        self.proxies = []
-        self.failed_proxies = set()
-        self.current_index = 0
-    
-    def load_proxies_from_service(self):
-        """Load proxies from external service"""
-        try:
-            resp = urllib.request.urlopen(
-                "http://list.didsoft.com/get?email=tikuntechnologies@gmail.com&pass=bwnh68&pid=http1000&showcountry=no&level=1&country=US"
-            )
-            data = resp.read().decode('utf-8').strip()
-            self.proxies = data.split("\n")
-            print(f"📡 Loaded {len(self.proxies)} proxies from service")
-            return True
-        except Exception as e:
-            print(f"⚠️ Error loading proxies: {e}")
-            return False
-    
-    def get_next_proxy(self):
-        """Get next available proxy"""
-        if not self.proxies:
-            return None
-            
-        attempts = 0
-        while attempts < len(self.proxies):
-            proxy = self.proxies[self.current_index % len(self.proxies)]
-            self.current_index += 1
-            
-            if proxy not in self.failed_proxies:
-                return proxy
-            
-            attempts += 1
-        
-        return None
-    
-    def mark_proxy_failed(self, proxy):
-        """Mark a proxy as failed"""
-        self.failed_proxies.add(proxy)
-        print(f"❌ Marked proxy as failed: {proxy}")
 
 
 def get_random_headers():
@@ -400,11 +357,11 @@ def handle_403_error(session, url, attempt=1, max_attempts=3):
 
 def setup_authenticated_proxy(session):
     """Setup authenticated proxy for session"""
-    proxy_url = f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}"
+    # proxy_url = f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@{PROXY_HOST}:{PROXY_PORT}"
     proxy_dict = {
-        'http': proxy_url,
-        'https': proxy_url
-    }
+    "http": f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@gate2.proxyfuel.com:2000",
+    "https": f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@gate2.proxyfuel.com:2000",
+}
     session.proxies.update(proxy_dict)
     print(f"🔧 Configured authenticated proxy: {PROXY_HOST}:{PROXY_PORT}")
     return True
@@ -541,9 +498,7 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
     if use_authenticated_proxy:
         setup_authenticated_proxy(session)
     else:
-        proxy_manager = ProxyManager()
-        if not proxy_manager.load_proxies_from_service():
-            print("⚠️ Failed to load proxy list, proceeding without proxies...")
+        print("⚠️ Failed to load proxy list, proceeding without proxies...")
     
     # Establish initial session
     if not make_initial_request(session):
