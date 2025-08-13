@@ -5,7 +5,12 @@ import os
 import threading
 import uuid
 from azure.storage.blob import BlobServiceClient
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import streamlit as st
+from openai import OpenAI
+from config import aii
 from typing import List, Dict, Union
 
 def parse_maybe_json_blob(blob: str) -> Union[Dict, List, None]:
@@ -153,69 +158,23 @@ def get_scraper_data(hashtag, progress_callback=None):
 
     return augmented_posts
 
-# def get_scraper_data(hashtag, progress_callback=None):
-#     aa = ScraperClient("1J3SttXjxlZIekKgvbX9sgyWtDQm8Zxh")
-    
-#     # Phase 1: Find hashtag
-#     hashtag_id = aa.get_hastag_id_by_tag_name(hashtag)
-    
-#     # Phase 2: Get posts
-#     posts = aa.get_hastag_posts_by_id(hashtag_id, 30, progress_callback)
-#     total_posts = len(posts)
-    
-#     if progress_callback:
-#         progress_callback(0, total_posts)
-    
-#     augmented_posts = []
-    
-#     for idx, post in enumerate(posts):
-#         try:
-#             # Download video
-#             video_file = download_tiktok_video(post["videoUrl"], f"video_{hashtag}_{idx}")
-            
-#             # Transcribe audio
-#             post["transcript"] = safe_transcribe(video_file)
-            
-#             # Get comments
-#             post["comments"] = aa.get_post_comments_by_post_id(post["id"], 100)
-            
-#             # Clean up downloaded file
-#             if os.path.exists(f"video_{hashtag}_{idx}"):
-#                 try:
-#                     os.remove(f"video_{hashtag}_{idx}")
-#                 except Exception:
-#                     pass
-            
-#             # Report progress
-#             if progress_callback:
-#                 progress_callback(idx + 1, total_posts)
-                
-#         except Exception as error:
-#             print(f"Error processing post {idx}: {error}")
-#             if progress_callback:
-#                 progress_callback(idx + 1, total_posts)
-        
-#         augmented_posts.append(post)
 
-#     return augmented_posts
+def _call_gpt(prompt, max_tokens=500, json_mode=False):
+        try:
+            client = OpenAI(api_key=aii)
+            response = client.chat.completions.create(
+                model="gpt-4.1-nano",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=3000,
+                response_format={"type": "json_object"} if json_mode else None
+            )
+            print(response.choices[0].message.content)
+            return response.choices[0].message.content
+        except Exception as e:
+            st.error(f"AI generation failed: {str(e)}")
+            return None
 
 
-# aa=get_scraper_data("sleepgood")
-# print(aa)
-
-
-# utils/localstorage.py
-# import streamlit as st
-# import streamlit.components.v1 as components
-
-# utils/localstorage.py
-import streamlit as st
-# from streamlit_javascript import st_javascript
-
-
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 def send_reset_email(email, reset_link):
     sender = "support@mindgenome.org"

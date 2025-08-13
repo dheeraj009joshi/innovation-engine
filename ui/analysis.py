@@ -22,7 +22,7 @@ from threading import Thread
 import fitz  # PyMuPDF
 import pytesseract
 import tempfile
-from functions import upload_to_azure, get_scraper_data
+from functions import _call_gpt, upload_to_azure, get_scraper_data
 import io
 from agents.ingredients_agent import run as run_ingredients
 from agents.technology_agent import run as run_technology
@@ -378,7 +378,17 @@ class AnalysisUI:
 
 
         with st.expander("📄 Scrape Papers", expanded=True):
-            query = st.text_input("🔍 Enter your search query")
+            print(st.session_state.current_project)
+            desc_prompt = (
+                f"Create a comprehensive google scholar search query. It has to be of 1-2 words only and based on the project name and project description  "
+                f"Project Name:  {st.session_state.current_project["name"]}"
+                f"Project Description : {st.session_state.current_project["description"]} "
+               
+               
+            )
+            get_paper_query= _call_gpt(desc_prompt, max_tokens=400, json_mode=False)
+        
+            query = st.text_input("🔍 Enter your search query", value=get_paper_query)
             
             col1, col2 = st.columns(2)
             with col1:
@@ -389,7 +399,12 @@ class AnalysisUI:
             if st.button("🚀 Search Papers using google scholar "):
                 with st.spinner("Scraping papers..."):
                     # --- Replace with your actual scraper ---
-                    results = scrape_scholar_pages(f"{query}  filetype:pdf", start_year, end_year)
+                    ppr_progress_container = st.container()
+                    ppr_status_text = ppr_progress_container.empty()
+
+                    def ppr_progress_callback(message):
+                        ppr_status_text.text(message)
+                    results = scrape_scholar_pages(f"{query.replace('"', '')}", start_year, end_year, ppr_progress_callback=ppr_progress_callback)
                     st.session_state["scholar_search_results"] = results
                     st.success(f"✅ Found {len(results)} papers.")
 
@@ -402,13 +417,15 @@ class AnalysisUI:
 
                 selected_papers = [
                     p for p in st.session_state["scholar_search_results"]
-                    if f"{p['title']} ({p['year']}) " in selected
+                    if f"{p['title']} ({p['year']}) (Cited by {p['cited_by']})" in selected
                 ]
+                print(selected_papers)
                 if not st.session_state.get("extracted_texts"):
                     if selected and st.button("⚙️ Process Selected Papers"):
                         extracted_texts = []
                         with st.spinner("🔄 Downloading and extracting text..."):
-                            for paper in selected_papers:
+                             for paper in selected_papers:
+                                print(paper["pdf_link"])
                                 try:
                                     response = requests.get(paper["pdf_link"], timeout=15)
                                     if response.status_code == 200:

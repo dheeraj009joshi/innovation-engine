@@ -67,7 +67,7 @@ def get_random_headers():
     }
 
 
-def solve_captcha_2captcha(web_url, site_key, api_key, session, is_invisible=False, timeout=180, poll_interval=5):
+def solve_captcha_2captcha(web_url, site_key, api_key, session, update_progress,is_invisible=False, timeout=180, poll_interval=5):
     """
     Solve CAPTCHA using 2Captcha API with requests session
     """
@@ -90,7 +90,7 @@ def solve_captcha_2captcha(web_url, site_key, api_key, session, is_invisible=Fal
     print(f"🧠 CAPTCHA task payload: {task_payload}")
 
     # Create task
-    print("🧠 Requesting CAPTCHA solution from 2Captcha (createTask)...")
+    update_progress("🧠 Requesting CAPTCHA solution from 2Captcha (createTask)...")
     create_resp = requests.post(create_url, json=task_payload, headers={"Content-Type": "application/json"})
     
     if create_resp.status_code != 200:
@@ -116,7 +116,7 @@ def solve_captcha_2captcha(web_url, site_key, api_key, session, is_invisible=Fal
             "taskId": task_id
         }
         check_resp = requests.post(result_url, json=check_payload, headers={"Content-Type": "application/json"})
-        print(f"🔍 Checking task status: {check_resp.json()}")
+        update_progress(f"🔍 Checking task status: {check_resp.json()}")
         
         if check_resp.status_code != 200:
             raise Exception(f"❌ 2Captcha getTaskResult HTTP error: {check_resp.status_code} - {check_resp.text}")
@@ -130,12 +130,11 @@ def solve_captcha_2captcha(web_url, site_key, api_key, session, is_invisible=Fal
             continue
 
         if status == "ready":
-            time.sleep(10)
             solution = check_json.get("solution", {})
             token = solution.get("gRecaptchaResponse")
             if not token:
                 raise Exception(f"❌ 2Captcha ready but no gRecaptchaResponse: {check_json}")
-            print("✅ CAPTCHA solved via 2Captcha.")
+            update_progress("✅ CAPTCHA solved.")
             return token
 
         # Unexpected status
@@ -165,17 +164,17 @@ def is_captcha_present(html_content):
     return any(indicator in content_lower for indicator in captcha_indicators)
 
 
-def save_cookies(session, path=COOKIE_FILE):
+def save_cookies(session, update_progress, path=COOKIE_FILE):
     """Save session cookies to file"""
     try:
         with open(path, "wb") as file:
             pickle.dump(dict(session.cookies), file)
-            print("🍪 Cookies saved.")
+            update_progress("🍪 Cookies saved.")
     except Exception as e:
-        print(f"⚠️ Error saving cookies: {e}")
+        update_progress(f"⚠️ Error saving cookies: {e}")
 
 
-def load_cookies(session, path=COOKIE_FILE):
+def load_cookies(session, update_progress, path=COOKIE_FILE):
     """Load cookies from file into session"""
     if not os.path.exists(path):
         return
@@ -185,12 +184,12 @@ def load_cookies(session, path=COOKIE_FILE):
             cookies = pickle.load(file)
             for name, value in cookies.items():
                 session.cookies.set(name, value, domain='.google.com')
-        print("🍪 Cookies loaded.")
+        update_progress("🍪 Cookies loaded.")
     except Exception as e:
         print(f"⚠️ Error loading cookies: {e}")
 
 
-def handle_captcha_verification(session, current_url, token):
+def handle_captcha_verification(session, current_url, token, update_progress):
     """Handle CAPTCHA verification by making request with token"""
     # Parse current URL and add CAPTCHA response parameter
     parsed_url = urlparse(current_url)
@@ -210,14 +209,14 @@ def handle_captcha_verification(session, current_url, token):
     response = session.get(captcha_url, headers=headers, timeout=30)
     
     if response.status_code == 200:
-        save_cookies(session)
-        print("🍪 Cookies saved after CAPTCHA verification")
+        save_cookies(session,update_progress)
+        update_progress("🍪 Cookies saved after CAPTCHA verification")
         return response
     else:
         raise Exception(f"❌ CAPTCHA verification failed: {response.status_code}")
 
 
-def parse_scholar_results(html_content):
+def parse_scholar_results(html_content, update_progress):
     """Parse Google Scholar results from HTML content"""
     soup = BeautifulSoup(html_content, 'html.parser')
     results = []
@@ -273,7 +272,7 @@ def parse_scholar_results(html_content):
                     "year": year,
                     "cited_by": cited_by
                 })
-                print(f"✅ Article added: {title[:60]}...")
+                update_progress(f"✅ Article added: {title[:60]}...")
                 
         except Exception as e:
             print(f"⚠️ Error parsing article: {e}")
@@ -282,7 +281,7 @@ def parse_scholar_results(html_content):
     return results
 
 
-def make_initial_request(session):
+def make_initial_request(session, update_progress):
     """Make an initial request to Google Scholar homepage to establish session"""
     try:
         print("🏠 Making initial request to Google Scholar homepage...")
@@ -291,14 +290,13 @@ def make_initial_request(session):
         
         # Visit Google first
         google_resp = session.get('https://www.google.com/', headers=headers, timeout=10)
-        time.sleep(random.uniform(1, 3))
         
         # Then visit Scholar homepage
         scholar_resp = session.get('https://scholar.google.com/', headers=headers, timeout=10)
         
         if scholar_resp.status_code == 200:
             print("✅ Successfully established session with Google Scholar")
-            save_cookies(session)
+            save_cookies(session, update_progress)
             return True
         else:
             print(f"⚠️ Scholar homepage returned: {scholar_resp.status_code}")
@@ -309,7 +307,7 @@ def make_initial_request(session):
         return False
 
 
-def handle_403_error(session, url, attempt=1, max_attempts=3):
+def handle_403_error(session, url, attempt=1, max_attempts=3, update_progress=None):
     """Handle 403 errors with progressive backoff and session reset"""
     if attempt > max_attempts:
         return None
@@ -319,12 +317,11 @@ def handle_403_error(session, url, attempt=1, max_attempts=3):
     # Progressive delays
     delay = random.uniform(5 * attempt, 15 * attempt)
     print(f"⏳ Waiting {delay:.1f} seconds...")
-    time.sleep(delay)
     
     # Reset session on subsequent attempts
     if attempt > 1:
         session.cookies.clear()
-        if not make_initial_request(session):
+        if not make_initial_request(session, update_progress):
             return None
     
     # Try with different approach
@@ -382,28 +379,24 @@ def make_request_with_authenticated_proxy(session, url, max_attempts=3):
                 return response
             elif response.status_code == 403:
                 print(f"🛑 403 error with proxy, attempt {attempt + 1}")
-                if attempt < max_attempts - 1:
-                    time.sleep(random.uniform(10, 20))
+                
             elif response.status_code == 429:
                 print(f"⏳ Rate limited, waiting before retry...")
-                time.sleep(random.uniform(15, 30))
+                
             else:
                 print(f"⚠️ Unexpected status {response.status_code}")
                 
         except requests.exceptions.ProxyError as e:
             print(f"🚫 Proxy connection error: {e}")
-            if attempt < max_attempts - 1:
-                time.sleep(random.uniform(5, 10))
+            
         except requests.exceptions.Timeout:
             print(f"⏰ Timeout with authenticated proxy")
-            if attempt < max_attempts - 1:
-                time.sleep(random.uniform(5, 10))
+            
         except Exception as e:
             print(f"❌ Error with authenticated proxy: {e}")
             
         # Random delay between attempts
-        if attempt < max_attempts - 1:
-            time.sleep(random.uniform(3, 8))
+        
     
     print(f"❌ All {max_attempts} attempts failed with authenticated proxy")
     return None
@@ -460,7 +453,7 @@ def make_request_with_proxy_rotation(session, url, proxy_manager, max_attempts=3
     return None
 
 
-def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=True, max_pages=3):
+def scrape_scholar_pages(query, start_year, end_year, ppr_progress_callback=None, use_authenticated_proxy=True, max_pages=3):
     """
     Main scraping function using requests
     
@@ -474,7 +467,13 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
     Returns:
         list: List of dictionaries containing article information
     """
-    print("🔍 Starting Google Scholar scraping with requests...")
+
+
+    def update_progress( message):
+        if ppr_progress_callback:
+            ppr_progress_callback(message)
+
+    update_progress("🔍 Starting Google Scholar scraping with requests...")
     
     # Create session for persistent cookies
     session = requests.Session()
@@ -491,7 +490,7 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
     session.mount("https://", adapter)
     
     # Load existing cookies if available
-    load_cookies(session)
+    load_cookies(session,ppr_progress_callback)
     
     # Setup proxy if requested
     proxy_manager = None
@@ -501,7 +500,7 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
         print("⚠️ Failed to load proxy list, proceeding without proxies...")
     
     # Establish initial session
-    if not make_initial_request(session):
+    if not make_initial_request(session,update_progress):
         print("⚠️ Failed to establish initial session, proceeding anyway...")
     
     all_results = []
@@ -515,7 +514,7 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
             # Longer random delay between requests
             delay = random.uniform(5, 12)
             print(f"⏳ Waiting {delay:.1f} seconds before request...")
-            time.sleep(delay)
+           
             
             # Make request based on proxy configuration
             response = None
@@ -547,7 +546,7 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
                     
             elif response.status_code == 429:
                 print("🛑 Rate limited (429), waiting longer...")
-                time.sleep(random.uniform(30, 60))
+                
                 continue
                 
             elif response.status_code != 200:
@@ -558,14 +557,14 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
             if is_captcha_present(response.text):
                 print("🛑 CAPTCHA detected. Solving...")
                 try:
-                    token = solve_captcha_2captcha(url, SITE_KEY, API_KEY, session)
-                    response = handle_captcha_verification(session, url, token)
+                    token = solve_captcha_2captcha(url, SITE_KEY, API_KEY, session, update_progress)
+                    response = handle_captcha_verification(session, url, token, update_progress)
                 except Exception as captcha_error:
                     print(f"❌ CAPTCHA solving failed: {captcha_error}")
                     continue
             
             # Parse results
-            page_results = parse_scholar_results(response.text)
+            page_results = parse_scholar_results(response.text, update_progress)
             all_results.extend(page_results)
             
             print(f"📄 Page {page + 1}: Found {len(page_results)} PDF articles")
@@ -577,6 +576,6 @@ def scrape_scholar_pages(query, start_year, end_year, use_authenticated_proxy=Tr
             print(f"❌ General error for page {page + 1}: {e}")
             continue
     
-    print(f"\n🎉 Scraping complete! Total PDF articles found: {len(all_results)}")
+    update_progress(f"\n🎉 Scraping complete! Total PDF articles found: {len(all_results)}")
     return all_results
 
