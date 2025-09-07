@@ -158,24 +158,11 @@ def main():
 
 
                 doc_url = "/?page=documentation"
-                st.markdown(
-                    f"""
-                    <a href="{doc_url}" target="_blank">
-                        <button style="
-                            background-color:#4F46E5;
-                            color:white;
-                            border:none;
-                            padding:0.6em 1.2em;
-                            border-radius:8px;
-                            font-size:16px;
-                            cursor:pointer;">
-                            📘 Tutorial
-                        </button>
-                    </a>
-                    """,
-                    unsafe_allow_html=True
-                )
-        
+               
+                from urllib.parse import urlencode
+                doc_url = f"/?{urlencode({'page':'documentation'})}"
+                st.link_button("📘 Tutorial", doc_url, use_container_width=True)
+                        
                 if st.button("\U0001F6AA Logout", use_container_width=True):
                     auth_service.users.update_one(
                         {"_id": st.session_state.current_user["_id"]},

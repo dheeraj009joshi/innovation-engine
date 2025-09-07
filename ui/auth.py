@@ -41,6 +41,7 @@ class AuthUI:
                 "<div style='text-align: center;'>"
                 "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
                 "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+                "<a href='https://mindgenome.org/?page=documentation' target='_blank' style='text-decoration: none; '>Read Documentation</a>"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -86,11 +87,22 @@ class AuthUI:
 
                         st.session_state.page = "projects"
                         st.rerun()
+            sp_left, pair, sp_right = st.columns([3, 3, 4])       # <- adjust 4,2,4 to move/center
+            with sp_left:
+                b1, b2 = st.columns([1.9, 1], gap="small")          # small gap between the two
 
-            st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("Create New Account"):
-                st.session_state.page = "signup"
-                st.rerun()
+                with b1:
+                    if st.button("Create New Account", key="btn_create", use_container_width=False):
+                        st.session_state.page = "signup"
+                        st.rerun()
+
+                with b2:
+                    # open docs in a NEW TAB while keeping a real st.button
+                    if st.button("📘 Tutorial", key="btn_tutorial", use_container_width=False):
+                        st.components.v1.html(
+                            '<script>window.open("/?page=documentation","_blank");</script>',
+                            height=0, width=0
+            )
 
 
     def signup_form(self):
@@ -99,6 +111,7 @@ class AuthUI:
                 "<div style='text-align: center;'>"
                 "<h2 style='margin-bottom: 0;'>🧠 Mind Genomics Inventor</h2>"
                 "<p style='margin-top: 0; color: gray;'>The fastest way to discover, generate, and test ideas on the planet</p>"
+                "<a href='https://mindgenome.org/?page=documentation' target='_blank' style='text-decoration: none; '>Read Documentation</a>"
                 "</div>",
                 unsafe_allow_html=True
             )
@@ -163,11 +176,22 @@ class AuthUI:
                         else:
                             st.error("Username or email already exists")
 
-            st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("← Back to Login"):
-                st.session_state.page = "login"
-                st.rerun()
-                
+            sp_left, pair, sp_right = st.columns([3, 3, 4])       # <- adjust 4,2,4 to move/center
+            with sp_left:
+                b1, b2 = st.columns([1.9, 1], gap="small")          # small gap between the two
+
+                with b1:
+                    if st.button("← Back to Login", key="btn_back", use_container_width=False):
+                        st.session_state.page = "login"
+                        st.rerun()
+
+                with b2:
+                    # open docs in a NEW TAB while keeping a real st.button
+                    if st.button("📘 Tutorial", key="btn_tutorial", use_container_width=False):
+                        st.components.v1.html(
+                            '<script>window.open("/?page=documentation","_blank");</script>',
+                            height=0, width=0
+            )
    
     def request_reset_form(self):
         st.title("🔑 Forgot Password")
