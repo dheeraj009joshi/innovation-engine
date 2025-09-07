@@ -11,7 +11,8 @@ st.set_page_config(
 from functions import inject_custom_css
 from services.auth import AuthService
 from ui.analysis import AnalysisUI
-from ui.auth import AuthUI
+from ui.auth import AuthUI 
+from ui.documentation import StepDocs
 from ui.project import ProjectUI
 from streamlit_cookies_manager import EncryptedCookieManager
 
@@ -77,6 +78,11 @@ def main():
     auth_ui = AuthUI(auth_service,cookies)
     project_ui = ProjectUI(auth_service)
     analysis_ui = AnalysisUI(auth_service)
+    documentation_ui = StepDocs(
+        md_path="./README.md",          # keep next to app root
+        images_root="./mages",         # folder created by pandoc --extract-media=./images
+        title="Documentation"
+    )
 
     params = st.query_params
     page = params.get("page", "login")
@@ -86,7 +92,10 @@ def main():
         auth_ui.reset_password_form(token)
     elif page == "forgot":
         auth_ui.request_reset_form()
-
+    elif page == "documentation":
+        # show your Documentation page
+        # or inline import
+        documentation_ui.render()
     # Restore token
     else:
         if "restored" not in st.session_state:
@@ -145,6 +154,27 @@ def main():
                         st.info("Export feature coming soon!")
 
                 st.markdown("---")
+
+
+
+                doc_url = "/?page=documentation"
+                st.markdown(
+                    f"""
+                    <a href="{doc_url}" target="_blank">
+                        <button style="
+                            background-color:#4F46E5;
+                            color:white;
+                            border:none;
+                            padding:0.6em 1.2em;
+                            border-radius:8px;
+                            font-size:16px;
+                            cursor:pointer;">
+                            📘 Tutorial
+                        </button>
+                    </a>
+                    """,
+                    unsafe_allow_html=True
+                )
         
                 if st.button("\U0001F6AA Logout", use_container_width=True):
                     auth_service.users.update_one(
