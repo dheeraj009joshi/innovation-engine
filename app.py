@@ -22,6 +22,7 @@ def init_session_state():
         "authenticated": False,
         "current_user": None,
         "current_project": None,
+        "extracted_texts":None,
         "agent_outputs": {},
         "theme_outputs": {},
         "wizard_step": 1,
