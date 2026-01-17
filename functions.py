@@ -65,7 +65,7 @@ def combine_blobs(raw_blobs: List[str]) -> List[Dict]:
 
 
 
-AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=printxd;AccountKey=CaL/3SmhK8iKVM02i/cIN1VgE3058lyxRnCxeRd2J1k/9Ay6I67GC2CMnW//lJhNl+71WwxYXHnC+AStkbW1Jg==;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=tikuntechwebimages;AccountKey=JBh4LIsNPWZ47xjknDD/kZrckTi3zLpvcnBig/8tE6x/cGJo099cNIZoqhv8lndro36VbflqEW0q+AStjIPodQ==;EndpointSuffix=core.windows.net"
 CONTAINER_NAME = "mf2"
 
 def upload_to_azure(file):
